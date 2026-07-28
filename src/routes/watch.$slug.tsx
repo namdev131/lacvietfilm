@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -38,6 +38,7 @@ function WatchPage() {
 
   const [mode, setMode] = useState<PlayMode>("hls");
   const [groupStart, setGroupStart] = useState(0);
+  const qc = useQueryClient();
 
   const { data, isLoading } = useQuery({
     queryKey: ["detail", source, slug],
@@ -86,6 +87,8 @@ function WatchPage() {
       source,
       episode_slug: currentEp?.slug,
       episode_name: currentEp?.name,
+    }).then(() => {
+      qc.invalidateQueries({ queryKey: ["history"] });
     });
   }, [user, data, source, currentEp?.slug, currentEp?.name]);
 
