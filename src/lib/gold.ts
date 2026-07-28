@@ -56,7 +56,7 @@ export async function recordView(entry: {
   } catch {
     /* ignore */
   }
-  await supabase.from("view_events").insert({
+  const { error } = await supabase.from("view_events").insert({
     user_id: entry.userId ?? null,
     slug: entry.slug,
     name: entry.name,
@@ -65,6 +65,7 @@ export async function recordView(entry: {
     kind: entry.kind ?? "other",
     lang: entry.lang ?? "vietsub",
   });
+  if (error) console.error("recordView failed", error);
 }
 
 export function useGoldBoard(period: GoldPeriod, kind: GoldKind) {
