@@ -14,7 +14,96 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      favorites: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          poster: string | null
+          slug: string
+          source: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          poster?: string | null
+          slug: string
+          source?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          poster?: string | null
+          slug?: string
+          source?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      watch_history: {
+        Row: {
+          episode_name: string | null
+          episode_slug: string | null
+          id: string
+          name: string
+          poster: string | null
+          slug: string
+          source: string
+          user_id: string
+          watched_at: string
+        }
+        Insert: {
+          episode_name?: string | null
+          episode_slug?: string | null
+          id?: string
+          name: string
+          poster?: string | null
+          slug: string
+          source?: string
+          user_id: string
+          watched_at?: string
+        }
+        Update: {
+          episode_name?: string | null
+          episode_slug?: string | null
+          id?: string
+          name?: string
+          poster?: string | null
+          slug?: string
+          source?: string
+          user_id?: string
+          watched_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
