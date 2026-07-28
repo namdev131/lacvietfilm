@@ -12,9 +12,12 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 import { Search, Home as HomeIcon, Flame } from "lucide-react";
+import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { AuthProvider } from "@/hooks/useAuth";
+import { DockBar } from "@/components/DockBar";
 
 const LOGO = "https://files.catbox.moe/6ua430.png";
 
@@ -176,13 +179,18 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-background text-foreground">
-        <Header />
-        <main className="pt-14 md:pt-16">
-          <Outlet />
-        </main>
-        <Footer />
-      </div>
+      <AuthProvider>
+        <div className="min-h-screen bg-background text-foreground">
+          <Header />
+          <main className="pt-14 md:pt-16">
+            <Outlet />
+          </main>
+          <Footer />
+          <div className="h-24" />
+          <DockBar />
+          <Toaster position="top-center" richColors />
+        </div>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

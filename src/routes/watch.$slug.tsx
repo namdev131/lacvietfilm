@@ -1,7 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { recordHistory } from "@/hooks/useUserData";
 import { ArrowLeft, Languages, Mic } from "lucide-react";
 import { fetchDetail } from "@/lib/api";
 import { Player, type PlayMode } from "@/components/Player";
@@ -31,6 +33,7 @@ function WatchPage() {
   const { src, ep, srv } = Route.useSearch();
   const navigate = useNavigate();
   const source = src as SourceId;
+  const { user } = useAuth();
 
   const [mode, setMode] = useState<PlayMode>("hls");
   const [groupStart, setGroupStart] = useState(0);
@@ -58,6 +61,18 @@ function WatchPage() {
   }
   const clampedGroupStart = Math.min(groupStart, Math.max(0, (groups.length - 1) * 10));
   const visibleEps = eps.slice(clampedGroupStart, clampedGroupStart + 10);
+
+  useEffect(() => {
+    if (!user || !data) return;
+    recordHistory(user.id, {
+      slug: data.slug,
+      name: data.name,
+      poster: data.poster,
+      source,
+      episode_slug: currentEp?.slug,
+      episode_name: currentEp?.name,
+    });
+  }, [user, data, source, currentEp?.slug, currentEp?.name]);
 
   const goEp = (i: number) => navigate({ to: "/watch/$slug", params: { slug }, search: { src: source, ep: i, srv } });
   const goSrv = (i: number) => navigate({ to: "/watch/$slug", params: { slug }, search: { src: source, ep: 0, srv: i } });
