@@ -32,7 +32,7 @@ function LatestPage() {
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-          {(data || []).map((m, i) => <MovieCard key={m.slug} movie={m} index={i} />)}
+          {(data || []).map((m, i) => <MovieCard key={`${m.source}-${m.slug}`} movie={m} index={i} />)}
         </div>
       )}
       <div className="mt-8 flex items-center justify-center gap-3">
