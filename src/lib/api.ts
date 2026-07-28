@@ -166,7 +166,29 @@ export async function searchMovies(q: string, source: SourceId): Promise<MovieCa
       }),
     );
   }
+  if (source === "vsmov") {
+    const r = await fetch(
+      `https://vsmov.com/api/tim-kiem?keyword=${encodeURIComponent(q)}&limit=24`,
+    );
+    const j = await r.json();
+    const items = j?.items || j?.data?.items || [];
+    return items.map(
+      (m: any): MovieCard => ({
+        slug: m.slug,
+        name: m.name,
+        origin_name: m.origin_name,
+        poster: vsmovImg(m.poster_url),
+        thumb: vsmovImg(m.thumb_url),
+        year: m.year,
+        quality: m.quality,
+        lang: m.lang,
+        episode_current: m.episode_current,
+        source: "vsmov",
+      }),
+    );
+  }
   const r = await fetch(
+
     `https://phim.nguonc.com/api/films/search?keyword=${encodeURIComponent(q)}`,
   );
   const j = await r.json();
