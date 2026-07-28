@@ -68,6 +68,42 @@ export type Database = {
         }
         Relationships: []
       }
+      view_events: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          lang: string
+          name: string
+          poster: string | null
+          slug: string
+          source: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind?: string
+          lang?: string
+          name: string
+          poster?: string | null
+          slug: string
+          source?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          lang?: string
+          name?: string
+          poster?: string | null
+          slug?: string
+          source?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       watch_history: {
         Row: {
           episode_name: string | null
@@ -109,7 +145,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      gold_board: {
+        Args: { _kind?: string; _limit?: number; _period?: string }
+        Returns: {
+          kind: string
+          name: string
+          poster: string
+          prev_rank: number
+          rank: number
+          slug: string
+          source: string
+          views: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
