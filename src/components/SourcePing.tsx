@@ -52,6 +52,19 @@ export function SourcePing({
       <span className="flex items-center gap-1 text-xs text-muted-foreground">
         <Activity className="h-3.5 w-3.5" /> Nguồn API
       </span>
+      {allowAll && (
+        <button
+          onClick={() => onChange("all")}
+          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition ${
+            value === "all"
+              ? "border-primary bg-primary/15 text-primary"
+              : "border-border bg-card/60 text-foreground hover:border-primary/50"
+          }`}
+        >
+          <Layers className="h-3.5 w-3.5" /> Tất cả
+        </button>
+      )}
+
       {SOURCES.map((s) => {
         const active = value === s.id;
         const p = pings[s.id];
