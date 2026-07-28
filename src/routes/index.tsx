@@ -113,13 +113,19 @@ function Home() {
       </div>
 
       <div className="mt-8 space-y-8 md:space-y-10">
-        <MovieRow title={`Phim mới · ${source.toUpperCase()}`} movies={featured} accent="cuộn ngang" />
+        <MovieRow
+          title={`Phim mới · ${source === "all" ? "GỘP 4 NGUỒN" : source.toUpperCase()}`}
+          movies={featured}
+          accent="cuộn ngang"
+        />
         <GoldBoard />
         <MovieRow title="Vietsub nổi bật" movies={vietsub.slice(0, 20)} />
         <MovieRow title="Thuyết Minh" movies={thuyetminh.slice(0, 20)} />
         <MovieRow title="Kho phim OPhim" movies={op.data || []} />
         <MovieRow title="Kho phim NguonC" movies={ng.data || []} />
+        <MovieRow title="Kho phim VSMov" movies={vs.data || []} />
         <MovieRow title="Đề xuất thêm" movies={kk2.data || []} />
+
       </div>
     </div>
   );
