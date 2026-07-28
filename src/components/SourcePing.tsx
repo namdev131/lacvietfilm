@@ -1,21 +1,24 @@
 import { useEffect, useState } from "react";
 import { SOURCES, pingSource } from "@/lib/api";
-import type { SourceId } from "@/lib/types";
-import { Activity } from "lucide-react";
+import type { SourceFilter, SourceId } from "@/lib/types";
+import { Activity, Layers } from "lucide-react";
 
 export function SourcePing({
   value,
   onChange,
   compact,
+  allowAll = true,
 }: {
-  value: SourceId;
-  onChange: (s: SourceId) => void;
+  value: SourceFilter;
+  onChange: (s: SourceFilter) => void;
   compact?: boolean;
+  allowAll?: boolean;
 }) {
   const [pings, setPings] = useState<Record<SourceId, number | null>>({
     kkphim: null,
     ophim: null,
     nguonc: null,
+    vsmov: null,
   });
 
   useEffect(() => {
@@ -34,6 +37,7 @@ export function SourcePing({
       clearInterval(t);
     };
   }, []);
+
 
   const pingColor = (p: number | null) => {
     if (p == null) return "text-muted-foreground";
