@@ -266,7 +266,44 @@ export async function fetchDetail(slug: string, source: SourceId): Promise<Movie
       source: "ophim",
     };
   }
+  if (source === "vsmov") {
+    const r = await fetch(`https://vsmov.com/api/phim/${slug}`);
+    const j = await r.json();
+    const m = j.movie;
+    const servers: EpisodeServer[] = (j.episodes || []).map((s: any) => ({
+      server_name: (s.server_name || "Vietsub").replace(/\s+/g, " ").trim(),
+      items: (s.server_data || []).map((ep: any) => {
+        const raw = String(ep.name || ep.filename || "");
+        return {
+          name: /^\d+$/.test(raw) ? `Tập ${raw}` : raw,
+          slug: ep.slug || raw,
+          m3u8: ep.link_m3u8 || undefined,
+          embed: ep.link_embed || undefined,
+        };
+      }),
+    }));
+    return {
+      slug: m.slug,
+      name: m.name,
+      origin_name: m.origin_name,
+      poster: vsmovImg(m.poster_url),
+      thumb: vsmovImg(m.thumb_url),
+      content: m.content,
+      year: m.year,
+      quality: m.quality,
+      lang: m.lang,
+      episode_current: m.episode_current,
+      time: m.time,
+      category: (m.category || []).map((c: any) => c.name),
+      country: (m.country || []).map((c: any) => c.name),
+      actors: m.actor || [],
+      director: m.director || [],
+      servers,
+      source: "vsmov",
+    };
+  }
   const r = await fetch(`https://phim.nguonc.com/api/film/${slug}`);
+
   const j = await r.json();
   const m = j.movie;
   const servers: EpisodeServer[] = (m.episodes || []).map((s: any) => ({
