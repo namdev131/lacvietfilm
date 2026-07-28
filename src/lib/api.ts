@@ -85,7 +85,26 @@ export async function fetchLatest(source: SourceId, page = 1): Promise<MovieCard
       }),
     );
   }
+  if (source === "vsmov") {
+    const r = await fetch(`https://vsmov.com/api/danh-sach/phim-moi-cap-nhat?page=${page}`);
+    const j = await r.json();
+    return (j.items || []).map(
+      (m: any): MovieCard => ({
+        slug: m.slug,
+        name: m.name,
+        origin_name: m.origin_name,
+        poster: vsmovImg(m.poster_url),
+        thumb: vsmovImg(m.thumb_url),
+        year: m.year,
+        quality: m.quality,
+        lang: m.lang,
+        episode_current: m.episode_current,
+        source: "vsmov",
+      }),
+    );
+  }
   const r = await fetch(
+
     `https://phim.nguonc.com/api/films/phim-moi-cap-nhat?page=${page}`,
   );
   const j = await r.json();
