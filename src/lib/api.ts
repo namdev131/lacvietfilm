@@ -342,3 +342,53 @@ export async function fetchDetail(slug: string, source: SourceId): Promise<Movie
     source: "nguonc",
   };
 }
+
+// ---------- Gộp nhiều nguồn ----------
+const norm = (s: string) =>
+  (s || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, "");
+
+/** Trộn kết quả từ nhiều nguồn theo kiểu xen kẽ + khử trùng lặp theo tên/năm */
+export function mergeMovies(lists: MovieCard[][]): MovieCard[] {
+  const out: MovieCard[] = [];
+  const seen = new Set<string>();
+  const max = Math.max(0, ...lists.map((l) => l.length));
+  for (let i = 0; i < max; i++) {
+    for (const list of lists) {
+      const m = list[i];
+      if (!m) continue;
+      const key = `${norm(m.origin_name || m.name)}-${m.year ?? ""}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(m);
+    }
+  }
+  return out;
+}
+
+const ALL_SOURCES: SourceId[] = SOURCES.map((s) => s.id);
+
+async function settled(tasks: Promise<MovieCard[]>[]): Promise<MovieCard[][]> {
+  const res = await Promise.allSettled(tasks);
+  return res.map((r) => (r.status === "fulfilled" ? r.value : []));
+}
+
+export async function fetchLatestMerged(
+  source: SourceFilter,
+  page = 1,
+): Promise<MovieCard[]> {
+  if (source !== "all") return fetchLatest(source, page);
+  return mergeMovies(await settled(ALL_SOURCES.map((s) => fetchLatest(s, page))));
+}
+
+export async function searchMoviesMerged(
+  q: string,
+  source: SourceFilter,
+): Promise<MovieCard[]> {
+  if (!q.trim()) return [];
+  if (source !== "all") return searchMovies(q, source);
+  return mergeMovies(await settled(ALL_SOURCES.map((s) => searchMovies(q, s))));
+}
