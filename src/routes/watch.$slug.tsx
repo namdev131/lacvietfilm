@@ -33,6 +33,7 @@ function WatchPage() {
   const { src, ep, srv } = Route.useSearch();
   const navigate = useNavigate();
   const source = src as SourceId;
+  const { user } = useAuth();
 
   const [mode, setMode] = useState<PlayMode>("hls");
   const [groupStart, setGroupStart] = useState(0);
