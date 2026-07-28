@@ -47,6 +47,12 @@ function ophimImg(u?: string) {
   if (u.startsWith("http")) return u;
   return `https://img.ophim.live/uploads/movies/${u}`;
 }
+function vsmovImg(u?: string) {
+  if (!u) return "";
+  if (u.startsWith("http")) return u;
+  return `https://vsmov.com/storage/${u.replace(/^\/+/, "")}`;
+}
+
 
 // ---------- Latest lists ----------
 export async function fetchLatest(source: SourceId, page = 1): Promise<MovieCard[]> {
