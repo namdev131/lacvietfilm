@@ -76,7 +76,7 @@ export async function recordHistory(
   userId: string,
   entry: { slug: string; name: string; poster?: string; source: SourceId; episode_slug?: string; episode_name?: string },
 ) {
-  await supabase.from("watch_history").upsert(
+  const { error } = await supabase.from("watch_history").upsert(
     {
       user_id: userId,
       slug: entry.slug,
@@ -89,4 +89,5 @@ export async function recordHistory(
     },
     { onConflict: "user_id,slug" },
   );
+  if (error) console.error("recordHistory failed", error);
 }
