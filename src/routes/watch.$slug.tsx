@@ -129,7 +129,11 @@ function WatchPage() {
 
           {/* Source switcher */}
           <div className="rounded-xl border border-border/60 bg-card/70 p-4">
-            <SourcePing value={source} onChange={changeSource} />
+            <SourcePing
+              value={source}
+              allowAll={false}
+              onChange={(s) => changeSource(s as SourceId)}
+            />
             <p className="mt-2 text-[11px] text-muted-foreground">
               Đổi nguồn API nếu tập hiện tại lỗi. Ping đo tự động, chọn nguồn xanh cho tốc độ tốt nhất.
             </p>
