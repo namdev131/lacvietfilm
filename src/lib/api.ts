@@ -3,12 +3,14 @@ import type {
   MovieDetail,
   EpisodeServer,
   SourceId,
+  SourceFilter,
 } from "./types";
 
 export const SOURCES: { id: SourceId; label: string; base: string }[] = [
   { id: "kkphim", label: "KKPhim", base: "https://phimapi.com" },
   { id: "ophim", label: "OPhim", base: "https://ophim1.com" },
   { id: "nguonc", label: "NguonC", base: "https://phim.nguonc.com/api" },
+  { id: "vsmov", label: "VSMov", base: "https://vsmov.com/api" },
 ];
 
 // ---------- Ping ----------
@@ -19,7 +21,9 @@ export async function pingSource(id: SourceId): Promise<number> {
       ? `${src.base}/danh-sach/phim-moi-cap-nhat-v3?page=1`
       : id === "ophim"
         ? `${src.base}/danh-sach/phim-moi-cap-nhat?page=1`
-        : `${src.base}/films/phim-moi-cap-nhat?page=1`;
+        : id === "vsmov"
+          ? `${src.base}/danh-sach/phim-moi-cap-nhat?page=1`
+          : `${src.base}/films/phim-moi-cap-nhat?page=1`;
   const start = performance.now();
   try {
     const r = await fetch(url, { cache: "no-store" });
@@ -30,6 +34,7 @@ export async function pingSource(id: SourceId): Promise<number> {
     return -1;
   }
 }
+
 
 // ---------- Normalize helpers ----------
 function kkImg(u?: string) {
