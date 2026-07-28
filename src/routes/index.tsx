@@ -3,28 +3,40 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { Play, Info } from "lucide-react";
-import { fetchLatest } from "@/lib/api";
+import { fetchLatest, fetchLatestMerged } from "@/lib/api";
 import { MovieRow } from "@/components/MovieRow";
 import { GoldBoard } from "@/components/GoldBoard";
 import { SourcePing } from "@/components/SourcePing";
-import type { SourceId } from "@/lib/types";
+import type { SourceFilter } from "@/lib/types";
 
 export const Route = createFileRoute("/")({
   component: Home,
 });
 
 function Home() {
-  const [source, setSource] = useState<SourceId>("kkphim");
+  const [source, setSource] = useState<SourceFilter>("all");
   const kk = useQuery({ queryKey: ["latest", "kkphim", 1], queryFn: () => fetchLatest("kkphim", 1) });
   const op = useQuery({ queryKey: ["latest", "ophim", 1], queryFn: () => fetchLatest("ophim", 1) });
   const ng = useQuery({ queryKey: ["latest", "nguonc", 1], queryFn: () => fetchLatest("nguonc", 1) });
+  const vs = useQuery({ queryKey: ["latest", "vsmov", 1], queryFn: () => fetchLatest("vsmov", 1) });
   const kk2 = useQuery({ queryKey: ["latest", "kkphim", 2], queryFn: () => fetchLatest("kkphim", 2) });
+  const all = useQuery({ queryKey: ["latest", "all", 1], queryFn: () => fetchLatestMerged("all", 1) });
 
-  const hero = (source === "kkphim" ? kk.data : source === "ophim" ? op.data : ng.data)?.[0];
-  const featured = (source === "kkphim" ? kk.data : source === "ophim" ? op.data : ng.data) || [];
+  const featured =
+    (source === "all"
+      ? all.data
+      : source === "kkphim"
+        ? kk.data
+        : source === "ophim"
+          ? op.data
+          : source === "vsmov"
+            ? vs.data
+            : ng.data) || [];
+  const hero = featured[0];
 
   const vietsub = (kk.data || []).filter((m) => (m.lang || "").toLowerCase().includes("vietsub"));
   const thuyetminh = (kk.data || []).filter((m) => (m.lang || "").toLowerCase().includes("thuyết"));
+
 
   return (
     <div>
@@ -101,13 +113,19 @@ function Home() {
       </div>
 
       <div className="mt-8 space-y-8 md:space-y-10">
-        <MovieRow title={`Phim mới · ${source.toUpperCase()}`} movies={featured} accent="cuộn ngang" />
+        <MovieRow
+          title={`Phim mới · ${source === "all" ? "GỘP 4 NGUỒN" : source.toUpperCase()}`}
+          movies={featured}
+          accent="cuộn ngang"
+        />
         <GoldBoard />
         <MovieRow title="Vietsub nổi bật" movies={vietsub.slice(0, 20)} />
         <MovieRow title="Thuyết Minh" movies={thuyetminh.slice(0, 20)} />
         <MovieRow title="Kho phim OPhim" movies={op.data || []} />
         <MovieRow title="Kho phim NguonC" movies={ng.data || []} />
+        <MovieRow title="Kho phim VSMov" movies={vs.data || []} />
         <MovieRow title="Đề xuất thêm" movies={kk2.data || []} />
+
       </div>
     </div>
   );

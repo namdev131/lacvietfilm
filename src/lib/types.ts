@@ -1,4 +1,6 @@
-export type SourceId = "kkphim" | "ophim" | "nguonc";
+export type SourceId = "kkphim" | "ophim" | "nguonc" | "vsmov";
+export type SourceFilter = SourceId | "all";
+
 
 export interface MovieCard {
   slug: string;

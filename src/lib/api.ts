@@ -3,12 +3,14 @@ import type {
   MovieDetail,
   EpisodeServer,
   SourceId,
+  SourceFilter,
 } from "./types";
 
 export const SOURCES: { id: SourceId; label: string; base: string }[] = [
   { id: "kkphim", label: "KKPhim", base: "https://phimapi.com" },
   { id: "ophim", label: "OPhim", base: "https://ophim1.com" },
   { id: "nguonc", label: "NguonC", base: "https://phim.nguonc.com/api" },
+  { id: "vsmov", label: "VSMov", base: "https://vsmov.com/api" },
 ];
 
 // ---------- Ping ----------
@@ -19,7 +21,9 @@ export async function pingSource(id: SourceId): Promise<number> {
       ? `${src.base}/danh-sach/phim-moi-cap-nhat-v3?page=1`
       : id === "ophim"
         ? `${src.base}/danh-sach/phim-moi-cap-nhat?page=1`
-        : `${src.base}/films/phim-moi-cap-nhat?page=1`;
+        : id === "vsmov"
+          ? `${src.base}/danh-sach/phim-moi-cap-nhat?page=1`
+          : `${src.base}/films/phim-moi-cap-nhat?page=1`;
   const start = performance.now();
   try {
     const r = await fetch(url, { cache: "no-store" });
@@ -30,6 +34,7 @@ export async function pingSource(id: SourceId): Promise<number> {
     return -1;
   }
 }
+
 
 // ---------- Normalize helpers ----------
 function kkImg(u?: string) {
@@ -42,6 +47,12 @@ function ophimImg(u?: string) {
   if (u.startsWith("http")) return u;
   return `https://img.ophim.live/uploads/movies/${u}`;
 }
+function vsmovImg(u?: string) {
+  if (!u) return "";
+  if (u.startsWith("http")) return u;
+  return `https://vsmov.com/storage/${u.replace(/^\/+/, "")}`;
+}
+
 
 // ---------- Latest lists ----------
 export async function fetchLatest(source: SourceId, page = 1): Promise<MovieCard[]> {
@@ -80,7 +91,26 @@ export async function fetchLatest(source: SourceId, page = 1): Promise<MovieCard
       }),
     );
   }
+  if (source === "vsmov") {
+    const r = await fetch(`https://vsmov.com/api/danh-sach/phim-moi-cap-nhat?page=${page}`);
+    const j = await r.json();
+    return (j.items || []).map(
+      (m: any): MovieCard => ({
+        slug: m.slug,
+        name: m.name,
+        origin_name: m.origin_name,
+        poster: vsmovImg(m.poster_url),
+        thumb: vsmovImg(m.thumb_url),
+        year: m.year,
+        quality: m.quality,
+        lang: m.lang,
+        episode_current: m.episode_current,
+        source: "vsmov",
+      }),
+    );
+  }
   const r = await fetch(
+
     `https://phim.nguonc.com/api/films/phim-moi-cap-nhat?page=${page}`,
   );
   const j = await r.json();
@@ -136,7 +166,29 @@ export async function searchMovies(q: string, source: SourceId): Promise<MovieCa
       }),
     );
   }
+  if (source === "vsmov") {
+    const r = await fetch(
+      `https://vsmov.com/api/tim-kiem?keyword=${encodeURIComponent(q)}&limit=24`,
+    );
+    const j = await r.json();
+    const items = j?.items || j?.data?.items || [];
+    return items.map(
+      (m: any): MovieCard => ({
+        slug: m.slug,
+        name: m.name,
+        origin_name: m.origin_name,
+        poster: vsmovImg(m.poster_url),
+        thumb: vsmovImg(m.thumb_url),
+        year: m.year,
+        quality: m.quality,
+        lang: m.lang,
+        episode_current: m.episode_current,
+        source: "vsmov",
+      }),
+    );
+  }
   const r = await fetch(
+
     `https://phim.nguonc.com/api/films/search?keyword=${encodeURIComponent(q)}`,
   );
   const j = await r.json();
@@ -214,7 +266,44 @@ export async function fetchDetail(slug: string, source: SourceId): Promise<Movie
       source: "ophim",
     };
   }
+  if (source === "vsmov") {
+    const r = await fetch(`https://vsmov.com/api/phim/${slug}`);
+    const j = await r.json();
+    const m = j.movie;
+    const servers: EpisodeServer[] = (j.episodes || []).map((s: any) => ({
+      server_name: (s.server_name || "Vietsub").replace(/\s+/g, " ").trim(),
+      items: (s.server_data || []).map((ep: any) => {
+        const raw = String(ep.name || ep.filename || "");
+        return {
+          name: /^\d+$/.test(raw) ? `Tập ${raw}` : raw,
+          slug: ep.slug || raw,
+          m3u8: ep.link_m3u8 || undefined,
+          embed: ep.link_embed || undefined,
+        };
+      }),
+    }));
+    return {
+      slug: m.slug,
+      name: m.name,
+      origin_name: m.origin_name,
+      poster: vsmovImg(m.poster_url),
+      thumb: vsmovImg(m.thumb_url),
+      content: m.content,
+      year: m.year,
+      quality: m.quality,
+      lang: m.lang,
+      episode_current: m.episode_current,
+      time: m.time,
+      category: (m.category || []).map((c: any) => c.name),
+      country: (m.country || []).map((c: any) => c.name),
+      actors: m.actor || [],
+      director: m.director || [],
+      servers,
+      source: "vsmov",
+    };
+  }
   const r = await fetch(`https://phim.nguonc.com/api/film/${slug}`);
+
   const j = await r.json();
   const m = j.movie;
   const servers: EpisodeServer[] = (m.episodes || []).map((s: any) => ({
@@ -252,4 +341,54 @@ export async function fetchDetail(slug: string, source: SourceId): Promise<Movie
     servers,
     source: "nguonc",
   };
+}
+
+// ---------- Gộp nhiều nguồn ----------
+const norm = (s: string) =>
+  (s || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, "");
+
+/** Trộn kết quả từ nhiều nguồn theo kiểu xen kẽ + khử trùng lặp theo tên/năm */
+export function mergeMovies(lists: MovieCard[][]): MovieCard[] {
+  const out: MovieCard[] = [];
+  const seen = new Set<string>();
+  const max = Math.max(0, ...lists.map((l) => l.length));
+  for (let i = 0; i < max; i++) {
+    for (const list of lists) {
+      const m = list[i];
+      if (!m) continue;
+      const key = `${norm(m.origin_name || m.name)}-${m.year ?? ""}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(m);
+    }
+  }
+  return out;
+}
+
+const ALL_SOURCES: SourceId[] = SOURCES.map((s) => s.id);
+
+async function settled(tasks: Promise<MovieCard[]>[]): Promise<MovieCard[][]> {
+  const res = await Promise.allSettled(tasks);
+  return res.map((r) => (r.status === "fulfilled" ? r.value : []));
+}
+
+export async function fetchLatestMerged(
+  source: SourceFilter,
+  page = 1,
+): Promise<MovieCard[]> {
+  if (source !== "all") return fetchLatest(source, page);
+  return mergeMovies(await settled(ALL_SOURCES.map((s) => fetchLatest(s, page))));
+}
+
+export async function searchMoviesMerged(
+  q: string,
+  source: SourceFilter,
+): Promise<MovieCard[]> {
+  if (!q.trim()) return [];
+  if (source !== "all") return searchMovies(q, source);
+  return mergeMovies(await settled(ALL_SOURCES.map((s) => searchMovies(q, s))));
 }

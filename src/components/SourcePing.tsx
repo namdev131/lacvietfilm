@@ -1,21 +1,24 @@
 import { useEffect, useState } from "react";
 import { SOURCES, pingSource } from "@/lib/api";
-import type { SourceId } from "@/lib/types";
-import { Activity } from "lucide-react";
+import type { SourceFilter, SourceId } from "@/lib/types";
+import { Activity, Layers } from "lucide-react";
 
 export function SourcePing({
   value,
   onChange,
   compact,
+  allowAll = true,
 }: {
-  value: SourceId;
-  onChange: (s: SourceId) => void;
+  value: SourceFilter;
+  onChange: (s: SourceFilter) => void;
   compact?: boolean;
+  allowAll?: boolean;
 }) {
   const [pings, setPings] = useState<Record<SourceId, number | null>>({
     kkphim: null,
     ophim: null,
     nguonc: null,
+    vsmov: null,
   });
 
   useEffect(() => {
@@ -35,6 +38,7 @@ export function SourcePing({
     };
   }, []);
 
+
   const pingColor = (p: number | null) => {
     if (p == null) return "text-muted-foreground";
     if (p < 0) return "text-red-400";
@@ -48,6 +52,19 @@ export function SourcePing({
       <span className="flex items-center gap-1 text-xs text-muted-foreground">
         <Activity className="h-3.5 w-3.5" /> Nguồn API
       </span>
+      {allowAll && (
+        <button
+          onClick={() => onChange("all")}
+          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition ${
+            value === "all"
+              ? "border-primary bg-primary/15 text-primary"
+              : "border-border bg-card/60 text-foreground hover:border-primary/50"
+          }`}
+        >
+          <Layers className="h-3.5 w-3.5" /> Tất cả
+        </button>
+      )}
+
       {SOURCES.map((s) => {
         const active = value === s.id;
         const p = pings[s.id];

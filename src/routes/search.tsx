@@ -2,10 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Search as SearchIcon } from "lucide-react";
-import { searchMovies } from "@/lib/api";
+import { searchMoviesMerged } from "@/lib/api";
 import { MovieCard } from "@/components/MovieCard";
 import { SourcePing } from "@/components/SourcePing";
-import type { SourceId } from "@/lib/types";
+import type { SourceFilter } from "@/lib/types";
 
 export const Route = createFileRoute("/search")({
   component: SearchPage,
@@ -14,12 +14,13 @@ export const Route = createFileRoute("/search")({
 function SearchPage() {
   const [q, setQ] = useState("");
   const [committed, setCommitted] = useState("");
-  const [source, setSource] = useState<SourceId>("kkphim");
+  const [source, setSource] = useState<SourceFilter>("all");
   const { data, isFetching } = useQuery({
     queryKey: ["search", source, committed],
-    queryFn: () => searchMovies(committed, source),
+    queryFn: () => searchMoviesMerged(committed, source),
     enabled: committed.length > 0,
   });
+
   return (
     <div className="mx-auto max-w-[1600px] px-4 py-8 md:px-10">
       <h1 className="mb-6 text-2xl md:text-3xl font-black tracking-tight">Tìm phim</h1>
@@ -51,7 +52,7 @@ function SearchPage() {
         )}
         {data && data.length > 0 && (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-            {data.map((m, i) => <MovieCard key={m.slug} movie={m} index={i} />)}
+            {data.map((m, i) => <MovieCard key={`${m.source}-${m.slug}`} movie={m} index={i} />)}
           </div>
         )}
       </div>
