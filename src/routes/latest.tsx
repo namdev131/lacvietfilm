@@ -1,22 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { fetchLatest } from "@/lib/api";
+import { fetchLatestMerged } from "@/lib/api";
 import { MovieCard } from "@/components/MovieCard";
 import { SourcePing } from "@/components/SourcePing";
-import type { SourceId } from "@/lib/types";
+import type { SourceFilter } from "@/lib/types";
 
 export const Route = createFileRoute("/latest")({
   component: LatestPage,
 });
 
 function LatestPage() {
-  const [source, setSource] = useState<SourceId>("kkphim");
+  const [source, setSource] = useState<SourceFilter>("all");
   const [page, setPage] = useState(1);
   const { data, isLoading } = useQuery({
     queryKey: ["latest", source, page],
-    queryFn: () => fetchLatest(source, page),
+    queryFn: () => fetchLatestMerged(source, page),
   });
+
   return (
     <div className="mx-auto max-w-[1600px] px-4 py-8 md:px-10">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
