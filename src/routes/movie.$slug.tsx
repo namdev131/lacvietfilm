@@ -5,6 +5,7 @@ import { Play, ArrowLeft } from "lucide-react";
 import { fetchDetail } from "@/lib/api";
 import type { SourceId } from "@/lib/types";
 import DOMPurify from "isomorphic-dompurify";
+import { FavoriteButton } from "@/components/FavoriteButton";
 
 const searchSchema = z.object({
   src: z.enum(["kkphim", "ophim", "nguonc"]).default("kkphim"),
@@ -77,8 +78,8 @@ function MoviePage() {
                 ))}
               </div>
             )}
-            {totalEps > 0 && (
-              <div className="pt-2">
+            <div className="flex flex-wrap items-center gap-2 pt-2">
+              {totalEps > 0 && (
                 <Link
                   to="/watch/$slug"
                   params={{ slug: data.slug }}
@@ -87,8 +88,9 @@ function MoviePage() {
                 >
                   <Play className="h-4 w-4 fill-current" /> Phát phim
                 </Link>
-              </div>
-            )}
+              )}
+              <FavoriteButton slug={data.slug} name={data.name} poster={data.poster} source={source} />
+            </div>
             {sanitized && (
               <div
                 className="prose prose-invert prose-sm max-w-none text-muted-foreground"
