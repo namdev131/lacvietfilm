@@ -4,6 +4,7 @@ import { z } from "zod";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { recordHistory } from "@/hooks/useUserData";
+import { recordView, detectKind } from "@/lib/gold";
 import { ArrowLeft, Languages, Mic } from "lucide-react";
 import { fetchDetail } from "@/lib/api";
 import { Player, type PlayMode } from "@/components/Player";
@@ -61,6 +62,20 @@ function WatchPage() {
   }
   const clampedGroupStart = Math.min(groupStart, Math.max(0, (groups.length - 1) * 10));
   const visibleEps = eps.slice(clampedGroupStart, clampedGroupStart + 10);
+
+  // Ghi nhận lượt xem cho Bảng Vàng (kể cả khách chưa đăng nhập)
+  useEffect(() => {
+    if (!data) return;
+    recordView({
+      slug: data.slug,
+      name: data.name,
+      poster: data.poster,
+      source,
+      kind: detectKind(data),
+      lang: detectLang(currentServer?.server_name || ""),
+      userId: user?.id ?? null,
+    });
+  }, [data?.slug, source, user?.id]);
 
   useEffect(() => {
     if (!user || !data) return;
