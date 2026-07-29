@@ -1,18 +1,39 @@
+import { cn } from "@/lib/utils";
+
 const strip = (s: string) =>
   (s || "")
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
 
+type HighlightTone = "default" | "subtle" | "strong";
+
+const TONES: Record<HighlightTone, string> = {
+  // chuẩn: nền mờ + chữ primary, không đổi chiều cao dòng
+  default: "bg-primary/20 text-primary",
+  subtle: "bg-primary/10 text-foreground",
+  strong: "bg-primary/30 text-primary font-semibold",
+};
+
 /** Tô đậm phần khớp từ khoá (bỏ dấu, không phân biệt hoa thường) */
-export function Highlight({ text, query }: { text: string; query?: string }) {
+export function Highlight({
+  text,
+  query,
+  tone = "default",
+  className,
+}: {
+  text: string;
+  query?: string;
+  tone?: HighlightTone;
+  className?: string;
+}) {
   const q = (query || "").replace(/\s+/g, " ").trim();
   if (!q || !text) return <>{text}</>;
 
   const hay = strip(text);
-  const terms = Array.from(new Set([strip(q), ...strip(q).split(" ")])).filter(
-    (t) => t.length >= 2,
-  );
+  const terms = Array.from(new Set([strip(q), ...strip(q).split(" ")]))
+    .filter((t) => t.length >= 2)
+    .sort((a, b) => b.length - a.length);
   const marks = new Array(text.length).fill(false);
   for (const t of terms) {
     let from = 0;
@@ -42,7 +63,14 @@ export function Highlight({ text, query }: { text: string; query?: string }) {
     <>
       {parts.map((p, i) =>
         p.on ? (
-          <mark key={i} className="rounded bg-primary/25 px-0.5 text-primary">
+          <mark
+            key={i}
+            className={cn(
+              "rounded-[3px] px-0.5 py-px leading-none decoration-clone",
+              TONES[tone],
+              className,
+            )}
+          >
             {p.s}
           </mark>
         ) : (
