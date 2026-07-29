@@ -1,8 +1,17 @@
 import { Link } from "@tanstack/react-router";
 import type { MovieCard as MC } from "@/lib/types";
 import { motion } from "framer-motion";
+import { Highlight } from "@/components/Highlight";
 
-export function MovieCard({ movie, index = 0 }: { movie: MC; index?: number }) {
+export function MovieCard({
+  movie,
+  index = 0,
+  highlight,
+}: {
+  movie: MC;
+  index?: number;
+  highlight?: string;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -46,11 +55,11 @@ export function MovieCard({ movie, index = 0 }: { movie: MC; index?: number }) {
         </div>
         <div className="mt-2 space-y-0.5">
           <div className="line-clamp-1 text-sm font-medium text-foreground group-hover:text-primary">
-            {movie.name}
+            <Highlight text={movie.name} query={highlight} />
           </div>
           {movie.origin_name && (
             <div className="line-clamp-1 text-xs text-muted-foreground">
-              {movie.origin_name}
+              <Highlight text={movie.origin_name} query={highlight} />
               {movie.year ? ` · ${movie.year}` : ""}
             </div>
           )}

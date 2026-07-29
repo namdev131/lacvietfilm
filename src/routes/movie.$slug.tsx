@@ -8,7 +8,7 @@ import DOMPurify from "isomorphic-dompurify";
 import { FavoriteButton } from "@/components/FavoriteButton";
 
 const searchSchema = z.object({
-  src: z.enum(["kkphim", "ophim", "nguonc"]).default("kkphim"),
+  src: z.enum(["kkphim", "ophim", "nguonc", "vsmov"]).default("kkphim"),
 });
 
 export const Route = createFileRoute("/movie/$slug")({

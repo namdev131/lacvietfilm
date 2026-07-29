@@ -12,7 +12,7 @@ import { SourcePing } from "@/components/SourcePing";
 import type { SourceId } from "@/lib/types";
 
 const searchSchema = z.object({
-  src: z.enum(["kkphim", "ophim", "nguonc"]).default("kkphim"),
+  src: z.enum(["kkphim", "ophim", "nguonc", "vsmov"]).default("kkphim"),
   ep: z.number().int().min(0).default(0),
   srv: z.number().int().min(0).default(0),
 });
@@ -36,7 +36,13 @@ function WatchPage() {
   const source = src as SourceId;
   const { user } = useAuth();
 
-  const [mode, setMode] = useState<PlayMode>("hls");
+  const hlsSources: SourceId[] = ["kkphim", "ophim"];
+  const allowHls = hlsSources.includes(source);
+  const [mode, setMode] = useState<PlayMode>(allowHls ? "hls" : "embed");
+
+  useEffect(() => {
+    setMode(allowHls ? "hls" : "embed");
+  }, [allowHls]);
   const [groupStart, setGroupStart] = useState(0);
   const qc = useQueryClient();
 
@@ -115,8 +121,9 @@ function WatchPage() {
             m3u8={currentEp?.m3u8}
             embed={currentEp?.embed}
             poster={data.thumb || data.poster}
-            mode={mode}
+            mode={allowHls ? mode : "embed"}
             onModeChange={setMode}
+            allowHls={allowHls}
             autoFallback
           />
 
@@ -135,6 +142,9 @@ function WatchPage() {
               onChange={(s) => changeSource(s as SourceId)}
             />
             <p className="mt-2 text-[11px] text-muted-foreground">
+              {allowHls
+                ? "Nguồn này hỗ trợ HLS và Embed."
+                : "Nguồn này chỉ phát bằng Embed."}{" "}
               Đổi nguồn API nếu tập hiện tại lỗi. Ping đo tự động, chọn nguồn xanh cho tốc độ tốt nhất.
             </p>
           </div>
