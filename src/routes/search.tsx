@@ -11,6 +11,8 @@ import {
   pushSearchHistory,
   removeSearchHistory,
   clearSearchHistory,
+  matchHistory,
+  type SearchHistoryItem,
 } from "@/lib/searchHistory";
 import type { SourceFilter } from "@/lib/types";
 
