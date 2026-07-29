@@ -384,11 +384,38 @@ export async function fetchLatestMerged(
   return mergeMovies(await settled(ALL_SOURCES.map((s) => fetchLatest(s, page))));
 }
 
+/** Điểm liên quan: khớp đầu chuỗi > chứa chuỗi > khớp rời từ */
+function relevance(m: MovieCard, q: string): number {
+  const nq = norm(q);
+  if (!nq) return 0;
+  const fields = [m.name, m.origin_name].filter(Boolean) as string[];
+  let best = 0;
+  for (const f of fields) {
+    const nf = norm(f);
+    if (nf === nq) best = Math.max(best, 100);
+    else if (nf.startsWith(nq)) best = Math.max(best, 80);
+    else if (nf.includes(nq)) best = Math.max(best, 60);
+    else {
+      const words = norm(q).length ? q.trim().split(/\s+/).map(norm).filter(Boolean) : [];
+      const hit = words.filter((w) => nf.includes(w)).length;
+      if (words.length) best = Math.max(best, Math.round((hit / words.length) * 40));
+    }
+  }
+  return best;
+}
+
 export async function searchMoviesMerged(
   q: string,
   source: SourceFilter,
 ): Promise<MovieCard[]> {
-  if (!q.trim()) return [];
-  if (source !== "all") return searchMovies(q, source);
-  return mergeMovies(await settled(ALL_SOURCES.map((s) => searchMovies(q, s))));
+  const keyword = q.replace(/\s+/g, " ").trim();
+  if (!keyword) return [];
+  const merged =
+    source !== "all"
+      ? await searchMovies(keyword, source).catch(() => [])
+      : mergeMovies(await settled(ALL_SOURCES.map((s) => searchMovies(keyword, s))));
+  return merged
+    .map((m, i) => ({ m, i, score: relevance(m, keyword) }))
+    .sort((a, b) => b.score - a.score || a.i - b.i)
+    .map((x) => x.m);
 }
