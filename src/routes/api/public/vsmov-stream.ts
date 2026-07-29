@@ -27,12 +27,10 @@ export const Route = createFileRoute("/api/public/vsmov-stream")({
           return new Response("Forbidden host", { status: 403 });
         }
 
-        const range = request.headers.get("range");
         const upstream = await fetch(parsed.toString(), {
           headers: {
             Referer: `${parsed.origin}/`,
             "User-Agent": request.headers.get("user-agent") || "Mozilla/5.0",
-            ...(range ? { Range: range } : {}),
           },
         });
 
@@ -61,14 +59,18 @@ export const Route = createFileRoute("/api/public/vsmov-stream")({
           });
         }
 
-        const headers = new Headers();
-        for (const k of ["content-type", "content-length", "content-range", "accept-ranges"]) {
-          const v = upstream.headers.get(k);
-          if (v) headers.set(k, v);
-        }
-        headers.set("access-control-allow-origin", "*");
-        headers.set("cache-control", "public, max-age=3600");
-        return new Response(upstream.body, { status: upstream.status, headers });
+        // Phân đoạn của VSMov được nguỵ trang thành .png: bỏ phần rác ở đầu
+        // cho tới khi gặp sync byte của MPEG-TS (0x47, lặp mỗi 188 byte).
+        const body = upstream.body ? stripToTs(upstream.body) : null;
+        return new Response(body, {
+          status: upstream.status,
+          headers: {
+            "content-type": "video/mp2t",
+            "access-control-allow-origin": "*",
+            "cache-control": "public, max-age=3600",
+          },
+        });
+
       },
     },
   },
