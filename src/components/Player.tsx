@@ -11,6 +11,7 @@ export function Player({
   mode,
   onModeChange,
   autoFallback = true,
+  allowHls = true,
 }: {
   m3u8?: string;
   embed?: string;
@@ -18,13 +19,14 @@ export function Player({
   mode: PlayMode;
   onModeChange: (m: PlayMode) => void;
   autoFallback?: boolean;
+  allowHls?: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setError(null);
-    if (mode !== "hls" || !m3u8 || !videoRef.current) return;
+    if (mode !== "hls" || !allowHls || !m3u8 || !videoRef.current) return;
     const video = videoRef.current;
     let hls: Hls | null = null;
     let fallbackTimer: number | null = null;
@@ -53,9 +55,9 @@ export function Player({
       if (fallbackTimer) window.clearTimeout(fallbackTimer);
       if (hls) hls.destroy();
     };
-  }, [m3u8, mode, embed, autoFallback, onModeChange]);
+  }, [m3u8, mode, embed, autoFallback, onModeChange, allowHls]);
 
-  const canHls = !!m3u8;
+  const canHls = allowHls && !!m3u8;
   const canEmbed = !!embed;
 
   return (
@@ -96,6 +98,7 @@ export function Player({
 
       <div className="flex flex-wrap items-center gap-2">
         <div className="inline-flex overflow-hidden rounded-full border border-border bg-card">
+          {allowHls && (
           <button
             disabled={!canHls}
             onClick={() => onModeChange("hls")}
@@ -105,6 +108,7 @@ export function Player({
           >
             <Zap className="h-3.5 w-3.5" /> HLS (m3u8)
           </button>
+          )}
           <button
             disabled={!canEmbed}
             onClick={() => onModeChange("embed")}
