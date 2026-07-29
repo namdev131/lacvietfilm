@@ -5,12 +5,19 @@ import type {
   SourceId,
   SourceFilter,
 } from "./types";
+import {
+  VSMOV_BASE,
+  VSMOV_LATEST,
+  vsmovLatest,
+  vsmovSearch,
+  vsmovDetail,
+} from "./sources/vsmov";
 
 export const SOURCES: { id: SourceId; label: string; base: string }[] = [
   { id: "kkphim", label: "KKPhim", base: "https://phimapi.com" },
   { id: "ophim", label: "OPhim", base: "https://ophim1.com" },
   { id: "nguonc", label: "NguonC", base: "https://phim.nguonc.com/api" },
-  { id: "vsmov", label: "VSMov", base: "https://vsmov.com/api" },
+  { id: "vsmov", label: "VSMov", base: VSMOV_BASE },
 ];
 
 // ---------- Ping ----------
@@ -22,7 +29,7 @@ export async function pingSource(id: SourceId): Promise<number> {
       : id === "ophim"
         ? `${src.base}/danh-sach/phim-moi-cap-nhat?page=1`
         : id === "vsmov"
-          ? `${src.base}/danh-sach/phim-moi-cap-nhat?page=1`
+          ? `${VSMOV_LATEST}?page=1`
           : `${src.base}/films/phim-moi-cap-nhat?page=1`;
   const start = performance.now();
   try {
@@ -46,11 +53,6 @@ function ophimImg(u?: string) {
   if (!u) return "";
   if (u.startsWith("http")) return u;
   return `https://img.ophim.live/uploads/movies/${u}`;
-}
-function vsmovImg(u?: string) {
-  if (!u) return "";
-  if (u.startsWith("http")) return u;
-  return `https://vsmov.com/storage/${u.replace(/^\/+/, "")}`;
 }
 
 
@@ -91,24 +93,7 @@ export async function fetchLatest(source: SourceId, page = 1): Promise<MovieCard
       }),
     );
   }
-  if (source === "vsmov") {
-    const r = await fetch(`https://vsmov.com/api/danh-sach/phim-moi-cap-nhat?page=${page}`);
-    const j = await r.json();
-    return (j.items || []).map(
-      (m: any): MovieCard => ({
-        slug: m.slug,
-        name: m.name,
-        origin_name: m.origin_name,
-        poster: vsmovImg(m.poster_url),
-        thumb: vsmovImg(m.thumb_url),
-        year: m.year,
-        quality: m.quality,
-        lang: m.lang,
-        episode_current: m.episode_current,
-        source: "vsmov",
-      }),
-    );
-  }
+  if (source === "vsmov") return vsmovLatest(page);
   const r = await fetch(
 
     `https://phim.nguonc.com/api/films/phim-moi-cap-nhat?page=${page}`,
@@ -166,27 +151,7 @@ export async function searchMovies(q: string, source: SourceId): Promise<MovieCa
       }),
     );
   }
-  if (source === "vsmov") {
-    const r = await fetch(
-      `https://vsmov.com/api/tim-kiem?keyword=${encodeURIComponent(q)}&limit=24`,
-    );
-    const j = await r.json();
-    const items = j?.items || j?.data?.items || [];
-    return items.map(
-      (m: any): MovieCard => ({
-        slug: m.slug,
-        name: m.name,
-        origin_name: m.origin_name,
-        poster: vsmovImg(m.poster_url),
-        thumb: vsmovImg(m.thumb_url),
-        year: m.year,
-        quality: m.quality,
-        lang: m.lang,
-        episode_current: m.episode_current,
-        source: "vsmov",
-      }),
-    );
-  }
+  if (source === "vsmov") return vsmovSearch(q);
   const r = await fetch(
 
     `https://phim.nguonc.com/api/films/search?keyword=${encodeURIComponent(q)}`,
@@ -266,42 +231,7 @@ export async function fetchDetail(slug: string, source: SourceId): Promise<Movie
       source: "ophim",
     };
   }
-  if (source === "vsmov") {
-    const r = await fetch(`https://vsmov.com/api/phim/${slug}`);
-    const j = await r.json();
-    const m = j.movie;
-    const servers: EpisodeServer[] = (j.episodes || []).map((s: any) => ({
-      server_name: (s.server_name || "Vietsub").replace(/\s+/g, " ").trim(),
-      items: (s.server_data || []).map((ep: any) => {
-        const raw = String(ep.name || ep.filename || "");
-        return {
-          name: /^\d+$/.test(raw) ? `Tập ${raw}` : raw,
-          slug: ep.slug || raw,
-          m3u8: ep.link_m3u8 || undefined,
-          embed: ep.link_embed || undefined,
-        };
-      }),
-    }));
-    return {
-      slug: m.slug,
-      name: m.name,
-      origin_name: m.origin_name,
-      poster: vsmovImg(m.poster_url),
-      thumb: vsmovImg(m.thumb_url),
-      content: m.content,
-      year: m.year,
-      quality: m.quality,
-      lang: m.lang,
-      episode_current: m.episode_current,
-      time: m.time,
-      category: (m.category || []).map((c: any) => c.name),
-      country: (m.country || []).map((c: any) => c.name),
-      actors: m.actor || [],
-      director: m.director || [],
-      servers,
-      source: "vsmov",
-    };
-  }
+  if (source === "vsmov") return vsmovDetail(slug);
   const r = await fetch(`https://phim.nguonc.com/api/film/${slug}`);
 
   const j = await r.json();
