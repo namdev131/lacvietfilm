@@ -384,24 +384,53 @@ export async function fetchLatestMerged(
   return mergeMovies(await settled(ALL_SOURCES.map((s) => fetchLatest(s, page))));
 }
 
-/** Điểm liên quan: khớp đầu chuỗi > chứa chuỗi > khớp rời từ */
+const tokens = (s: string) =>
+  (s || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+
+/**
+ * Điểm liên quan 0–100:
+ * khớp tuyệt đối > khớp đầu chuỗi > chứa nguyên cụm > phủ token (ưu tiên token đứng đầu)
+ * + thưởng nhẹ cho phim có năm/chất lượng, phạt tên quá dài so với từ khoá.
+ */
 function relevance(m: MovieCard, q: string): number {
   const nq = norm(q);
   if (!nq) return 0;
-  const fields = [m.name, m.origin_name].filter(Boolean) as string[];
+  const qt = tokens(q);
+  const fields: { v: string; w: number }[] = [
+    { v: m.name || "", w: 1 },
+    { v: m.origin_name || "", w: 0.92 },
+  ].filter((f) => f.v);
+
   let best = 0;
   for (const f of fields) {
-    const nf = norm(f);
-    if (nf === nq) best = Math.max(best, 100);
-    else if (nf.startsWith(nq)) best = Math.max(best, 80);
-    else if (nf.includes(nq)) best = Math.max(best, 60);
-    else {
-      const words = norm(q).length ? q.trim().split(/\s+/).map(norm).filter(Boolean) : [];
-      const hit = words.filter((w) => nf.includes(w)).length;
-      if (words.length) best = Math.max(best, Math.round((hit / words.length) * 40));
+    const nf = norm(f.v);
+    const ft = tokens(f.v);
+    let s = 0;
+    if (nf === nq) s = 100;
+    else if (nf.startsWith(nq)) s = 88;
+    else if (nf.includes(nq)) s = 74;
+    else if (qt.length) {
+      const hit = qt.filter((t) => ft.some((x) => x === t || x.startsWith(t))).length;
+      const coverage = hit / qt.length;
+      const ordered = qt.every((t, i) => ft[i] && (ft[i] === t || ft[i].startsWith(t)));
+      s = Math.round(coverage * 58) + (ordered && coverage === 1 ? 8 : 0);
     }
+    // phạt khi tên dài hơn nhiều so với từ khoá (giảm nhiễu)
+    if (s > 0 && nf.length > nq.length * 3) s -= 4;
+    best = Math.max(best, Math.round(s * f.w));
   }
-  return best;
+
+  if (best > 0) {
+    if (m.year) best += 2;
+    if (m.quality) best += 1;
+    if (m.poster) best += 1;
+  }
+  return Math.max(0, Math.min(100, best));
 }
 
 export async function searchMoviesMerged(
@@ -416,6 +445,8 @@ export async function searchMoviesMerged(
       : mergeMovies(await settled(ALL_SOURCES.map((s) => searchMovies(keyword, s))));
   return merged
     .map((m, i) => ({ m, i, score: relevance(m, keyword) }))
+    .filter((x) => x.score > 0)
     .sort((a, b) => b.score - a.score || a.i - b.i)
     .map((x) => x.m);
 }
+
