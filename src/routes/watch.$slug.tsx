@@ -36,7 +36,7 @@ function WatchPage() {
   const source = src as SourceId;
   const { user } = useAuth();
 
-  const hlsSources: SourceId[] = ["kkphim", "ophim"];
+  const hlsSources: SourceId[] = ["kkphim", "ophim", "vsmov"];
   const allowHls = hlsSources.includes(source);
   const [mode, setMode] = useState<PlayMode>(allowHls ? "hls" : "embed");
 
