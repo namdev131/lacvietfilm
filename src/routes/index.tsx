@@ -76,7 +76,7 @@ function Home() {
               </p>
             )}
             <p className="max-w-xl text-sm text-white/80 md:text-base">
-              Mở phim, chạm hồn Việt. Tổng hợp phim mới từ KKPhim, OPhim và NguonC — Vietsub, Thuyết Minh, HLS & Embed.
+              Mở phim, chạm hồn Việt.
             </p>
             {hero && (
               <div className="flex flex-wrap gap-2 pt-2">
@@ -114,7 +114,7 @@ function Home() {
 
       <div className="mt-8 space-y-8 md:space-y-10">
         <MovieRow
-          title={`Phim mới · ${source === "all" ? "GỘP 4 NGUỒN" : source.toUpperCase()}`}
+          title="Phim mới"
           movies={featured}
           accent="cuộn ngang"
         />
