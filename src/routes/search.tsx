@@ -52,7 +52,7 @@ function SearchPage() {
   const [q, setQ] = useState("");
   const [source, setSource] = useState<SourceFilter>("all");
   const [open, setOpen] = useState(false);
-  const [history, setHistory] = useState<string[]>([]);
+  const [history, setHistory] = useState<SearchHistoryItem[]>([]);
   const boxRef = useRef<HTMLDivElement>(null);
 
   const term = useDebounced(q.replace(/\s+/g, " ").trim(), 350);
@@ -76,9 +76,9 @@ function SearchPage() {
     staleTime: 60_000,
   });
 
-  // Lưu lịch sử khi có kết quả thật
+  // Lưu lịch sử khi có kết quả thật (kèm số kết quả)
   useEffect(() => {
-    if (enabled && data && data.length > 0) setHistory(pushSearchHistory(term));
+    if (enabled && data && data.length > 0) setHistory(pushSearchHistory(term, data.length));
   }, [enabled, term, data?.length]);
 
   const suggestions = useMemo(() => {
@@ -94,11 +94,18 @@ function SearchPage() {
     return out;
   }, [data]);
 
+  // Lịch sử gợi ý theo từ đang gõ, sắp theo tần suất
+  const historyView = useMemo(
+    () => matchHistory(q.trim(), 8),
+    [q, history],
+  );
+
   const submit = (value: string) => {
     setQ(value);
     setOpen(false);
     setHistory(pushSearchHistory(value));
   };
+
 
   return (
     <div className="mx-auto max-w-[1600px] px-4 py-8 md:px-10">
