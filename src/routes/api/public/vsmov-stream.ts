@@ -6,6 +6,50 @@ function proxied(url: string) {
   return `/api/public/vsmov-stream?u=${encodeURIComponent(url)}`;
 }
 
+/** Vị trí bắt đầu của luồng MPEG-TS trong buffer (sync 0x47 lặp mỗi 188 byte). */
+function findTsStart(buf: Uint8Array): number {
+  const limit = Math.min(buf.length - 377, 65536);
+  for (let i = 0; i < limit; i++) {
+    if (buf[i] === 0x47 && buf[i + 188] === 0x47 && buf[i + 376] === 0x47) return i;
+  }
+  return -1;
+}
+
+/** Cắt bỏ phần header nguỵ trang ở đầu phân đoạn, giữ nguyên phần còn lại. */
+function stripToTs(stream: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
+  let head: Uint8Array = new Uint8Array(0);
+  let done = false;
+  return stream.pipeThrough(
+    new TransformStream<Uint8Array, Uint8Array>({
+      transform(chunk, controller) {
+        if (done) {
+          controller.enqueue(chunk);
+          return;
+        }
+        const merged = new Uint8Array(head.length + chunk.length);
+        merged.set(head);
+        merged.set(chunk, head.length);
+        const at = findTsStart(merged);
+        if (at >= 0) {
+          done = true;
+          head = new Uint8Array(0);
+          controller.enqueue(merged.subarray(at));
+        } else if (merged.length > 65536) {
+          done = true;
+          head = new Uint8Array(0);
+          controller.enqueue(merged);
+        } else {
+          head = merged;
+        }
+      },
+      flush(controller) {
+        if (!done && head.length) controller.enqueue(head);
+      },
+    }),
+  );
+}
+
+
 /**
  * Proxy luồng HLS của VSMov: các file .ts/.png của họ không trả CORS nên
  * hls.js không đọc được trực tiếp từ trình duyệt.
