@@ -18,6 +18,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WatchSlugRouteImport } from './routes/watch.$slug'
 import { Route as MovieSlugRouteImport } from './routes/movie.$slug'
+import { Route as ApiPublicVsmovStreamRouteImport } from './routes/api/public/vsmov-stream'
 
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
@@ -64,6 +65,11 @@ const MovieSlugRoute = MovieSlugRouteImport.update({
   path: '/movie/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicVsmovStreamRoute = ApiPublicVsmovStreamRouteImport.update({
+  id: '/api/public/vsmov-stream',
+  path: '/api/public/vsmov-stream',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/movie/$slug': typeof MovieSlugRoute
   '/watch/$slug': typeof WatchSlugRoute
+  '/api/public/vsmov-stream': typeof ApiPublicVsmovStreamRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/movie/$slug': typeof MovieSlugRoute
   '/watch/$slug': typeof WatchSlugRoute
+  '/api/public/vsmov-stream': typeof ApiPublicVsmovStreamRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -98,6 +106,7 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/movie/$slug': typeof MovieSlugRoute
   '/watch/$slug': typeof WatchSlugRoute
+  '/api/public/vsmov-stream': typeof ApiPublicVsmovStreamRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,6 +120,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/movie/$slug'
     | '/watch/$slug'
+    | '/api/public/vsmov-stream'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -122,6 +132,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/movie/$slug'
     | '/watch/$slug'
+    | '/api/public/vsmov-stream'
   id:
     | '__root__'
     | '/'
@@ -133,6 +144,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/movie/$slug'
     | '/watch/$slug'
+    | '/api/public/vsmov-stream'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -145,6 +157,7 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   MovieSlugRoute: typeof MovieSlugRoute
   WatchSlugRoute: typeof WatchSlugRoute
+  ApiPublicVsmovStreamRoute: typeof ApiPublicVsmovStreamRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -212,6 +225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MovieSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/vsmov-stream': {
+      id: '/api/public/vsmov-stream'
+      path: '/api/public/vsmov-stream'
+      fullPath: '/api/public/vsmov-stream'
+      preLoaderRoute: typeof ApiPublicVsmovStreamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -225,6 +245,7 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   MovieSlugRoute: MovieSlugRoute,
   WatchSlugRoute: WatchSlugRoute,
+  ApiPublicVsmovStreamRoute: ApiPublicVsmovStreamRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

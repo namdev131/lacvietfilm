@@ -43,6 +43,7 @@ export function Player({
       hls.loadSource(m3u8);
       hls.attachMedia(video);
       hls.on(Hls.Events.ERROR, (_e, data) => {
+        if (data.fatal) console.warn("[HLS]", data.type, data.details);
         if (data.fatal) triggerFallback("Không phát được HLS, đang chuyển sang Embed…");
       });
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
