@@ -164,7 +164,7 @@ function SearchPage() {
                 </div>
               )}
 
-              {history.length > 0 && (
+              {historyView.length > 0 && (
                 <div className="border-t border-border/60 py-1.5">
                   <div className="flex items-center justify-between px-4 py-1">
                     <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -178,20 +178,32 @@ function SearchPage() {
                       <Trash2 className="h-3 w-3" /> Xoá hết
                     </button>
                   </div>
-                  {history.map((h) => (
-                    <div key={h} className="group flex items-center hover:bg-muted">
+                  {historyView.map((h) => (
+                    <div key={h.q} className="group flex items-center hover:bg-muted">
                       <button
                         type="button"
-                        onClick={() => submit(h)}
+                        onClick={() => submit(h.q)}
                         className="flex flex-1 items-center gap-2 px-4 py-2 text-left text-sm"
                       >
                         <Clock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                        <span className="line-clamp-1">{h}</span>
+                        <span className="line-clamp-1 flex-1">
+                          <Highlight text={h.q} query={q.trim()} tone="subtle" />
+                        </span>
+                        {typeof h.hits === "number" && (
+                          <span className="shrink-0 text-[11px] text-muted-foreground">
+                            {h.hits} kq
+                          </span>
+                        )}
+                        {h.count > 1 && (
+                          <span className="shrink-0 rounded-full bg-muted px-1.5 text-[10px] text-muted-foreground">
+                            ×{h.count}
+                          </span>
+                        )}
                       </button>
                       <button
                         type="button"
-                        aria-label={`Xoá ${h}`}
-                        onClick={() => setHistory(removeSearchHistory(h))}
+                        aria-label={`Xoá ${h.q}`}
+                        onClick={() => setHistory(removeSearchHistory(h.q))}
                         className="px-3 text-muted-foreground opacity-0 transition hover:text-foreground group-hover:opacity-100"
                       >
                         <X className="h-3.5 w-3.5" />
@@ -200,6 +212,7 @@ function SearchPage() {
                   ))}
                 </div>
               )}
+
 
               {!enabled && (
                 <div className="border-t border-border/60 px-4 py-3">
