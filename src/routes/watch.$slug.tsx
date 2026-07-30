@@ -146,9 +146,11 @@ function WatchPage() {
               onChange={(s) => changeSource(s as SourceId)}
             />
             <p className="mt-2 text-[11px] text-muted-foreground">
-              {allowHls
+              {currentEp?.m3u8 && currentEp?.embed
                 ? "Nguồn này hỗ trợ HLS và Embed."
-                : "Nguồn này chỉ phát bằng Embed."}{" "}
+                : currentEp?.m3u8
+                  ? "Nguồn này phát bằng HLS."
+                  : "Nguồn này chỉ phát bằng Embed."}{" "}
               Đổi nguồn API nếu tập hiện tại lỗi. Ping đo tự động, chọn nguồn xanh cho tốc độ tốt nhất.
             </p>
           </div>
