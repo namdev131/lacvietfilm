@@ -67,20 +67,29 @@ export async function vsmovDetail(slug: string): Promise<MovieDetail> {
   const m = j?.movie ?? j?.data?.item ?? {};
   const rawServers = j?.episodes ?? m?.episodes ?? [];
 
-  const servers: EpisodeServer[] = (rawServers || []).map((s: any) => ({
-    server_name: String(s.server_name || "Vietsub").replace(/\s+/g, " ").trim(),
-    items: (s.server_data || s.items || []).map((ep: any) => {
-      const raw = String(ep.name || ep.filename || "");
-      const embed = ep.link_embed || ep.embed || undefined;
-      const direct = ep.link_m3u8 || ep.m3u8 || vsmovM3u8(embed);
-      return {
-        name: /^\d+$/.test(raw) ? `Tập ${raw}` : raw,
-        slug: ep.slug || raw,
-        m3u8: vsmovProxy(direct),
-        embed,
-      };
-    }),
-  }));
+  const servers: EpisodeServer[] = (rawServers || [])
+    .map((s: any) => ({
+      server_name: String(s.server_name || "Vietsub").replace(/\s+/g, " ").trim(),
+      items: (s.server_data || s.items || []).flatMap((ep: any) => {
+        const raw = String(ep.name || ep.filename || "");
+        const embed = ep.link_embed || ep.embed || undefined;
+        const direct = ep.link_m3u8 || ep.m3u8 || vsmovM3u8(embed);
+
+        // VSMov thường trả cả máy chủ/tập rỗng. Loại chúng ra để tập đầu tiên
+        // luôn là nguồn có thể phát thay vì dừng ở "HLS không khả dụng".
+        if (!direct) return [];
+
+        return [{
+          name: /^\d+$/.test(raw) ? `Tập ${raw}` : raw,
+          slug: ep.slug || raw,
+          m3u8: vsmovProxy(direct),
+          // Embed của VSMov bị khóa domain; không đưa vào player để tránh
+          // tự fallback từ HLS hợp lệ sang iframe chắc chắn lỗi.
+          embed: undefined,
+        }];
+      }),
+    }))
+    .filter((server: EpisodeServer) => server.items.length > 0);
 
   return {
     slug: m.slug || slug,

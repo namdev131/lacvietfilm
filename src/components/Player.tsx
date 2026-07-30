@@ -32,9 +32,11 @@ export function Player({
     let fallbackTimer: number | null = null;
 
     const triggerFallback = (reason: string) => {
-      setError(reason);
       if (autoFallback && embed) {
+        setError(`${reason}, đang chuyển sang Embed…`);
         fallbackTimer = window.setTimeout(() => onModeChange("embed"), 800);
+      } else {
+        setError(reason);
       }
     };
 
@@ -44,7 +46,7 @@ export function Player({
       hls.attachMedia(video);
       hls.on(Hls.Events.ERROR, (_e, data) => {
         if (data.fatal) console.warn("[HLS]", data.type, data.details);
-        if (data.fatal) triggerFallback("Không phát được HLS, đang chuyển sang Embed…");
+        if (data.fatal) triggerFallback("Không phát được HLS");
       });
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = m3u8;
