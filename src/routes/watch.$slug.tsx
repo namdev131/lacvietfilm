@@ -51,16 +51,20 @@ function WatchPage() {
     queryFn: () => fetchDetail(slug, source),
   });
 
-  const currentServer = data?.servers[srv];
+  const servers = useMemo(
+    () => (data?.servers || []).filter((server) => server.items.some((item) => item.m3u8 || item.embed)),
+    [data],
+  );
+  const currentServer = servers[srv] || servers[0];
   const currentEp = currentServer?.items[ep];
 
   // Group servers by language
   const langGroups = useMemo(() => {
     if (!data) return { vietsub: [] as number[], thuyetminh: [] as number[], other: [] as number[] };
     const g: any = { vietsub: [], thuyetminh: [], other: [] };
-    data.servers.forEach((s, i) => g[detectLang(s.server_name)].push(i));
+    servers.forEach((s, i) => g[detectLang(s.server_name)].push(i));
     return g;
-  }, [data]);
+  }, [data, servers]);
 
   const eps = currentServer?.items || [];
   const groups: { start: number; end: number }[] = [];
@@ -189,11 +193,11 @@ function WatchPage() {
           </div>
 
           {/* Server tabs */}
-          {data.servers.length > 1 && (
+          {servers.length > 1 && (
             <div>
               <h3 className="mb-2 text-sm font-semibold text-muted-foreground">Máy chủ phát</h3>
               <div className="flex flex-wrap gap-2">
-                {data.servers.map((s, i) => (
+                {servers.map((s, i) => (
                   <button
                     key={i}
                     onClick={() => goSrv(i)}
