@@ -17,6 +17,8 @@ import type { SourceId } from "@/lib/types";
 
 const PERIODS: GoldPeriod[] = ["day", "week", "month", "all"];
 const KINDS: GoldKind[] = ["all", "series", "single", "anime"];
+const SOURCES: ("all" | SourceId)[] = ["all", "kkphim", "ophim", "nguonc", "vsmov"];
+
 
 function Delta({ row }: { row: GoldRow }) {
   if (row.prev_rank == null)
