@@ -19,6 +19,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/hooks/useAuth";
 import { DockBar } from "@/components/DockBar";
 import { QuickSearch, openQuickSearch } from "@/components/QuickSearch";
+import { PlayerHostProvider } from "@/components/PlayerHost";
 
 const LOGO = "https://files.catbox.moe/6ua430.png";
 
@@ -184,6 +185,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <PlayerHostProvider>
         <div className="min-h-screen bg-background text-foreground">
           <Header />
           <main className="pt-14 md:pt-16">
@@ -195,6 +197,7 @@ function RootComponent() {
           <QuickSearch />
           <Toaster position="top-center" richColors />
         </div>
+        </PlayerHostProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
