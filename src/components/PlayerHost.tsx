@@ -47,15 +47,19 @@ export function usePlayerHost() {
   return ctx;
 }
 
-/** Đăng ký khung chứa trên trang xem phim để trình phát "gắn" vào đó. */
+/**
+ * Đăng ký khung chứa trên trang xem phim để trình phát "gắn" vào đó.
+ * Dùng callback ref để bắt được cả khi node bị thay (skeleton -> nội dung thật),
+ * tránh việc trình phát bám vào node cũ đã bị gỡ khỏi DOM.
+ */
 export function usePlayerDock() {
   const { registerDock } = usePlayerHost();
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    registerDock(ref.current);
-    return () => registerDock(null);
-  }, [registerDock]);
-  return ref;
+  return useCallback(
+    (el: HTMLDivElement | null) => {
+      registerDock(el);
+    },
+    [registerDock],
+  );
 }
 
 function sameMedia(a: Playback | null, b: Playback) {
