@@ -75,6 +75,7 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
   const [playback, setPlayback] = useState<Playback | null>(null);
   const [dockEl, setDockEl] = useState<HTMLElement | null>(null);
   const [rect, setRect] = useState<DOMRect | null>(null);
+  const [drag, setDrag] = useState<{ x: number; y: number } | null>(null);
   const { user } = useAuth();
   const userRef = useRef<string | null>(null);
   userRef.current = user?.id ?? null;
