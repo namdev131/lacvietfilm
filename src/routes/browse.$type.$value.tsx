@@ -46,7 +46,7 @@ function BrowseListPage() {
   });
 
   const setSearch = (patch: Partial<{ page: number; sort: SortField; year?: string }>) =>
-    navigate({ search: (prev) => ({ ...prev, ...patch }) });
+    navigate({ search: { page, sort, year, ...patch } });
 
   const heading = data?.title || `${TYPE_LABEL[type] ?? ""} ${value.replace(/-/g, " ")}`;
 
