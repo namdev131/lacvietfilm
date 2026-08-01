@@ -197,6 +197,8 @@ function RootComponent() {
           <div className="h-24" />
           <DockBar />
           <QuickSearch />
+          <TvRemote />
+
           <Toaster position="top-center" richColors />
         </div>
         </PlayerHostProvider>
