@@ -11,7 +11,13 @@ export interface LibraryItem {
   episode_slug?: string | null;
   episode_name?: string | null;
   watched_at?: string;
+  position_seconds?: number;
+  duration_seconds?: number;
+  ep_index?: number;
+  srv_index?: number;
+  finished?: boolean;
 }
+
 
 export function useFavorites() {
   const { user } = useAuth();
