@@ -84,7 +84,16 @@ export function useHistory() {
 
 export async function recordHistory(
   userId: string,
-  entry: { slug: string; name: string; poster?: string; source: SourceId; episode_slug?: string; episode_name?: string },
+  entry: {
+    slug: string;
+    name: string;
+    poster?: string;
+    source: SourceId;
+    episode_slug?: string;
+    episode_name?: string;
+    ep_index?: number;
+    srv_index?: number;
+  },
 ) {
   const { error } = await supabase.from("watch_history").upsert(
     {
@@ -95,9 +104,12 @@ export async function recordHistory(
       source: entry.source,
       episode_slug: entry.episode_slug ?? null,
       episode_name: entry.episode_name ?? null,
+      ep_index: entry.ep_index ?? 0,
+      srv_index: entry.srv_index ?? 0,
       watched_at: new Date().toISOString(),
-    },
+    } as never,
     { onConflict: "user_id,slug" },
   );
   if (error) console.error("recordHistory failed", error);
 }
+
