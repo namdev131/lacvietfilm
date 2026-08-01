@@ -203,6 +203,9 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
             autoFallback
             hideControls
             fill={!mini}
+            resumeAt={resumeAt}
+            onProgress={handleProgress}
+
           />
         </div>
       )}
