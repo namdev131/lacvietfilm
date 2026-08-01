@@ -11,7 +11,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
-import { Search, Home as HomeIcon, Flame } from "lucide-react";
+import { Search, Home as HomeIcon, Flame, Bookmark, Settings as SettingsIcon } from "lucide-react";
 import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
