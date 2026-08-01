@@ -75,6 +75,7 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
   const [playback, setPlayback] = useState<Playback | null>(null);
   const [dockEl, setDockEl] = useState<HTMLElement | null>(null);
   const [rect, setRect] = useState<DOMRect | null>(null);
+  const [drag, setDrag] = useState<{ x: number; y: number } | null>(null);
   const { user } = useAuth();
   const userRef = useRef<string | null>(null);
   userRef.current = user?.id ?? null;
@@ -148,6 +149,27 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
     ? `${playback.source}-${playback.slug}-${playback.srv}-${playback.ep}-${playback.mode}`
     : "none";
 
+  const onDragStart = (e: React.PointerEvent) => {
+    if ((e.target as HTMLElement).closest("button, a")) return;
+    const el = e.currentTarget.parentElement as HTMLElement | null;
+    if (!el) return;
+    const box = el.getBoundingClientRect();
+    const dx = e.clientX - box.left;
+    const dy = e.clientY - box.top;
+    setDrag({ x: box.left, y: box.top });
+    const move = (ev: PointerEvent) => {
+      const x = Math.min(Math.max(0, ev.clientX - dx), window.innerWidth - box.width);
+      const y = Math.min(Math.max(0, ev.clientY - dy), window.innerHeight - box.height);
+      setDrag({ x, y });
+    };
+    const up = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  };
+
   return (
     <PlayerCtx.Provider value={value}>
       {children}
@@ -155,17 +177,22 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
         <div
           className={
             mini
-              ? "fixed bottom-24 right-3 z-[60] w-[min(340px,calc(100vw-1.5rem))] overflow-hidden rounded-xl border border-border bg-card shadow-2xl md:bottom-4"
+              ? "fixed z-[60] w-[min(340px,calc(100vw-1.5rem))] overflow-hidden rounded-xl border border-border bg-card shadow-2xl"
               : "fixed z-30"
           }
           style={
             mini
-              ? undefined
+              ? drag
+                ? { top: drag.y, left: drag.x }
+                : { bottom: "6rem", right: "0.75rem" }
               : { top: rect!.top, left: rect!.left, width: rect!.width, height: rect!.height }
           }
         >
           {mini && (
-            <div className="flex items-center gap-1 border-b border-border bg-card px-2 py-1.5">
+            <div
+              onPointerDown={onDragStart}
+              className="flex cursor-grab touch-none select-none items-center gap-1 border-b border-border bg-card px-2 py-1.5 active:cursor-grabbing"
+            >
               <GripVertical className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
               <div className="min-w-0 flex-1">
                 <div className="line-clamp-1 text-[11px] font-semibold">{playback.name}</div>

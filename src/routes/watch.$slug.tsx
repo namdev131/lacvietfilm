@@ -176,7 +176,11 @@ function WatchPage() {
   const changeSource = (s: SourceId) => navigate({ to: "/watch/$slug", params: { slug }, search: { src: s, ep: 0, srv: 0 } });
 
   if (isLoading) {
-    return <div className="mx-auto max-w-6xl px-4 py-16 md:px-10"><div className="aspect-video rounded-lg bg-card shimmer" /></div>;
+    return (
+      <div className="mx-auto max-w-6xl px-4 py-16 md:px-10">
+        <div ref={dockRef} className="aspect-video w-full overflow-hidden rounded-lg bg-card shimmer" />
+      </div>
+    );
   }
 
   if (error || !data) {
