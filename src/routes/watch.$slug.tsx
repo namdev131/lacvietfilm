@@ -112,10 +112,13 @@ function WatchPage() {
       source,
       episode_slug: currentEp?.slug,
       episode_name: currentEp?.name,
+      ep_index: ep,
+      srv_index: srv,
     }).then(() => {
       qc.invalidateQueries({ queryKey: ["history"] });
     });
-  }, [user, data, source, currentEp?.slug, currentEp?.name]);
+  }, [user, data, source, ep, srv, currentEp?.slug, currentEp?.name]);
+
 
   // Đẩy phim hiện tại vào trình phát toàn cục (tiếp tục phát khi rời trang)
   useEffect(() => {
