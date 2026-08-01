@@ -14,6 +14,7 @@ import { Player, type PlayMode } from "@/components/Player";
 import type { SourceId } from "@/lib/types";
 import { useAuth } from "@/hooks/useAuth";
 import { getLocalProgress, setLocalProgress, syncProgress } from "@/lib/progress";
+import { useSettings } from "@/lib/settings";
 
 
 export type Playback = {
@@ -28,6 +29,8 @@ export type Playback = {
   poster?: string;
   allowHls: boolean;
   mode: PlayMode;
+  /** Gọi khi tập hiện tại phát xong (dùng cho tự chuyển tập) */
+  onEnded?: () => void;
 };
 
 type Ctx = {
@@ -81,6 +84,7 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
   const [rect, setRect] = useState<DOMRect | null>(null);
   const [drag, setDrag] = useState<{ x: number; y: number } | null>(null);
   const { user } = useAuth();
+  const { settings } = useSettings();
   const userRef = useRef<string | null>(null);
   userRef.current = user?.id ?? null;
 
@@ -148,7 +152,9 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
     [playback, start, stop, setMode, registerDock, dockEl],
   );
 
-  const mini = !dockEl || !dockEl.isConnected || !rect || rect.width < 80 || rect.height < 80;
+  const miniRaw = !dockEl || !dockEl.isConnected || !rect || rect.width < 80 || rect.height < 80;
+  const mini = miniRaw;
+  const hidePlayer = mini && !settings.miniPlayer;
   const playKey = playback
     ? `${playback.source}-${playback.slug}-${playback.srv}-${playback.ep}-${playback.mode}`
     : "none";
@@ -177,7 +183,7 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
   return (
     <PlayerCtx.Provider value={value}>
       {children}
-      {playback && (
+      {playback && !hidePlayer && (
         <div
           className={
             mini
@@ -231,7 +237,9 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
             mode={playback.allowHls ? playback.mode : "embed"}
             onModeChange={setMode}
             allowHls={playback.allowHls}
-            autoFallback
+            autoPlay={settings.autoPlay}
+            onEnded={playback.onEnded}
+            autoFallback={settings.autoFallback}
             hideControls
             fill={!mini}
             resumeAt={resumeAt}

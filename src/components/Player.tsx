@@ -16,6 +16,8 @@ export function Player({
   fill = false,
   resumeAt = 0,
   onProgress,
+  autoPlay = true,
+  onEnded,
 }: {
   m3u8?: string;
   embed?: string;
@@ -28,6 +30,8 @@ export function Player({
   fill?: boolean;
   resumeAt?: number;
   onProgress?: (position: number, duration: number) => void;
+  autoPlay?: boolean;
+  onEnded?: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -35,6 +39,8 @@ export function Player({
   progressRef.current = onProgress;
   const resumeRef = useRef(resumeAt);
   resumeRef.current = resumeAt;
+  const endedRef = useRef(onEnded);
+  endedRef.current = onEnded;
 
   // Tiếp tục xem + lưu tiến độ + phím tắt cho video / remote TV
   useEffect(() => {
@@ -77,7 +83,9 @@ export function Player({
 
     video.addEventListener("loadedmetadata", onLoaded);
     video.addEventListener("timeupdate", onTime);
+    const onEndedEv = () => endedRef.current?.();
     video.addEventListener("pause", flush);
+    video.addEventListener("ended", onEndedEv);
     window.addEventListener("keydown", onKey);
     window.addEventListener("beforeunload", flush);
     return () => {
@@ -85,6 +93,7 @@ export function Player({
       video.removeEventListener("loadedmetadata", onLoaded);
       video.removeEventListener("timeupdate", onTime);
       video.removeEventListener("pause", flush);
+      video.removeEventListener("ended", onEndedEv);
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("beforeunload", flush);
     };
@@ -160,6 +169,7 @@ export function Player({
           <video
             ref={videoRef}
             controls
+            autoPlay={autoPlay}
             tabIndex={0}
 
             playsInline
