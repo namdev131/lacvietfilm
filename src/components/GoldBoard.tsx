@@ -325,9 +325,25 @@ export function GoldBoard() {
                         )}
                         <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] uppercase">{m.source}</span>
                       </div>
+                      <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full rounded-full bg-[color:var(--color-gold)]"
+                          style={{ width: `${topViews ? Math.max(6, (m.views / topViews) * 100) : 0}%` }}
+                        />
+                      </div>
                     </div>
                   </Link>
+                  <Link
+                    to="/watch/$slug"
+                    params={{ slug: m.slug }}
+                    search={{ src: m.source, ep: 0, srv: 0 }}
+                    aria-label={`Xem ${m.name}`}
+                    className="shrink-0 rounded-full bg-primary p-2 text-primary-foreground opacity-90 transition hover:opacity-100"
+                  >
+                    <Play className="h-3.5 w-3.5 fill-current" />
+                  </Link>
                   <HeartBtn row={m} isFav={favSet.has(m.slug)} />
+
                 </div>
               </motion.div>
             ))}
