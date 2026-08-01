@@ -160,6 +160,8 @@ export function Player({
           <video
             ref={videoRef}
             controls
+            tabIndex={0}
+
             playsInline
             poster={poster}
             className="h-full w-full"
