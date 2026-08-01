@@ -60,6 +60,20 @@ function WatchPage() {
   const host = usePlayerHost();
   const dockRef = usePlayerDock();
 
+  // Tiến độ xem đã lưu của tập hiện tại
+  const [saved, setSaved] = useState<{ position: number; duration: number } | null>(null);
+  useEffect(() => {
+    const read = () => {
+      const p = getLocalProgress(source, slug, srv, ep);
+      setSaved(p ? { position: p.position, duration: p.duration } : null);
+    };
+    read();
+    const id = window.setInterval(read, 5000);
+    return () => window.clearInterval(id);
+  }, [source, slug, srv, ep]);
+  const savedPct = saved ? progressPercent(saved.position, saved.duration) : 0;
+
+
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["detail", source, slug],
     queryFn: () => fetchDetail(slug, source),
