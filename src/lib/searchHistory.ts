@@ -73,6 +73,13 @@ export function getSearchHistory(): SearchHistoryItem[] {
 export function pushSearchHistory(term: string, hits?: number): SearchHistoryItem[] {
   const q = (term || "").replace(/\s+/g, " ").trim();
   if (!isBrowser() || q.length < 2) return read();
+  // Tôn trọng cài đặt quyền riêng tư
+  try {
+    const st = JSON.parse(window.localStorage.getItem("lv-settings") || "{}");
+    if (st.saveSearchHistory === false) return read();
+  } catch {
+    /* ignore */
+  }
   const cur = read();
   const found = cur.find((x) => x.q.toLowerCase() === q.toLowerCase());
   const item: SearchHistoryItem = {

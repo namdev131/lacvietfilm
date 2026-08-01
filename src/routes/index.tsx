@@ -1,20 +1,39 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Play, Info } from "lucide-react";
 import { fetchLatest, fetchLatestMerged } from "@/lib/api";
 import { MovieRow } from "@/components/MovieRow";
 import { GoldBoard } from "@/components/GoldBoard";
 import { SourcePing } from "@/components/SourcePing";
+import { useSettings } from "@/lib/settings";
 import type { SourceFilter } from "@/lib/types";
 
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "Lạc Việt Cinema — Xem phim Vietsub & Thuyết minh miễn phí" },
+      { name: "description", content: "Xem phim online chất lượng cao: phim mới, bảng vàng realtime, HLS & Embed, nhiều nguồn phát để đổi khi giật lag." },
+      { property: "og:title", content: "Lạc Việt Cinema — Mở phim, chạm hồn Việt" },
+      { property: "og:description", content: "Phim mới mỗi ngày, bảng vàng realtime, xem Vietsub và Thuyết minh." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: Home,
 });
 
 function Home() {
+  const { settings } = useSettings();
   const [source, setSource] = useState<SourceFilter>("all");
+  // Áp dụng nguồn mặc định trong Cài đặt (sau khi hydrate)
+  const appliedDefault = useRef(false);
+  useEffect(() => {
+    if (appliedDefault.current) return;
+    appliedDefault.current = true;
+    setSource(settings.defaultSource as SourceFilter);
+  }, [settings.defaultSource]);
   const kk = useQuery({ queryKey: ["latest", "kkphim", 1], queryFn: () => fetchLatest("kkphim", 1) });
   const op = useQuery({ queryKey: ["latest", "ophim", 1], queryFn: () => fetchLatest("ophim", 1) });
   const ng = useQuery({ queryKey: ["latest", "nguonc", 1], queryFn: () => fetchLatest("nguonc", 1) });

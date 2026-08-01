@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as MeRouteImport } from './routes/me'
 import { Route as LatestRouteImport } from './routes/latest'
@@ -20,6 +21,11 @@ import { Route as WatchSlugRouteImport } from './routes/watch.$slug'
 import { Route as MovieSlugRouteImport } from './routes/movie.$slug'
 import { Route as ApiPublicVsmovStreamRouteImport } from './routes/api/public/vsmov-stream'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
@@ -79,6 +85,7 @@ export interface FileRoutesByFullPath {
   '/latest': typeof LatestRoute
   '/me': typeof MeRoute
   '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
   '/movie/$slug': typeof MovieSlugRoute
   '/watch/$slug': typeof WatchSlugRoute
   '/api/public/vsmov-stream': typeof ApiPublicVsmovStreamRoute
@@ -91,6 +98,7 @@ export interface FileRoutesByTo {
   '/latest': typeof LatestRoute
   '/me': typeof MeRoute
   '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
   '/movie/$slug': typeof MovieSlugRoute
   '/watch/$slug': typeof WatchSlugRoute
   '/api/public/vsmov-stream': typeof ApiPublicVsmovStreamRoute
@@ -104,6 +112,7 @@ export interface FileRoutesById {
   '/latest': typeof LatestRoute
   '/me': typeof MeRoute
   '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
   '/movie/$slug': typeof MovieSlugRoute
   '/watch/$slug': typeof WatchSlugRoute
   '/api/public/vsmov-stream': typeof ApiPublicVsmovStreamRoute
@@ -118,6 +127,7 @@ export interface FileRouteTypes {
     | '/latest'
     | '/me'
     | '/search'
+    | '/settings'
     | '/movie/$slug'
     | '/watch/$slug'
     | '/api/public/vsmov-stream'
@@ -130,6 +140,7 @@ export interface FileRouteTypes {
     | '/latest'
     | '/me'
     | '/search'
+    | '/settings'
     | '/movie/$slug'
     | '/watch/$slug'
     | '/api/public/vsmov-stream'
@@ -142,6 +153,7 @@ export interface FileRouteTypes {
     | '/latest'
     | '/me'
     | '/search'
+    | '/settings'
     | '/movie/$slug'
     | '/watch/$slug'
     | '/api/public/vsmov-stream'
@@ -155,6 +167,7 @@ export interface RootRouteChildren {
   LatestRoute: typeof LatestRoute
   MeRoute: typeof MeRoute
   SearchRoute: typeof SearchRoute
+  SettingsRoute: typeof SettingsRoute
   MovieSlugRoute: typeof MovieSlugRoute
   WatchSlugRoute: typeof WatchSlugRoute
   ApiPublicVsmovStreamRoute: typeof ApiPublicVsmovStreamRoute
@@ -162,6 +175,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/search': {
       id: '/search'
       path: '/search'
@@ -243,6 +263,7 @@ const rootRouteChildren: RootRouteChildren = {
   LatestRoute: LatestRoute,
   MeRoute: MeRoute,
   SearchRoute: SearchRoute,
+  SettingsRoute: SettingsRoute,
   MovieSlugRoute: MovieSlugRoute,
   WatchSlugRoute: WatchSlugRoute,
   ApiPublicVsmovStreamRoute: ApiPublicVsmovStreamRoute,

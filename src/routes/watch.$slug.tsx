@@ -13,6 +13,7 @@ import { MovieRow } from "@/components/MovieRow";
 import { SourcePing } from "@/components/SourcePing";
 import type { SourceId } from "@/lib/types";
 import { getLocalProgress, progressPercent, formatTime } from "@/lib/progress";
+import { useSettings } from "@/lib/settings";
 
 
 const searchSchema = z.object({
@@ -52,11 +53,13 @@ function WatchPage() {
 
   const hlsSources: SourceId[] = ["kkphim", "ophim", "vsmov"];
   const allowHls = hlsSources.includes(source);
-  const [mode, setMode] = useState<PlayMode>(allowHls ? "hls" : "embed");
+  const { settings } = useSettings();
+  const preferHls = allowHls && settings.defaultMode === "hls";
+  const [mode, setMode] = useState<PlayMode>(preferHls ? "hls" : "embed");
 
   useEffect(() => {
-    setMode(allowHls ? "hls" : "embed");
-  }, [allowHls]);
+    setMode(preferHls ? "hls" : "embed");
+  }, [preferHls]);
   const [groupStart, setGroupStart] = useState(0);
   const qc = useQueryClient();
   const host = usePlayerHost();
@@ -97,6 +100,15 @@ function WatchPage() {
     return g;
   }, [data, servers]);
 
+  // Tự chọn server theo ngôn ngữ ưu tiên trong Cài đặt
+  useEffect(() => {
+    if (!servers.length || settings.langPref === "auto") return;
+    const wanted: number[] = (langGroups as any)[settings.langPref] || [];
+    if (wanted.length && !wanted.includes(srv)) {
+      navigate({ to: "/watch/$slug", params: { slug }, search: { src: source, ep: 0, srv: wanted[0] }, replace: true });
+    }
+  }, [servers.length, settings.langPref, langGroups, srv, slug, source]);
+
   const eps = currentServer?.items || [];
   const groups: { start: number; end: number }[] = [];
   for (let i = 0; i < eps.length; i += 10) {
@@ -120,7 +132,7 @@ function WatchPage() {
   }, [data?.slug, source, user?.id]);
 
   useEffect(() => {
-    if (!user || !data) return;
+    if (!user || !data || !settings.saveHistory) return;
     recordHistory(user.id, {
       slug: data.slug,
       name: data.name,
@@ -133,7 +145,7 @@ function WatchPage() {
     }).then(() => {
       qc.invalidateQueries({ queryKey: ["history"] });
     });
-  }, [user, data, source, ep, srv, currentEp?.slug, currentEp?.name]);
+  }, [user, data, source, ep, srv, currentEp?.slug, currentEp?.name, settings.saveHistory]);
 
 
   // Đẩy phim hiện tại vào trình phát toàn cục (tiếp tục phát khi rời trang)
@@ -151,8 +163,15 @@ function WatchPage() {
       poster: data.thumb || data.poster,
       allowHls,
       mode: allowHls ? mode : "embed",
+      onEnded: () => {
+        if (!settings.autoNext) return;
+        const total = currentServer?.items.length ?? 0;
+        if (ep + 1 < total) {
+          navigate({ to: "/watch/$slug", params: { slug }, search: { src: source, ep: ep + 1, srv } });
+        }
+      },
     });
-  }, [data?.slug, slug, source, ep, srv, currentEp?.m3u8, currentEp?.embed, mode, allowHls]);
+  }, [data?.slug, slug, source, ep, srv, currentEp?.m3u8, currentEp?.embed, mode, allowHls, settings.autoNext, currentServer?.items.length]);
 
   // Phim đề xuất
   const { data: suggested } = useQuery({
