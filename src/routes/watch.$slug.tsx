@@ -226,7 +226,23 @@ function WatchPage() {
             <p className="text-sm text-muted-foreground">
               {currentServer?.server_name} · {currentEp?.name || `Tập ${ep + 1}`}
             </p>
+            {savedPct > 0 && (
+              <div className="mt-2 max-w-sm">
+                <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                  <span>
+                    {savedPct >= 95
+                      ? "Bạn đã xem xong tập này"
+                      : `Tiếp tục từ ${formatTime(saved!.position)} · ${savedPct}%`}
+                  </span>
+                  {savedPct < 95 && <span>{formatTime(saved!.duration)}</span>}
+                </div>
+                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
+                  <div className="h-full bg-primary" style={{ width: `${savedPct}%` }} />
+                </div>
+              </div>
+            )}
           </div>
+
 
           {/* Source switcher */}
           <div className="rounded-xl border border-border/60 bg-card/70 p-4">
