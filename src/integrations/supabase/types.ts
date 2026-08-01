@@ -68,6 +68,24 @@ export type Database = {
         }
         Relationships: []
       }
+      user_settings: {
+        Row: {
+          data: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          data?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          data?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       view_events: {
         Row: {
           created_at: string
@@ -152,6 +170,39 @@ export type Database = {
           srv_index?: number
           user_id?: string
           watched_at?: string
+        }
+        Relationships: []
+      }
+      watchlist: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          note: string | null
+          poster: string | null
+          slug: string
+          source: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          note?: string | null
+          poster?: string | null
+          slug: string
+          source: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          note?: string | null
+          poster?: string | null
+          slug?: string
+          source?: string
+          user_id?: string
         }
         Relationships: []
       }
