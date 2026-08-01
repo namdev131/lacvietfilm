@@ -14,6 +14,8 @@ export function Player({
   allowHls = true,
   hideControls = false,
   fill = false,
+  resumeAt = 0,
+  onProgress,
 }: {
   m3u8?: string;
   embed?: string;
@@ -24,9 +26,70 @@ export function Player({
   allowHls?: boolean;
   hideControls?: boolean;
   fill?: boolean;
+  resumeAt?: number;
+  onProgress?: (position: number, duration: number) => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [error, setError] = useState<string | null>(null);
+  const progressRef = useRef(onProgress);
+  progressRef.current = onProgress;
+  const resumeRef = useRef(resumeAt);
+  resumeRef.current = resumeAt;
+
+  // Tiếp tục xem + lưu tiến độ + phím tắt cho video / remote TV
+  useEffect(() => {
+    const video = videoRef.current;
+    if (mode !== "hls" || !video) return;
+    let resumed = false;
+    let last = 0;
+
+    const onLoaded = () => {
+      const at = resumeRef.current;
+      if (!resumed && at > 5 && video.duration && at < video.duration - 30) {
+        video.currentTime = at;
+      }
+      resumed = true;
+    };
+    const onTime = () => {
+      const now = Date.now();
+      if (now - last < 5000) return;
+      last = now;
+      if (video.duration > 0) progressRef.current?.(video.currentTime, video.duration);
+    };
+    const flush = () => {
+      if (video.duration > 0) progressRef.current?.(video.currentTime, video.duration);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (document.activeElement !== video) return;
+      if (e.key === " " || e.key === "Enter") {
+        e.preventDefault();
+        video.paused ? void video.play() : video.pause();
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        video.currentTime += 10;
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        video.currentTime -= 10;
+      } else if (e.key.toLowerCase() === "f") {
+        void video.requestFullscreen?.();
+      }
+    };
+
+    video.addEventListener("loadedmetadata", onLoaded);
+    video.addEventListener("timeupdate", onTime);
+    video.addEventListener("pause", flush);
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("beforeunload", flush);
+    return () => {
+      flush();
+      video.removeEventListener("loadedmetadata", onLoaded);
+      video.removeEventListener("timeupdate", onTime);
+      video.removeEventListener("pause", flush);
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("beforeunload", flush);
+    };
+  }, [mode, m3u8]);
+
 
   useEffect(() => {
     setError(null);
