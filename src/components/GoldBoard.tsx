@@ -157,68 +157,102 @@ export function GoldBoard() {
         </div>
       )}
 
-      {/* Podium top 3 */}
+      {/* Podium top 3 — poster lớn, bố cục lệch tầng */}
       {podium.length > 0 && (
-        <div className="grid grid-cols-3 gap-2 md:gap-4">
+        <div className="grid grid-cols-2 items-end gap-3 md:grid-cols-3 md:gap-6">
           <AnimatePresence mode="popLayout">
-            {podium.map((m) => (
-              <motion.div
-                layout
-                key={`${m.source}-${m.slug}`}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -16 }}
-                transition={{ duration: 0.35 }}
-                className={m.rank === 1 ? "md:-mt-3" : ""}
-              >
-                <Link
-                  to="/movie/$slug"
-                  params={{ slug: m.slug }}
-                  search={{ src: m.source }}
-                  className={`group block overflow-hidden rounded-xl border bg-card/70 transition hover:bg-card ${
-                    m.rank === 1
-                      ? "border-[color:var(--color-gold)]/70 shadow-[0_0_30px_-10px_var(--color-gold)]"
-                      : "border-border/60 hover:border-[color:var(--color-gold)]/50"
-                  }`}
+            {podium.map((m) => {
+              const first = m.rank === 1;
+              return (
+                <motion.div
+                  layout
+                  key={`${m.source}-${m.slug}`}
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -24 }}
+                  transition={{ type: "spring", stiffness: 220, damping: 26 }}
+                  className={`${first ? "col-span-2 md:col-span-1 md:-mt-10 md:order-2" : m.rank === 2 ? "md:order-1 md:mt-6" : "md:order-3 md:mt-10"}`}
                 >
-                  <div className="relative aspect-[2/3] w-full overflow-hidden bg-muted">
-                    {m.poster && (
-                      <img
-                        src={m.poster}
-                        alt={m.name}
-                        loading="lazy"
-                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                      />
-                    )}
-                    <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/85 to-transparent" />
-                    <span
-                      className={`absolute left-2 top-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-black ${
-                        m.rank === 1 ? "bg-[color:var(--color-gold)] text-black" : "bg-black/70 text-white"
+                  <Link
+                    to="/movie/$slug"
+                    params={{ slug: m.slug }}
+                    search={{ src: m.source }}
+                    className="group relative block"
+                  >
+                    {/* viền vàng gradient */}
+                    <div
+                      className={`relative rounded-2xl p-[2px] transition duration-300 ${
+                        first
+                          ? "bg-[linear-gradient(140deg,var(--color-gold),transparent_45%,var(--color-gold))] shadow-[0_25px_60px_-25px_var(--color-gold)]"
+                          : "bg-[linear-gradient(140deg,hsl(var(--border)),transparent_55%,hsl(var(--border)))] group-hover:bg-[linear-gradient(140deg,var(--color-gold),transparent_55%,var(--color-gold))]"
                       }`}
                     >
-                      {m.rank === 1 && <Crown className="h-3 w-3" />}#{m.rank}
-                    </span>
-                    {seenSet.has(m.slug) && (
-                      <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-black/70 px-2 py-0.5 text-[10px] text-white">
-                        <CheckCircle2 className="h-3 w-3 text-emerald-400" /> Đã xem
-                      </span>
-                    )}
-                    <div className="absolute inset-x-2 bottom-2">
-                      <div className="line-clamp-2 text-xs font-semibold text-white md:text-sm">{m.name}</div>
-                      <div className="mt-1 flex items-center gap-2 text-[10px] text-white/80">
-                        <span className="inline-flex items-center gap-1">
-                          <Eye className="h-3 w-3" /> {m.views}
+                      <div
+                        className={`relative overflow-hidden rounded-[14px] bg-card ${
+                          first ? "aspect-[3/4]" : "aspect-[2/3]"
+                        }`}
+                      >
+                        {m.poster && (
+                          <img
+                            src={m.poster}
+                            alt={m.name}
+                            loading="lazy"
+                            className="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-110"
+                          />
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-transparent opacity-90" />
+
+                        {/* số thứ hạng khổng lồ */}
+                        <span
+                          className={`pointer-events-none absolute -bottom-4 -left-1 select-none font-black leading-none tracking-tighter ${
+                            first
+                              ? "text-[7rem] text-[color:var(--color-gold)]/85 md:text-[9rem]"
+                              : "text-[5rem] text-white/20 md:text-[6.5rem]"
+                          }`}
+                          style={first ? { WebkitTextStroke: "1px rgba(0,0,0,0.35)" } : undefined}
+                        >
+                          {m.rank}
                         </span>
-                        <Delta row={m} />
+
+                        {first && (
+                          <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-[color:var(--color-gold)] px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-black shadow-lg">
+                            <Crown className="h-3.5 w-3.5" /> Quán quân
+                          </span>
+                        )}
+                        {seenSet.has(m.slug) && (
+                          <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/75 px-2 py-1 text-[10px] text-white">
+                            <CheckCircle2 className="h-3 w-3 text-emerald-400" /> Đã xem
+                          </span>
+                        )}
+
+                        <div className="absolute inset-x-3 bottom-3 pl-14 md:pl-20">
+                          <div
+                            className={`line-clamp-2 font-bold text-white ${
+                              first ? "text-base md:text-xl" : "text-sm md:text-base"
+                            }`}
+                          >
+                            {m.name}
+                          </div>
+                          <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-white/85">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5">
+                              <Eye className="h-3 w-3" /> {m.views}
+                            </span>
+                            <Delta row={m} />
+                            <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] uppercase">
+                              {m.source}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
+                  </Link>
+                </motion.div>
+              );
+            })}
           </AnimatePresence>
         </div>
       )}
+
 
       {/* 4 - 10 */}
       {rest.length > 0 && (

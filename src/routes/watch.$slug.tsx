@@ -5,9 +5,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { recordHistory } from "@/hooks/useUserData";
 import { recordView, detectKind } from "@/lib/gold";
-import { ArrowLeft, Languages, Mic } from "lucide-react";
-import { fetchDetail } from "@/lib/api";
-import { Player, type PlayMode } from "@/components/Player";
+import { ArrowLeft, Languages, Mic, Zap, Film } from "lucide-react";
+import { fetchDetail, fetchLatestMerged } from "@/lib/api";
+import { type PlayMode } from "@/components/Player";
+import { usePlayerHost, usePlayerDock } from "@/components/PlayerHost";
+import { MovieRow } from "@/components/MovieRow";
 import { SourcePing } from "@/components/SourcePing";
 import type { SourceId } from "@/lib/types";
 
@@ -55,6 +57,8 @@ function WatchPage() {
   }, [allowHls]);
   const [groupStart, setGroupStart] = useState(0);
   const qc = useQueryClient();
+  const host = usePlayerHost();
+  const dockRef = usePlayerDock();
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["detail", source, slug],
@@ -113,6 +117,41 @@ function WatchPage() {
     });
   }, [user, data, source, currentEp?.slug, currentEp?.name]);
 
+  // Đẩy phim hiện tại vào trình phát toàn cục (tiếp tục phát khi rời trang)
+  useEffect(() => {
+    if (!data || !currentEp) return;
+    host.start({
+      slug,
+      source,
+      name: data.name,
+      epLabel: `${currentServer?.server_name ?? ""} · ${currentEp.name || `Tập ${ep + 1}`}`,
+      ep,
+      srv,
+      m3u8: currentEp.m3u8,
+      embed: currentEp.embed,
+      poster: data.thumb || data.poster,
+      allowHls,
+      mode: allowHls ? mode : "embed",
+    });
+  }, [data?.slug, slug, source, ep, srv, currentEp?.m3u8, currentEp?.embed, mode, allowHls]);
+
+  // Phim đề xuất
+  const { data: suggested } = useQuery({
+    queryKey: ["suggest", source, data?.slug],
+    queryFn: () => fetchLatestMerged("all", 1),
+    staleTime: 5 * 60_000,
+    enabled: !!data,
+  });
+  const recommend = useMemo(() => {
+    const cats = new Set((data?.category || []).map((c: any) => (typeof c === "string" ? c : c?.name)));
+    const list = (suggested || []).filter((m) => m.slug !== slug);
+    const scored = list.map((m) => ({
+      m,
+      s: (m.year && data?.year && m.year === data.year ? 1 : 0) + (cats.size ? 0 : 0),
+    }));
+    return scored.sort((a, b) => b.s - a.s).map((x) => x.m).slice(0, 24);
+  }, [suggested, data?.slug, data?.year, slug]);
+
   const goEp = (i: number) => navigate({ to: "/watch/$slug", params: { slug }, search: { src: source, ep: i, srv } });
   const goSrv = (i: number) => navigate({ to: "/watch/$slug", params: { slug }, search: { src: source, ep: 0, srv: i } });
   const changeSource = (s: SourceId) => navigate({ to: "/watch/$slug", params: { slug }, search: { src: s, ep: 0, srv: 0 } });
@@ -154,16 +193,30 @@ function WatchPage() {
 
       <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
         <div className="space-y-4">
-          <Player
-            key={`${srv}-${ep}-${mode}`}
-            m3u8={currentEp?.m3u8}
-            embed={currentEp?.embed}
-            poster={data.thumb || data.poster}
-            mode={allowHls ? mode : "embed"}
-            onModeChange={setMode}
-            allowHls={allowHls}
-            autoFallback
-          />
+          <div ref={dockRef} className="aspect-video w-full overflow-hidden rounded-lg bg-black ring-1 ring-border/60" />
+
+          <div className="inline-flex overflow-hidden rounded-full border border-border bg-card">
+            {allowHls && (
+              <button
+                disabled={!currentEp?.m3u8}
+                onClick={() => setMode("hls")}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition disabled:opacity-40 ${
+                  mode === "hls" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"
+                }`}
+              >
+                <Zap className="h-3.5 w-3.5" /> HLS (m3u8)
+              </button>
+            )}
+            <button
+              disabled={!currentEp?.embed}
+              onClick={() => setMode("embed")}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition disabled:opacity-40 ${
+                mode === "embed" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"
+              }`}
+            >
+              <Film className="h-3.5 w-3.5" /> Embed
+            </button>
+          </div>
 
           <div>
             <h1 className="text-xl md:text-2xl font-bold tracking-tight">{data.name}</h1>
@@ -309,6 +362,12 @@ function WatchPage() {
           </div>
         </aside>
       </div>
+
+      {recommend.length > 0 && (
+        <div className="-mx-4 mt-10 md:-mx-10">
+          <MovieRow title="Phim đề xuất" movies={recommend} accent="dành cho bạn" />
+        </div>
+      )}
     </div>
   );
 }

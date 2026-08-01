@@ -12,6 +12,8 @@ export function Player({
   onModeChange,
   autoFallback = true,
   allowHls = true,
+  hideControls = false,
+  fill = false,
 }: {
   m3u8?: string;
   embed?: string;
@@ -20,6 +22,8 @@ export function Player({
   onModeChange: (m: PlayMode) => void;
   autoFallback?: boolean;
   allowHls?: boolean;
+  hideControls?: boolean;
+  fill?: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -83,8 +87,12 @@ export function Player({
   const canEmbed = !!embed;
 
   return (
-    <div className="space-y-3">
-      <div className="relative aspect-video overflow-hidden rounded-lg bg-black ring-1 ring-border/60">
+    <div className={fill ? "flex h-full flex-col" : "space-y-3"}>
+      <div
+        className={`relative overflow-hidden bg-black ${
+          fill ? "h-full w-full rounded-lg ring-1 ring-border/60" : "aspect-video rounded-lg ring-1 ring-border/60"
+        }`}
+      >
         {mode === "hls" && canHls && (
           <video
             ref={videoRef}
@@ -118,6 +126,7 @@ export function Player({
         </div>
       </div>
 
+      {!hideControls && (
       <div className="flex flex-wrap items-center gap-2">
         <div className="inline-flex overflow-hidden rounded-full border border-border bg-card">
           {allowHls && (
@@ -147,6 +156,7 @@ export function Player({
           </span>
         )}
       </div>
+      )}
     </div>
   );
 }
