@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { MovieCard as MC } from "@/lib/types";
 import { motion } from "framer-motion";
+import { Play } from "lucide-react";
 import { Highlight } from "@/components/Highlight";
 
 export function MovieCard({
