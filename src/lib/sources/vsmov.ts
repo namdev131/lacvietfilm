@@ -63,8 +63,10 @@ export async function vsmovSearch(q: string, limit = 24): Promise<MovieCard[]> {
 
 export async function vsmovDetail(slug: string): Promise<MovieDetail> {
   const r = await fetch(`${VSMOV_BASE}/phim/${slug}`);
+  if (!r.ok) throw new Error(`VSMov detail failed: ${r.status}`);
   const j = await r.json();
   const m = j?.movie ?? j?.data?.item ?? {};
+  if (!j?.status || !m?.slug) throw new Error("VSMov movie not found");
   const rawServers = j?.episodes ?? m?.episodes ?? [];
 
   const servers: EpisodeServer[] = (rawServers || [])

@@ -19,6 +19,16 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/watch/$slug")({
   validateSearch: searchSchema,
+  head: () => ({
+    meta: [
+      { title: "Xem phim — Lạc Việt Cinema" },
+      { name: "description", content: "Xem phim trực tuyến trên Lạc Việt Cinema." },
+      { property: "og:title", content: "Xem phim — Lạc Việt Cinema" },
+      { property: "og:description", content: "Xem phim trực tuyến trên Lạc Việt Cinema." },
+      { property: "og:type", content: "video.movie" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: WatchPage,
 });
 
@@ -46,9 +56,10 @@ function WatchPage() {
   const [groupStart, setGroupStart] = useState(0);
   const qc = useQueryClient();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["detail", source, slug],
     queryFn: () => fetchDetail(slug, source),
+    retry: 1,
   });
 
   const servers = useMemo(
@@ -106,8 +117,31 @@ function WatchPage() {
   const goSrv = (i: number) => navigate({ to: "/watch/$slug", params: { slug }, search: { src: source, ep: 0, srv: i } });
   const changeSource = (s: SourceId) => navigate({ to: "/watch/$slug", params: { slug }, search: { src: s, ep: 0, srv: 0 } });
 
-  if (isLoading || !data) {
+  if (isLoading) {
     return <div className="mx-auto max-w-6xl px-4 py-16 md:px-10"><div className="aspect-video rounded-lg bg-card shimmer" /></div>;
+  }
+
+  if (error || !data) {
+    return (
+      <div className="mx-auto flex min-h-[55vh] max-w-xl flex-col items-center justify-center px-4 text-center">
+        <h1 className="text-xl font-semibold">Không tải được trang xem phim</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Phim này có thể chưa tồn tại trên VSMov hoặc nguồn đang tạm gián đoạn.
+        </p>
+        <div className="mt-5 flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+          >
+            Thử lại
+          </button>
+          <Link to="/" className="rounded-md border border-border px-4 py-2 text-sm font-medium">
+            Về trang chủ
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (

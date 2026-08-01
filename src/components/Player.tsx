@@ -30,6 +30,7 @@ export function Player({
     const video = videoRef.current;
     let hls: Hls | null = null;
     let fallbackTimer: number | null = null;
+    let mediaRecoveryAttempts = 0;
 
     const triggerFallback = (reason: string) => {
       if (autoFallback && embed) {
@@ -41,12 +42,30 @@ export function Player({
     };
 
     if (Hls.isSupported()) {
-      hls = new Hls({ enableWorker: true });
+      hls = new Hls({
+        enableWorker: true,
+        startLevel: -1,
+        capLevelToPlayerSize: true,
+        backBufferLength: 30,
+      });
       hls.loadSource(m3u8);
       hls.attachMedia(video);
       hls.on(Hls.Events.ERROR, (_e, data) => {
         if (data.fatal) console.warn("[HLS]", data.type, data.details);
-        if (data.fatal) triggerFallback("Không phát được HLS");
+        if (!data.fatal) return;
+
+        if (data.type === Hls.ErrorTypes.MEDIA_ERROR && mediaRecoveryAttempts < 1) {
+          mediaRecoveryAttempts += 1;
+          hls?.recoverMediaError();
+          return;
+        }
+
+        const codecError = data.details === Hls.ErrorDetails.BUFFER_ADD_CODEC_ERROR;
+        triggerFallback(
+          codecError
+            ? "Trình duyệt này không hỗ trợ codec của video"
+            : "Không phát được HLS",
+        );
       });
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = m3u8;
