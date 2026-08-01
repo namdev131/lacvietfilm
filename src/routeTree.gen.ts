@@ -23,6 +23,8 @@ import { Route as CollectionsIndexRouteImport } from './routes/collections.index
 import { Route as BrowseIndexRouteImport } from './routes/browse.index'
 import { Route as WatchSlugRouteImport } from './routes/watch.$slug'
 import { Route as MovieSlugRouteImport } from './routes/movie.$slug'
+import { Route as CollectionsIdRouteImport } from './routes/collections.$id'
+import { Route as CCodeRouteImport } from './routes/c.$code'
 import { Route as BrowseTypeValueRouteImport } from './routes/browse.$type.$value'
 import { Route as ApiPublicVsmovStreamRouteImport } from './routes/api/public/vsmov-stream'
 
@@ -96,6 +98,16 @@ const MovieSlugRoute = MovieSlugRouteImport.update({
   path: '/movie/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CollectionsIdRoute = CollectionsIdRouteImport.update({
+  id: '/collections/$id',
+  path: '/collections/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CCodeRoute = CCodeRouteImport.update({
+  id: '/c/$code',
+  path: '/c/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BrowseTypeValueRoute = BrowseTypeValueRouteImport.update({
   id: '/browse/$type/$value',
   path: '/browse/$type/$value',
@@ -118,6 +130,8 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/upcoming': typeof UpcomingRoute
   '/watchlist': typeof WatchlistRoute
+  '/c/$code': typeof CCodeRoute
+  '/collections/$id': typeof CollectionsIdRoute
   '/movie/$slug': typeof MovieSlugRoute
   '/watch/$slug': typeof WatchSlugRoute
   '/browse/': typeof BrowseIndexRoute
@@ -136,6 +150,8 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/upcoming': typeof UpcomingRoute
   '/watchlist': typeof WatchlistRoute
+  '/c/$code': typeof CCodeRoute
+  '/collections/$id': typeof CollectionsIdRoute
   '/movie/$slug': typeof MovieSlugRoute
   '/watch/$slug': typeof WatchSlugRoute
   '/browse': typeof BrowseIndexRoute
@@ -155,6 +171,8 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/upcoming': typeof UpcomingRoute
   '/watchlist': typeof WatchlistRoute
+  '/c/$code': typeof CCodeRoute
+  '/collections/$id': typeof CollectionsIdRoute
   '/movie/$slug': typeof MovieSlugRoute
   '/watch/$slug': typeof WatchSlugRoute
   '/browse/': typeof BrowseIndexRoute
@@ -175,6 +193,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/upcoming'
     | '/watchlist'
+    | '/c/$code'
+    | '/collections/$id'
     | '/movie/$slug'
     | '/watch/$slug'
     | '/browse/'
@@ -193,6 +213,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/upcoming'
     | '/watchlist'
+    | '/c/$code'
+    | '/collections/$id'
     | '/movie/$slug'
     | '/watch/$slug'
     | '/browse'
@@ -211,6 +233,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/upcoming'
     | '/watchlist'
+    | '/c/$code'
+    | '/collections/$id'
     | '/movie/$slug'
     | '/watch/$slug'
     | '/browse/'
@@ -230,6 +254,8 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   UpcomingRoute: typeof UpcomingRoute
   WatchlistRoute: typeof WatchlistRoute
+  CCodeRoute: typeof CCodeRoute
+  CollectionsIdRoute: typeof CollectionsIdRoute
   MovieSlugRoute: typeof MovieSlugRoute
   WatchSlugRoute: typeof WatchSlugRoute
   BrowseIndexRoute: typeof BrowseIndexRoute
@@ -338,6 +364,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MovieSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/collections/$id': {
+      id: '/collections/$id'
+      path: '/collections/$id'
+      fullPath: '/collections/$id'
+      preLoaderRoute: typeof CollectionsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/c/$code': {
+      id: '/c/$code'
+      path: '/c/$code'
+      fullPath: '/c/$code'
+      preLoaderRoute: typeof CCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/browse/$type/$value': {
       id: '/browse/$type/$value'
       path: '/browse/$type/$value'
@@ -366,6 +406,8 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   UpcomingRoute: UpcomingRoute,
   WatchlistRoute: WatchlistRoute,
+  CCodeRoute: CCodeRoute,
+  CollectionsIdRoute: CollectionsIdRoute,
   MovieSlugRoute: MovieSlugRoute,
   WatchSlugRoute: WatchSlugRoute,
   BrowseIndexRoute: BrowseIndexRoute,

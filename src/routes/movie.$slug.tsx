@@ -7,6 +7,9 @@ import type { SourceId } from "@/lib/types";
 import DOMPurify from "isomorphic-dompurify";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { WatchLaterButton } from "@/components/WatchLaterButton";
+import { RatingStars } from "@/components/RatingStars";
+import { CommentsSection } from "@/components/CommentsSection";
+import { AddToCollectionButton } from "@/components/AddToCollectionButton";
 
 const searchSchema = z.object({
   src: z.enum(["kkphim", "ophim", "nguonc", "vsmov"]).default("kkphim"),
@@ -92,7 +95,9 @@ function MoviePage() {
               )}
               <FavoriteButton slug={data.slug} name={data.name} poster={data.poster} source={source} />
               <WatchLaterButton slug={data.slug} name={data.name} poster={data.poster} source={source} />
+              <AddToCollectionButton slug={data.slug} name={data.name} poster={data.poster} source={source} />
             </div>
+            <RatingStars slug={data.slug} name={data.name} poster={data.poster} source={source} />
             {sanitized && (
               <div
                 className="prose prose-invert prose-sm max-w-none text-muted-foreground"
@@ -132,6 +137,8 @@ function MoviePage() {
             </div>
           </div>
         )}
+
+        <CommentsSection slug={data.slug} source={source} />
       </div>
     </div>
   );
