@@ -69,7 +69,10 @@ export function useHistory() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("watch_history")
-        .select("slug,name,poster,source,episode_slug,episode_name,watched_at")
+        .select(
+          "slug,name,poster,source,episode_slug,episode_name,watched_at,position_seconds,duration_seconds,ep_index,srv_index,finished",
+        )
+
         .order("watched_at", { ascending: false })
         .limit(60);
       if (error) throw error;
