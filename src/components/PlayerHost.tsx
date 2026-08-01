@@ -80,9 +80,16 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
   const userRef = useRef<string | null>(null);
   userRef.current = user?.id ?? null;
 
-  const resumeAt = playback
+  const mediaKey = playback
+    ? `${playback.source}:${playback.slug}:${playback.srv}:${playback.ep}`
+    : "";
+  const savedPos = playback
     ? (getLocalProgress(playback.source, playback.slug, playback.srv, playback.ep)?.position ?? 0)
     : 0;
+  // Hỏi người dùng trước khi tua tới vị trí đã lưu
+  const [resumeDecision, setResumeDecision] = useState<{ key: string; at: number } | null>(null);
+  const askResume = savedPos > 30 && resumeDecision?.key !== mediaKey;
+  const resumeAt = resumeDecision?.key === mediaKey ? resumeDecision.at : 0;
 
   const handleProgress = useCallback(
     (position: number, duration: number) => {
