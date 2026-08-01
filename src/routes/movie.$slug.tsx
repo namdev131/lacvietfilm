@@ -6,6 +6,7 @@ import { fetchDetail } from "@/lib/api";
 import type { SourceId } from "@/lib/types";
 import DOMPurify from "isomorphic-dompurify";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { WatchLaterButton } from "@/components/WatchLaterButton";
 
 const searchSchema = z.object({
   src: z.enum(["kkphim", "ophim", "nguonc", "vsmov"]).default("kkphim"),
