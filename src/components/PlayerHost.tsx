@@ -167,7 +167,7 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
             onModeChange={setMode}
             allowHls={playback.allowHls}
             autoFallback
-            hideControls={mini}
+            hideControls
             fill={!mini}
           />
         </div>
