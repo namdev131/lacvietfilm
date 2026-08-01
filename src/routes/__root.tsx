@@ -21,6 +21,7 @@ import { DockBar } from "@/components/DockBar";
 import { QuickSearch, openQuickSearch } from "@/components/QuickSearch";
 import { PlayerHostProvider } from "@/components/PlayerHost";
 import { TvRemote } from "@/hooks/useTvRemote";
+import { SettingsProvider } from "@/lib/settings";
 
 
 const LOGO = "https://files.catbox.moe/6ua430.png";
@@ -187,6 +188,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <SettingsProvider>
         <PlayerHostProvider>
         <div className="min-h-screen bg-background text-foreground">
           <Header />
@@ -202,6 +204,7 @@ function RootComponent() {
           <Toaster position="top-center" richColors />
         </div>
         </PlayerHostProvider>
+        </SettingsProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
