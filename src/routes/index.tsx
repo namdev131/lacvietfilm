@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Play, Info } from "lucide-react";
 import { fetchLatest, fetchLatestMerged } from "@/lib/api";
 import { MovieRow } from "@/components/MovieRow";
