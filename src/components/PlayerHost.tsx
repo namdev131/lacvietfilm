@@ -72,6 +72,37 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
   const [playback, setPlayback] = useState<Playback | null>(null);
   const [dockEl, setDockEl] = useState<HTMLElement | null>(null);
   const [rect, setRect] = useState<DOMRect | null>(null);
+  const { user } = useAuth();
+  const userRef = useRef<string | null>(null);
+  userRef.current = user?.id ?? null;
+
+  const resumeAt = playback
+    ? (getLocalProgress(playback.source, playback.slug, playback.srv, playback.ep)?.position ?? 0)
+    : 0;
+
+  const handleProgress = useCallback(
+    (position: number, duration: number) => {
+      const p = playback;
+      if (!p) return;
+      setLocalProgress({ slug: p.slug, source: p.source, ep: p.ep, srv: p.srv, position, duration });
+      const uid = userRef.current;
+      if (uid) {
+        void syncProgress(uid, {
+          slug: p.slug,
+          name: p.name,
+          poster: p.poster,
+          source: p.source,
+          ep: p.ep,
+          srv: p.srv,
+          episode_name: p.epLabel,
+          position,
+          duration,
+        });
+      }
+    },
+    [playback],
+  );
+
 
   const start = useCallback((p: Playback) => {
     setPlayback((prev) => (sameMedia(prev, p) ? { ...prev!, name: p.name, epLabel: p.epLabel } : p));
