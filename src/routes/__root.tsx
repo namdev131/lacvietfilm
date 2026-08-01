@@ -140,19 +140,38 @@ function Header() {
             <NavLink to="/" icon={<HomeIcon className="h-4 w-4" />} label="Trang nhà" />
             <NavLink to="/latest" icon={<Flame className="h-4 w-4" />} label="Phim mới" />
             <NavLink to="/search" icon={<Search className="h-4 w-4" />} label="Tìm phim" />
+            <NavLink to="/watchlist" icon={<Bookmark className="h-4 w-4" />} label="Xem sau" />
           </nav>
         </div>
-        <button
-          type="button"
-          onClick={openQuickSearch}
-          aria-label="Tìm phim nhanh"
-          className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground transition hover:border-primary/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary md:text-sm"
-        >
-          <Search className="h-4 w-4" />
-          <span className="hidden sm:inline">Tìm phim…</span>
-          <kbd className="hidden rounded border border-border px-1 text-[10px] md:inline">Ctrl K</kbd>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={openQuickSearch}
+            aria-label="Tìm phim nhanh"
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground transition hover:border-primary/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary md:text-sm"
+          >
+            <Search className="h-4 w-4" />
+            <span className="hidden sm:inline">Tìm phim…</span>
+            <kbd className="hidden rounded border border-border px-1 text-[10px] md:inline">Ctrl K</kbd>
+          </button>
+          <Link
+            to="/watchlist"
+            aria-label="Danh sách Xem sau"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition hover:border-primary/60 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary md:hidden"
+          >
+            <Bookmark className="h-4 w-4" />
+          </Link>
+          <Link
+            to="/settings"
+            aria-label="Cài đặt"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition hover:border-primary/60 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            activeProps={{ className: "border-primary/60 text-primary" }}
+          >
+            <SettingsIcon className="h-4 w-4" />
+          </Link>
+        </div>
       </div>
+
     </header>
   );
 }
