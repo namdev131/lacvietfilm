@@ -226,21 +226,43 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
               </button>
             </div>
           )}
-          <Player
-            key={playKey}
-            m3u8={playback.m3u8}
-            embed={playback.embed}
-            poster={playback.poster}
-            mode={playback.allowHls ? playback.mode : "embed"}
-            onModeChange={setMode}
-            allowHls={playback.allowHls}
-            autoFallback
-            hideControls
-            fill={!mini}
-            resumeAt={resumeAt}
-            onProgress={handleProgress}
-
-          />
+          <div className="relative h-full">
+            <Player
+              key={playKey}
+              m3u8={playback.m3u8}
+              embed={playback.embed}
+              poster={playback.poster}
+              mode={playback.allowHls ? playback.mode : "embed"}
+              onModeChange={setMode}
+              allowHls={playback.allowHls}
+              autoFallback
+              hideControls
+              fill={!mini}
+              resumeAt={resumeAt}
+              onProgress={handleProgress}
+            />
+            {askResume && (
+              <div className="absolute bottom-3 left-3 right-3 z-10 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card/95 px-3 py-2 shadow-xl">
+                <span className="min-w-0 flex-1 text-xs text-foreground">
+                  Xem tiếp từ <strong className="text-primary">{formatTime(savedPos)}</strong>?
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setResumeDecision({ key: mediaKey, at: savedPos })}
+                  className="rounded-md bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
+                >
+                  Xem tiếp
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setResumeDecision({ key: mediaKey, at: 0 })}
+                  className="rounded-md border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground"
+                >
+                  Bỏ qua
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </PlayerCtx.Provider>
