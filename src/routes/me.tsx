@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { LogOut, Heart, History, LogIn, UserRound, ShieldCheck, Settings as SettingsIcon, ChevronRight } from "lucide-react";
+import { LogOut, Heart, History, LogIn, UserRound, ShieldCheck, Settings as SettingsIcon, ChevronRight, Bookmark } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useFavorites, useHistory } from "@/hooks/useUserData";
+import { useWatchlist } from "@/hooks/useWatchlist";
 
 export const Route = createFileRoute("/me")({
   head: () => ({
@@ -25,6 +26,7 @@ function MePage() {
   const qc = useQueryClient();
   const favorites = useFavorites();
   const history = useHistory();
+  const watchlist = useWatchlist();
 
   async function signOut() {
     await qc.cancelQueries();
@@ -82,8 +84,9 @@ function MePage() {
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-3">
+      <div className="mt-4 grid grid-cols-3 gap-3">
         <StatCard to="/favorites" icon={<Heart className="h-5 w-5 text-primary" />} label="Yêu thích" value={favorites.data?.length ?? 0} />
+        <StatCard to="/watchlist" icon={<Bookmark className="h-5 w-5 text-primary" />} label="Xem sau" value={watchlist.data?.length ?? 0} />
         <StatCard to="/history" icon={<History className="h-5 w-5 text-primary" />} label="Đã xem" value={history.data?.length ?? 0} />
       </div>
 
