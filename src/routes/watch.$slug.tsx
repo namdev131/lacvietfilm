@@ -12,6 +12,8 @@ import { usePlayerHost, usePlayerDock } from "@/components/PlayerHost";
 import { MovieRow } from "@/components/MovieRow";
 import { SourcePing } from "@/components/SourcePing";
 import type { SourceId } from "@/lib/types";
+import { getLocalProgress, progressPercent, formatTime } from "@/lib/progress";
+
 
 const searchSchema = z.object({
   src: z.enum(["kkphim", "ophim", "nguonc", "vsmov"]).default("kkphim"),
@@ -59,6 +61,20 @@ function WatchPage() {
   const qc = useQueryClient();
   const host = usePlayerHost();
   const dockRef = usePlayerDock();
+
+  // Tiến độ xem đã lưu của tập hiện tại
+  const [saved, setSaved] = useState<{ position: number; duration: number } | null>(null);
+  useEffect(() => {
+    const read = () => {
+      const p = getLocalProgress(source, slug, srv, ep);
+      setSaved(p ? { position: p.position, duration: p.duration } : null);
+    };
+    read();
+    const id = window.setInterval(read, 5000);
+    return () => window.clearInterval(id);
+  }, [source, slug, srv, ep]);
+  const savedPct = saved ? progressPercent(saved.position, saved.duration) : 0;
+
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["detail", source, slug],
@@ -112,10 +128,13 @@ function WatchPage() {
       source,
       episode_slug: currentEp?.slug,
       episode_name: currentEp?.name,
+      ep_index: ep,
+      srv_index: srv,
     }).then(() => {
       qc.invalidateQueries({ queryKey: ["history"] });
     });
-  }, [user, data, source, currentEp?.slug, currentEp?.name]);
+  }, [user, data, source, ep, srv, currentEp?.slug, currentEp?.name]);
+
 
   // Đẩy phim hiện tại vào trình phát toàn cục (tiếp tục phát khi rời trang)
   useEffect(() => {
@@ -223,7 +242,23 @@ function WatchPage() {
             <p className="text-sm text-muted-foreground">
               {currentServer?.server_name} · {currentEp?.name || `Tập ${ep + 1}`}
             </p>
+            {savedPct > 0 && (
+              <div className="mt-2 max-w-sm">
+                <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                  <span>
+                    {savedPct >= 95
+                      ? "Bạn đã xem xong tập này"
+                      : `Tiếp tục từ ${formatTime(saved!.position)} · ${savedPct}%`}
+                  </span>
+                  {savedPct < 95 && <span>{formatTime(saved!.duration)}</span>}
+                </div>
+                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
+                  <div className="h-full bg-primary" style={{ width: `${savedPct}%` }} />
+                </div>
+              </div>
+            )}
           </div>
+
 
           {/* Source switcher */}
           <div className="rounded-xl border border-border/60 bg-card/70 p-4">

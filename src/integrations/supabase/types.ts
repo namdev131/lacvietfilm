@@ -106,35 +106,50 @@ export type Database = {
       }
       watch_history: {
         Row: {
+          duration_seconds: number
+          ep_index: number
           episode_name: string | null
           episode_slug: string | null
+          finished: boolean
           id: string
           name: string
+          position_seconds: number
           poster: string | null
           slug: string
           source: string
+          srv_index: number
           user_id: string
           watched_at: string
         }
         Insert: {
+          duration_seconds?: number
+          ep_index?: number
           episode_name?: string | null
           episode_slug?: string | null
+          finished?: boolean
           id?: string
           name: string
+          position_seconds?: number
           poster?: string | null
           slug: string
           source?: string
+          srv_index?: number
           user_id: string
           watched_at?: string
         }
         Update: {
+          duration_seconds?: number
+          ep_index?: number
           episode_name?: string | null
           episode_slug?: string | null
+          finished?: boolean
           id?: string
           name?: string
+          position_seconds?: number
           poster?: string | null
           slug?: string
           source?: string
+          srv_index?: number
           user_id?: string
           watched_at?: string
         }

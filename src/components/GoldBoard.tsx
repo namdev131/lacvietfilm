@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "@tanstack/react-router";
-import { Crown, Radio, ChevronUp, ChevronDown, Minus, Flame, Eye, Heart, Users, CheckCircle2 } from "lucide-react";
+import { Crown, Radio, ChevronUp, ChevronDown, Minus, Flame, Eye, Heart, Users, CheckCircle2, Play } from "lucide-react";
 import {
   useGoldBoard,
   useLiveViewers,
@@ -17,6 +17,8 @@ import type { SourceId } from "@/lib/types";
 
 const PERIODS: GoldPeriod[] = ["day", "week", "month", "all"];
 const KINDS: GoldKind[] = ["all", "series", "single", "anime"];
+const SOURCES: ("all" | SourceId)[] = ["all", "kkphim", "ophim", "nguonc", "vsmov"];
+
 
 function Delta({ row }: { row: GoldRow }) {
   if (row.prev_rank == null)
@@ -74,6 +76,7 @@ function HeartBtn({ row, isFav }: { row: GoldRow; isFav: boolean }) {
 export function GoldBoard() {
   const [period, setPeriod] = useState<GoldPeriod>("day");
   const [kind, setKind] = useState<GoldKind>("all");
+  const [srcFilter, setSrcFilter] = useState<"all" | SourceId>("all");
   const { data, isLoading } = useGoldBoard(period, kind);
   const viewers = useLiveViewers();
   const { data: favs } = useFavorites();
@@ -82,7 +85,13 @@ export function GoldBoard() {
   const favSet = useMemo(() => new Set((favs ?? []).map((f) => f.slug)), [favs]);
   const seenSet = useMemo(() => new Set((history ?? []).map((h) => h.slug)), [history]);
 
-  const rows = data ?? [];
+  const all = data ?? [];
+  const rows = useMemo(
+    () => (srcFilter === "all" ? all : all.filter((r) => r.source === srcFilter)),
+    [all, srcFilter],
+  );
+  const topViews = rows[0]?.views ?? 0;
+  const totalViews = all.reduce((s, r) => s + (r.views || 0), 0);
   const podium = rows.slice(0, 3);
   const rest = rows.slice(3, 10);
 
@@ -95,6 +104,12 @@ export function GoldBoard() {
           <span className="text-xs font-normal text-muted-foreground">Xếp hạng theo lượt xem</span>
         </h2>
         <div className="flex items-center gap-2">
+          {totalViews > 0 && (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/60 px-2.5 py-1 text-[11px] text-muted-foreground">
+              <Eye className="h-3 w-3 text-[color:var(--color-gold)]" />
+              {totalViews.toLocaleString("vi-VN")} lượt · {PERIOD_LABEL[period]}
+            </span>
+          )}
           {viewers > 0 && (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/60 px-2.5 py-1 text-[11px] text-muted-foreground">
               <Users className="h-3 w-3 text-[color:var(--color-gold)]" />
@@ -138,7 +153,23 @@ export function GoldBoard() {
             </button>
           ))}
         </div>
+        <div className="inline-flex rounded-full border border-border bg-card/60 p-0.5">
+          {SOURCES.map((s) => (
+            <button
+              key={s}
+              onClick={() => setSrcFilter(s)}
+              className={`rounded-full px-3 py-1 text-[11px] font-medium uppercase transition ${
+                srcFilter === s
+                  ? "bg-foreground text-background"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {s === "all" ? "Mọi nguồn" : s}
+            </button>
+          ))}
+        </div>
       </div>
+
 
       {isLoading && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -294,9 +325,25 @@ export function GoldBoard() {
                         )}
                         <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] uppercase">{m.source}</span>
                       </div>
+                      <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full rounded-full bg-[color:var(--color-gold)]"
+                          style={{ width: `${topViews ? Math.max(6, (m.views / topViews) * 100) : 0}%` }}
+                        />
+                      </div>
                     </div>
                   </Link>
+                  <Link
+                    to="/watch/$slug"
+                    params={{ slug: m.slug }}
+                    search={{ src: m.source, ep: 0, srv: 0 }}
+                    aria-label={`Xem ${m.name}`}
+                    className="shrink-0 rounded-full bg-primary p-2 text-primary-foreground opacity-90 transition hover:opacity-100"
+                  >
+                    <Play className="h-3.5 w-3.5 fill-current" />
+                  </Link>
                   <HeartBtn row={m} isFav={favSet.has(m.slug)} />
+
                 </div>
               </motion.div>
             ))}

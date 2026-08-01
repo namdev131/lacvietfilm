@@ -5,7 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useHistory } from "@/hooks/useUserData";
 import { SignInPrompt } from "@/components/SignInPrompt";
+import { progressPercent, formatTime } from "@/lib/progress";
 import type { SourceId } from "@/lib/types";
+
 
 export const Route = createFileRoute("/history")({
   head: () => ({
@@ -56,27 +58,49 @@ function HistoryPage() {
         <p className="mt-10 text-sm text-muted-foreground">Chưa có lịch sử. Hãy bắt đầu xem một bộ phim nhé!</p>
       ) : (
         <ul className="mt-6 space-y-3">
-          {data.map((m) => (
-            <li key={m.slug} className="flex items-center gap-3 rounded-xl border border-border/60 bg-card/50 p-2.5">
-              <img src={m.poster ?? ""} alt="" loading="lazy" className="h-20 w-14 shrink-0 rounded-md object-cover" />
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-semibold">{m.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {m.episode_name ? `Đang xem ${m.episode_name}` : "Đã xem"}
-                  {m.watched_at ? ` · ${new Date(m.watched_at).toLocaleDateString("vi-VN")}` : ""}
-                </p>
-              </div>
-              <Link
-                to="/watch/$slug"
-                params={{ slug: m.slug }}
-                search={{ src: (m.source as SourceId) || "kkphim", ep: 0, srv: 0 }}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
-              >
-                <Play className="h-3.5 w-3.5" /> Xem tiếp
-              </Link>
-            </li>
-          ))}
+          {data.map((m) => {
+            const pct = progressPercent(m.position_seconds ?? 0, m.duration_seconds ?? 0);
+            return (
+              <li key={m.slug} className="flex items-center gap-3 rounded-xl border border-border/60 bg-card/50 p-2.5">
+                <div className="relative h-20 w-14 shrink-0 overflow-hidden rounded-md bg-muted">
+                  <img src={m.poster ?? ""} alt="" loading="lazy" className="h-full w-full object-cover" />
+                  {pct > 0 && (
+                    <div className="absolute inset-x-0 bottom-0 h-1 bg-black/60">
+                      <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold">{m.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {m.episode_name ? `Đang xem ${m.episode_name}` : "Đã xem"}
+                    {m.watched_at ? ` · ${new Date(m.watched_at).toLocaleDateString("vi-VN")}` : ""}
+                  </p>
+                  {pct > 0 && (
+                    <p className="mt-0.5 text-[11px] text-primary">
+                      {m.finished
+                        ? "Đã xem xong"
+                        : `Đã xem ${pct}% · dừng ở ${formatTime(m.position_seconds ?? 0)}`}
+                    </p>
+                  )}
+                </div>
+                <Link
+                  to="/watch/$slug"
+                  params={{ slug: m.slug }}
+                  search={{
+                    src: (m.source as SourceId) || "kkphim",
+                    ep: m.ep_index ?? 0,
+                    srv: m.srv_index ?? 0,
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
+                >
+                  <Play className="h-3.5 w-3.5" /> Xem tiếp
+                </Link>
+              </li>
+            );
+          })}
         </ul>
+
       )}
     </div>
   );

@@ -11,7 +11,13 @@ export interface LibraryItem {
   episode_slug?: string | null;
   episode_name?: string | null;
   watched_at?: string;
+  position_seconds?: number;
+  duration_seconds?: number;
+  ep_index?: number;
+  srv_index?: number;
+  finished?: boolean;
 }
+
 
 export function useFavorites() {
   const { user } = useAuth();
@@ -63,18 +69,31 @@ export function useHistory() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("watch_history")
-        .select("slug,name,poster,source,episode_slug,episode_name,watched_at")
+        .select(
+          "slug,name,poster,source,episode_slug,episode_name,watched_at,position_seconds,duration_seconds,ep_index,srv_index,finished",
+        )
+
         .order("watched_at", { ascending: false })
         .limit(60);
       if (error) throw error;
-      return (data ?? []) as LibraryItem[];
+      return (data ?? []) as unknown as LibraryItem[];
+
     },
   });
 }
 
 export async function recordHistory(
   userId: string,
-  entry: { slug: string; name: string; poster?: string; source: SourceId; episode_slug?: string; episode_name?: string },
+  entry: {
+    slug: string;
+    name: string;
+    poster?: string;
+    source: SourceId;
+    episode_slug?: string;
+    episode_name?: string;
+    ep_index?: number;
+    srv_index?: number;
+  },
 ) {
   const { error } = await supabase.from("watch_history").upsert(
     {
@@ -85,9 +104,12 @@ export async function recordHistory(
       source: entry.source,
       episode_slug: entry.episode_slug ?? null,
       episode_name: entry.episode_name ?? null,
+      ep_index: entry.ep_index ?? 0,
+      srv_index: entry.srv_index ?? 0,
       watched_at: new Date().toISOString(),
-    },
+    } as never,
     { onConflict: "user_id,slug" },
   );
   if (error) console.error("recordHistory failed", error);
 }
+

@@ -20,6 +20,8 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { DockBar } from "@/components/DockBar";
 import { QuickSearch, openQuickSearch } from "@/components/QuickSearch";
 import { PlayerHostProvider } from "@/components/PlayerHost";
+import { TvRemote } from "@/hooks/useTvRemote";
+
 
 const LOGO = "https://files.catbox.moe/6ua430.png";
 
@@ -195,6 +197,8 @@ function RootComponent() {
           <div className="h-24" />
           <DockBar />
           <QuickSearch />
+          <TvRemote />
+
           <Toaster position="top-center" richColors />
         </div>
         </PlayerHostProvider>
