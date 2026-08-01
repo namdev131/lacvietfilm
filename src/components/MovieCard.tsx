@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { MovieCard as MC } from "@/lib/types";
 import { motion } from "framer-motion";
+import { Play } from "lucide-react";
 import { Highlight } from "@/components/Highlight";
 
 export function MovieCard({
@@ -25,13 +26,19 @@ export function MovieCard({
         search={{ src: movie.source }}
         className="block"
       >
-        <div className="relative aspect-[2/3] overflow-hidden rounded-md bg-card ring-1 ring-border/50 transition-transform duration-300 group-hover:scale-[1.04] group-hover:ring-primary/60">
+        <div className="relative aspect-[2/3] overflow-hidden rounded-lg bg-card ring-1 ring-border/50 transition-all duration-300 ease-out will-change-transform group-hover:-translate-y-2 group-hover:scale-[1.05] group-hover:shadow-[0_18px_40px_-12px_hsl(var(--primary)/0.55)] group-hover:ring-2 group-hover:ring-primary group-focus-within:-translate-y-2 group-focus-within:scale-[1.05] group-focus-within:ring-2 group-focus-within:ring-primary">
+          <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black/85 via-black/25 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100" />
+          <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
+            <span className="flex h-12 w-12 scale-75 items-center justify-center rounded-full bg-primary text-primary-foreground opacity-0 shadow-lg transition-all duration-300 group-hover:scale-100 group-hover:opacity-100 group-focus-within:scale-100 group-focus-within:opacity-100">
+              <Play className="h-5 w-5 translate-x-[1px] fill-current" />
+            </span>
+          </div>
           {movie.poster ? (
             <img
               src={movie.poster}
               alt={movie.name}
               loading="lazy"
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
               onError={(e) => ((e.currentTarget as HTMLImageElement).style.opacity = "0")}
             />
           ) : (

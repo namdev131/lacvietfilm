@@ -18,6 +18,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/hooks/useAuth";
 import { DockBar } from "@/components/DockBar";
+import { QuickSearch, openQuickSearch } from "@/components/QuickSearch";
 
 const LOGO = "https://files.catbox.moe/6ua430.png";
 
@@ -137,13 +138,16 @@ function Header() {
             <NavLink to="/search" icon={<Search className="h-4 w-4" />} label="Tìm phim" />
           </nav>
         </div>
-        <Link
-          to="/search"
-          className="inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-3 py-1.5 text-xs text-muted-foreground hover:border-primary/60 hover:text-foreground md:text-sm"
+        <button
+          type="button"
+          onClick={openQuickSearch}
+          aria-label="Tìm phim nhanh"
+          className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground transition hover:border-primary/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary md:text-sm"
         >
           <Search className="h-4 w-4" />
           <span className="hidden sm:inline">Tìm phim…</span>
-        </Link>
+          <kbd className="hidden rounded border border-border px-1 text-[10px] md:inline">Ctrl K</kbd>
+        </button>
       </div>
     </header>
   );
@@ -188,6 +192,7 @@ function RootComponent() {
           <Footer />
           <div className="h-24" />
           <DockBar />
+          <QuickSearch />
           <Toaster position="top-center" richColors />
         </div>
       </AuthProvider>
