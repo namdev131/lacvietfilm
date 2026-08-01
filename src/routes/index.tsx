@@ -7,6 +7,7 @@ import { fetchLatest, fetchLatestMerged } from "@/lib/api";
 import { MovieRow } from "@/components/MovieRow";
 import { GoldBoard } from "@/components/GoldBoard";
 import { SourcePing } from "@/components/SourcePing";
+import { useSettings } from "@/lib/settings";
 import type { SourceFilter } from "@/lib/types";
 
 export const Route = createFileRoute("/")({
@@ -14,7 +15,15 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
+  const { settings } = useSettings();
   const [source, setSource] = useState<SourceFilter>("all");
+  // Áp dụng nguồn mặc định trong Cài đặt (sau khi hydrate)
+  const appliedDefault = useRef(false);
+  useEffect(() => {
+    if (appliedDefault.current) return;
+    appliedDefault.current = true;
+    setSource(settings.defaultSource as SourceFilter);
+  }, [settings.defaultSource]);
   const kk = useQuery({ queryKey: ["latest", "kkphim", 1], queryFn: () => fetchLatest("kkphim", 1) });
   const op = useQuery({ queryKey: ["latest", "ophim", 1], queryFn: () => fetchLatest("ophim", 1) });
   const ng = useQuery({ queryKey: ["latest", "nguonc", 1], queryFn: () => fetchLatest("nguonc", 1) });
