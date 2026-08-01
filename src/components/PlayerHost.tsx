@@ -148,7 +148,7 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
     [playback, start, stop, setMode, registerDock, dockEl],
   );
 
-  const mini = !dockEl || !rect;
+  const mini = !dockEl || !dockEl.isConnected || !rect || rect.width < 80 || rect.height < 80;
   const playKey = playback
     ? `${playback.source}-${playback.slug}-${playback.srv}-${playback.ep}-${playback.mode}`
     : "none";
