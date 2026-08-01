@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "@tanstack/react-router";
-import { Crown, Radio, ChevronUp, ChevronDown, Minus, Flame, Eye, Heart, Users, CheckCircle2 } from "lucide-react";
+import { Crown, Radio, ChevronUp, ChevronDown, Minus, Flame, Eye, Heart, Users, CheckCircle2, Play } from "lucide-react";
 import {
   useGoldBoard,
   useLiveViewers,
