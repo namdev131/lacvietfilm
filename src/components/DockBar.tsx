@@ -1,6 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { History, Search, Home, Heart, User } from "lucide-react";
 import { motion } from "framer-motion";
+import { openQuickSearch } from "@/components/QuickSearch";
 
 const items = [
   { to: "/history", label: "Lịch sử", icon: History },
@@ -45,13 +46,9 @@ export function DockBar() {
             );
           }
 
-          return (
-            <Link
-              key={item.to}
-              to={item.to}
-              aria-label={item.label}
-              className="relative flex flex-1 flex-col items-center gap-1 rounded-xl px-1 py-1.5"
-            >
+          const quick = item.to === "/search" && pathname.startsWith("/watch");
+          const inner = (
+            <>
               {active && (
                 <motion.span
                   layoutId="dock-active"
@@ -67,6 +64,18 @@ export function DockBar() {
               >
                 {item.label}
               </span>
+            </>
+          );
+
+          const cls = "relative flex flex-1 flex-col items-center gap-1 rounded-xl px-1 py-1.5";
+
+          return quick ? (
+            <button key={item.to} type="button" onClick={openQuickSearch} aria-label={item.label} className={cls}>
+              {inner}
+            </button>
+          ) : (
+            <Link key={item.to} to={item.to} aria-label={item.label} className={cls}>
+              {inner}
             </Link>
           );
         })}
