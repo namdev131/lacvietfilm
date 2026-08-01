@@ -14,6 +14,89 @@ export type Database = {
   }
   public: {
     Tables: {
+      collection_items: {
+        Row: {
+          collection_id: string
+          created_at: string
+          id: string
+          name: string
+          note: string | null
+          position: number
+          poster: string | null
+          slug: string
+          source: string
+          user_id: string
+        }
+        Insert: {
+          collection_id: string
+          created_at?: string
+          id?: string
+          name: string
+          note?: string | null
+          position?: number
+          poster?: string | null
+          slug: string
+          source?: string
+          user_id: string
+        }
+        Update: {
+          collection_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+          note?: string | null
+          position?: number
+          poster?: string | null
+          slug?: string
+          source?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_items_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collections: {
+        Row: {
+          cover: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_public: boolean
+          share_code: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cover?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          share_code?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cover?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          share_code?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -40,6 +123,83 @@ export type Database = {
           poster?: string | null
           slug?: string
           source?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      movie_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          parent_id: string | null
+          slug: string
+          source: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          parent_id?: string | null
+          slug: string
+          source?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          parent_id?: string | null
+          slug?: string
+          source?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movie_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "movie_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      movie_ratings: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          poster: string | null
+          score: number
+          slug: string
+          source: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name?: string
+          poster?: string | null
+          score: number
+          slug: string
+          source?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          poster?: string | null
+          score?: number
+          slug?: string
+          source?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
