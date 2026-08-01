@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import {
   ArrowLeft, Film, Gauge, Languages, LogOut, Monitor, Palette, PlayCircle,
-  Save, ShieldCheck, Sparkles, Trash2, UserRound, KeyRound, Database,
+  Save, ShieldCheck, Sparkles, Trash2, UserRound, KeyRound, Database, CloudUpload, Bookmark, RefreshCw,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/settings")({
 });
 
 function SettingsPage() {
-  const { settings, set, reset } = useSettings();
+  const { settings, set, reset, syncState, pushNow, lastSyncedAt } = useSettings();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -66,12 +66,14 @@ function SettingsPage() {
     toast.success("Đã đổi mật khẩu");
   }
 
-  async function clearCloud(table: "watch_history" | "favorites") {
+  async function clearCloud(table: "watch_history" | "favorites" | "watchlist") {
     if (!user) return;
     const { error } = await supabase.from(table).delete().eq("user_id", user.id);
     if (error) return toast.error(error.message);
     qc.invalidateQueries();
-    toast.success(table === "favorites" ? "Đã xoá danh sách yêu thích" : "Đã xoá lịch sử xem");
+    toast.success(
+      table === "favorites" ? "Đã xoá danh sách yêu thích" : table === "watchlist" ? "Đã xoá danh sách Xem sau" : "Đã xoá lịch sử xem",
+    );
   }
 
   function clearLocal() {
@@ -161,6 +163,39 @@ function SettingsPage() {
         )}
       </Section>
 
+      {/* Đồng bộ Cloud */}
+      <Section icon={<CloudUpload className="h-4 w-4" />} title="Đồng bộ giữa các thiết bị">
+        <Toggle
+          label="Đồng bộ cài đặt lên Cloud"
+          desc="Cài đặt của bạn tự áp dụng trên điện thoại, máy tính và TV khi cùng đăng nhập."
+          checked={settings.cloudSync}
+          onChange={(v) => set("cloudSync", v)}
+        />
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <span className="text-xs text-muted-foreground">
+            {!user
+              ? "Đăng nhập để bật đồng bộ."
+              : !settings.cloudSync
+                ? "Đang tắt — cài đặt chỉ lưu trên thiết bị này."
+                : syncState === "syncing"
+                  ? "Đang đồng bộ…"
+                  : syncState === "error"
+                    ? "Đồng bộ lỗi, thử lại nhé."
+                    : lastSyncedAt
+                      ? `Đã đồng bộ lúc ${new Date(lastSyncedAt).toLocaleTimeString("vi-VN")}`
+                      : "Sẵn sàng đồng bộ."}
+          </span>
+          {user && settings.cloudSync && (
+            <button onClick={() => void pushNow()} className={btnGhost}>
+              <RefreshCw className={`h-4 w-4 ${syncState === "syncing" ? "animate-spin" : ""}`} /> Đồng bộ ngay
+            </button>
+          )}
+        </div>
+        <Link to="/watchlist" className={`${btnGhost} w-full justify-center`}>
+          <Bookmark className="h-4 w-4" /> Mở danh sách Xem sau
+        </Link>
+      </Section>
+
       {/* Phát phim */}
       <Section icon={<PlayCircle className="h-4 w-4" />} title="Phát phim">
         <Row label="Chế độ mặc định" desc="Ưu tiên HLS (m3u8) hoặc trình nhúng Embed.">
@@ -227,6 +262,9 @@ function SettingsPage() {
               </button>
               <button onClick={() => clearCloud("favorites")} className={btnDanger}>
                 <Trash2 className="h-4 w-4" /> Xoá yêu thích
+              </button>
+              <button onClick={() => clearCloud("watchlist")} className={btnDanger}>
+                <Trash2 className="h-4 w-4" /> Xoá danh sách Xem sau
               </button>
             </>
           )}
