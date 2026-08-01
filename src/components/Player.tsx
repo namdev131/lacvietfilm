@@ -90,6 +90,18 @@ export function Player({
     };
   }, [mode, m3u8]);
 
+  // Khi người dùng bấm "Xem tiếp" sau khi video đã tải xong
+  useEffect(() => {
+    const video = videoRef.current;
+    if (mode !== "hls" || !video || resumeAt <= 5) return;
+    if (video.readyState > 0 && Math.abs(video.currentTime - resumeAt) > 5) {
+      video.currentTime = resumeAt;
+      void video.play().catch(() => {});
+    }
+  }, [resumeAt, mode]);
+
+
+
 
   useEffect(() => {
     setError(null);
