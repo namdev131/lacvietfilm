@@ -94,3 +94,21 @@
   background-size: 200% 100%;
   animation: shimmer 1.8s linear infinite;
 }
+
+/* ==== Chế độ điều khiển bằng remote Smart TV ==== */
+html.tv-mode :focus {
+  outline: none;
+}
+html.tv-mode :focus-visible,
+html.tv-mode a:focus,
+html.tv-mode button:focus,
+html.tv-mode [tabindex]:focus {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 10px;
+  box-shadow: 0 0 0 6px oklch(0.75 0.15 75 / 0.18);
+  transition: outline-color 0.15s ease;
+}
+html.tv-mode {
+  scroll-behavior: smooth;
+}
