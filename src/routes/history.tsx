@@ -5,7 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useHistory } from "@/hooks/useUserData";
 import { SignInPrompt } from "@/components/SignInPrompt";
+import { progressPercent, formatTime } from "@/lib/progress";
 import type { SourceId } from "@/lib/types";
+
 
 export const Route = createFileRoute("/history")({
   head: () => ({
