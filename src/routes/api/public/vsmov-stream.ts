@@ -71,12 +71,22 @@ export const Route = createFileRoute("/api/public/vsmov-stream")({
           return new Response("Forbidden host", { status: 403 });
         }
 
-        const upstream = await fetch(parsed.toString(), {
-          headers: {
-            Referer: `${parsed.origin}/`,
-            "User-Agent": request.headers.get("user-agent") || "Mozilla/5.0",
-          },
-        });
+        let upstream: Response;
+        try {
+          upstream = await fetch(parsed.toString(), {
+            headers: {
+              Referer: `${parsed.origin}/`,
+              "User-Agent": request.headers.get("user-agent") || "Mozilla/5.0",
+            },
+            signal: AbortSignal.timeout(15000),
+          });
+        } catch {
+          return new Response("VSMov upstream unavailable", { status: 502 });
+        }
+
+        if (!upstream.ok) {
+          return new Response("VSMov upstream error", { status: upstream.status });
+        }
 
         const isPlaylist =
           parsed.pathname.endsWith(".m3u8") ||
