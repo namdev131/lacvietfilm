@@ -90,6 +90,7 @@ function MoviePage() {
                 </Link>
               )}
               <FavoriteButton slug={data.slug} name={data.name} poster={data.poster} source={source} />
+              <WatchLaterButton slug={data.slug} name={data.name} poster={data.poster} source={source} />
             </div>
             {sanitized && (
               <div
