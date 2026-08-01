@@ -76,7 +76,8 @@ export function useHistory() {
         .order("watched_at", { ascending: false })
         .limit(60);
       if (error) throw error;
-      return (data ?? []) as LibraryItem[];
+      return (data ?? []) as unknown as LibraryItem[];
+
     },
   });
 }
