@@ -13,7 +13,7 @@ import { X, Maximize2, GripVertical } from "lucide-react";
 import { Player, type PlayMode } from "@/components/Player";
 import type { SourceId } from "@/lib/types";
 import { useAuth } from "@/hooks/useAuth";
-import { getLocalProgress, setLocalProgress, syncProgress } from "@/lib/progress";
+import { getLocalProgress, setLocalProgress, syncProgress, formatTime } from "@/lib/progress";
 
 
 export type Playback = {
