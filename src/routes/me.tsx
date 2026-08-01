@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { LogOut, Heart, History, LogIn, UserRound, ShieldCheck } from "lucide-react";
+import { LogOut, Heart, History, LogIn, UserRound, ShieldCheck, Settings as SettingsIcon, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useFavorites, useHistory } from "@/hooks/useUserData";
@@ -53,6 +53,11 @@ function MePage() {
         >
           <LogIn className="h-4 w-4" /> Đăng nhập / Đăng ký
         </Link>
+        <div className="mt-4">
+          <Link to="/settings" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary">
+            <SettingsIcon className="h-4 w-4" /> Cài đặt ứng dụng
+          </Link>
+        </div>
       </div>
     );
   }
@@ -81,6 +86,18 @@ function MePage() {
         <StatCard to="/favorites" icon={<Heart className="h-5 w-5 text-primary" />} label="Yêu thích" value={favorites.data?.length ?? 0} />
         <StatCard to="/history" icon={<History className="h-5 w-5 text-primary" />} label="Đã xem" value={history.data?.length ?? 0} />
       </div>
+
+      <Link
+        to="/settings"
+        className="mt-4 flex items-center gap-3 rounded-2xl border border-border/70 bg-card/60 p-4 transition hover:border-primary/50"
+      >
+        <SettingsIcon className="h-5 w-5 text-primary" />
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-semibold">Cài đặt</div>
+          <div className="text-xs text-muted-foreground">Trình phát, nguồn phim, giao diện, quyền riêng tư, hồ sơ</div>
+        </div>
+        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+      </Link>
 
       <div className="mt-4 rounded-2xl border border-border/70 bg-card/50 p-4 text-sm text-muted-foreground">
         <div className="flex items-center gap-2 text-foreground">

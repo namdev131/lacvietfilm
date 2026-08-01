@@ -117,7 +117,7 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
 
 
   const start = useCallback((p: Playback) => {
-    setPlayback((prev) => (sameMedia(prev, p) ? { ...prev!, name: p.name, epLabel: p.epLabel } : p));
+    setPlayback((prev) => (sameMedia(prev, p) ? { ...prev!, name: p.name, epLabel: p.epLabel, onEnded: p.onEnded } : p));
   }, []);
   const stop = useCallback(() => setPlayback(null), []);
   const setMode = useCallback(
