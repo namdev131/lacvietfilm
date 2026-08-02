@@ -1,0 +1,262 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.1",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://bnhalridbjbiuxlpuflw.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "cinestream-hub",
+      "version": "0.1.0",
+      "title": "CineStream Hub"
+    },
+    "tools": [
+      {
+        "name": "search_movies",
+        "title": "Tìm phim",
+        "description": "Search the Lạc Việt Cinema catalog by keyword across a movie source.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Keyword, e.g. a movie title."
+            },
+            "source": {
+              "default": "kkphim",
+              "description": "Catalog source to search.",
+              "type": "string",
+              "enum": [
+                "kkphim",
+                "ophim",
+                "nguonc"
+              ]
+            },
+            "limit": {
+              "default": 10,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20
+            }
+          },
+          "required": [
+            "query"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_movie",
+        "title": "Chi tiết phim",
+        "description": "Get details for one movie (description, genres, episode servers) by slug and source.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "slug": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Movie slug, as returned by search_movies."
+            },
+            "source": {
+              "default": "kkphim",
+              "type": "string",
+              "enum": [
+                "kkphim",
+                "ophim",
+                "nguonc"
+              ]
+            }
+          },
+          "required": [
+            "slug"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_favorites",
+        "title": "Danh sách yêu thích",
+        "description": "List the signed-in user's favorite movies.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "limit": {
+              "default": 50,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_watchlist",
+        "title": "Danh sách Xem sau",
+        "description": "List the signed-in user's watch-later movies.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "limit": {
+              "default": 50,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "add_to_watchlist",
+        "title": "Thêm vào Xem sau",
+        "description": "Add a movie to the signed-in user's watch-later list.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "slug": {
+              "type": "string",
+              "minLength": 1
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Movie title to display."
+            },
+            "source": {
+              "default": "kkphim",
+              "type": "string",
+              "enum": [
+                "kkphim",
+                "ophim",
+                "nguonc",
+                "vsmov"
+              ]
+            },
+            "poster": {
+              "type": "string",
+              "format": "uri"
+            },
+            "note": {
+              "type": "string",
+              "maxLength": 500
+            }
+          },
+          "required": [
+            "slug",
+            "name"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_watch_history",
+        "title": "Lịch sử xem",
+        "description": "List the signed-in user's recent watch history with playback progress.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "limit": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "rate_movie",
+        "title": "Đánh giá phim",
+        "description": "Set the signed-in user's 1–10 star rating for a movie.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "slug": {
+              "type": "string",
+              "minLength": 1
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source": {
+              "default": "kkphim",
+              "type": "string",
+              "enum": [
+                "kkphim",
+                "ophim",
+                "nguonc",
+                "vsmov"
+              ]
+            },
+            "score": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10
+            },
+            "poster": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "required": [
+            "slug",
+            "name",
+            "score"
+          ]
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}

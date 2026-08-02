@@ -14,6 +14,7 @@ import { Route as UpcomingRouteImport } from './routes/upcoming'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as MeRouteImport } from './routes/me'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LatestRouteImport } from './routes/latest'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as FavoritesRouteImport } from './routes/favorites'
@@ -25,8 +26,12 @@ import { Route as WatchSlugRouteImport } from './routes/watch.$slug'
 import { Route as MovieSlugRouteImport } from './routes/movie.$slug'
 import { Route as CollectionsIdRouteImport } from './routes/collections.$id'
 import { Route as CCodeRouteImport } from './routes/c.$code'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as BrowseTypeValueRouteImport } from './routes/browse.$type.$value'
 import { Route as ApiPublicVsmovStreamRouteImport } from './routes/api/public/vsmov-stream'
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
 const WatchlistRoute = WatchlistRouteImport.update({
   id: '/watchlist',
@@ -51,6 +56,11 @@ const SearchRoute = SearchRouteImport.update({
 const MeRoute = MeRouteImport.update({
   id: '/me',
   path: '/me',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LatestRoute = LatestRouteImport.update({
@@ -108,6 +118,18 @@ const CCodeRoute = CCodeRouteImport.update({
   path: '/c/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const BrowseTypeValueRoute = BrowseTypeValueRouteImport.update({
   id: '/browse/$type/$value',
   path: '/browse/$type/$value',
@@ -118,6 +140,17 @@ const ApiPublicVsmovStreamRoute = ApiPublicVsmovStreamRouteImport.update({
   path: '/api/public/vsmov-stream',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Char91DotmcpChar93InvokeToolToolRoute =
+  Char91DotmcpChar93InvokeToolToolRouteImport.update({
+    id: '/.mcp/invoke-tool/$tool',
+    path: '/.mcp/invoke-tool/$tool',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -125,17 +158,22 @@ export interface FileRoutesByFullPath {
   '/favorites': typeof FavoritesRoute
   '/history': typeof HistoryRoute
   '/latest': typeof LatestRoute
+  '/mcp': typeof McpRoute
   '/me': typeof MeRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/upcoming': typeof UpcomingRoute
   '/watchlist': typeof WatchlistRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/c/$code': typeof CCodeRoute
   '/collections/$id': typeof CollectionsIdRoute
   '/movie/$slug': typeof MovieSlugRoute
   '/watch/$slug': typeof WatchSlugRoute
   '/browse/': typeof BrowseIndexRoute
   '/collections/': typeof CollectionsIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/vsmov-stream': typeof ApiPublicVsmovStreamRoute
   '/browse/$type/$value': typeof BrowseTypeValueRoute
 }
@@ -145,17 +183,22 @@ export interface FileRoutesByTo {
   '/favorites': typeof FavoritesRoute
   '/history': typeof HistoryRoute
   '/latest': typeof LatestRoute
+  '/mcp': typeof McpRoute
   '/me': typeof MeRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/upcoming': typeof UpcomingRoute
   '/watchlist': typeof WatchlistRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/c/$code': typeof CCodeRoute
   '/collections/$id': typeof CollectionsIdRoute
   '/movie/$slug': typeof MovieSlugRoute
   '/watch/$slug': typeof WatchSlugRoute
   '/browse': typeof BrowseIndexRoute
   '/collections': typeof CollectionsIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/vsmov-stream': typeof ApiPublicVsmovStreamRoute
   '/browse/$type/$value': typeof BrowseTypeValueRoute
 }
@@ -166,17 +209,22 @@ export interface FileRoutesById {
   '/favorites': typeof FavoritesRoute
   '/history': typeof HistoryRoute
   '/latest': typeof LatestRoute
+  '/mcp': typeof McpRoute
   '/me': typeof MeRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/upcoming': typeof UpcomingRoute
   '/watchlist': typeof WatchlistRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/c/$code': typeof CCodeRoute
   '/collections/$id': typeof CollectionsIdRoute
   '/movie/$slug': typeof MovieSlugRoute
   '/watch/$slug': typeof WatchSlugRoute
   '/browse/': typeof BrowseIndexRoute
   '/collections/': typeof CollectionsIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/vsmov-stream': typeof ApiPublicVsmovStreamRoute
   '/browse/$type/$value': typeof BrowseTypeValueRoute
 }
@@ -188,17 +236,22 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/history'
     | '/latest'
+    | '/mcp'
     | '/me'
     | '/search'
     | '/settings'
     | '/upcoming'
     | '/watchlist'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/c/$code'
     | '/collections/$id'
     | '/movie/$slug'
     | '/watch/$slug'
     | '/browse/'
     | '/collections/'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/api/public/vsmov-stream'
     | '/browse/$type/$value'
   fileRoutesByTo: FileRoutesByTo
@@ -208,17 +261,22 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/history'
     | '/latest'
+    | '/mcp'
     | '/me'
     | '/search'
     | '/settings'
     | '/upcoming'
     | '/watchlist'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/c/$code'
     | '/collections/$id'
     | '/movie/$slug'
     | '/watch/$slug'
     | '/browse'
     | '/collections'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/api/public/vsmov-stream'
     | '/browse/$type/$value'
   id:
@@ -228,17 +286,22 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/history'
     | '/latest'
+    | '/mcp'
     | '/me'
     | '/search'
     | '/settings'
     | '/upcoming'
     | '/watchlist'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/c/$code'
     | '/collections/$id'
     | '/movie/$slug'
     | '/watch/$slug'
     | '/browse/'
     | '/collections/'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/api/public/vsmov-stream'
     | '/browse/$type/$value'
   fileRoutesById: FileRoutesById
@@ -249,17 +312,22 @@ export interface RootRouteChildren {
   FavoritesRoute: typeof FavoritesRoute
   HistoryRoute: typeof HistoryRoute
   LatestRoute: typeof LatestRoute
+  McpRoute: typeof McpRoute
   MeRoute: typeof MeRoute
   SearchRoute: typeof SearchRoute
   SettingsRoute: typeof SettingsRoute
   UpcomingRoute: typeof UpcomingRoute
   WatchlistRoute: typeof WatchlistRoute
+  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   CCodeRoute: typeof CCodeRoute
   CollectionsIdRoute: typeof CollectionsIdRoute
   MovieSlugRoute: typeof MovieSlugRoute
   WatchSlugRoute: typeof WatchSlugRoute
   BrowseIndexRoute: typeof BrowseIndexRoute
   CollectionsIndexRoute: typeof CollectionsIndexRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
+  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicVsmovStreamRoute: typeof ApiPublicVsmovStreamRoute
   BrowseTypeValueRoute: typeof BrowseTypeValueRoute
 }
@@ -299,6 +367,13 @@ declare module '@tanstack/react-router' {
       path: '/me'
       fullPath: '/me'
       preLoaderRoute: typeof MeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/latest': {
@@ -378,6 +453,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/list-tools': {
+      id: '/.mcp/list-tools'
+      path: '/.mcp/list-tools'
+      fullPath: '/.mcp/list-tools'
+      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/browse/$type/$value': {
       id: '/browse/$type/$value'
       path: '/browse/$type/$value'
@@ -392,6 +481,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicVsmovStreamRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.mcp/invoke-tool/$tool': {
+      id: '/.mcp/invoke-tool/$tool'
+      path: '/.mcp/invoke-tool/$tool'
+      fullPath: '/.mcp/invoke-tool/$tool'
+      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -401,20 +504,36 @@ const rootRouteChildren: RootRouteChildren = {
   FavoritesRoute: FavoritesRoute,
   HistoryRoute: HistoryRoute,
   LatestRoute: LatestRoute,
+  McpRoute: McpRoute,
   MeRoute: MeRoute,
   SearchRoute: SearchRoute,
   SettingsRoute: SettingsRoute,
   UpcomingRoute: UpcomingRoute,
   WatchlistRoute: WatchlistRoute,
+  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   CCodeRoute: CCodeRoute,
   CollectionsIdRoute: CollectionsIdRoute,
   MovieSlugRoute: MovieSlugRoute,
   WatchSlugRoute: WatchSlugRoute,
   BrowseIndexRoute: BrowseIndexRoute,
   CollectionsIndexRoute: CollectionsIndexRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
+  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicVsmovStreamRoute: ApiPublicVsmovStreamRoute,
   BrowseTypeValueRoute: BrowseTypeValueRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
