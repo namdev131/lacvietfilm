@@ -7,6 +7,9 @@ import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//") ? s.next : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Đăng nhập | Lạc Việt Cinema" },
@@ -27,11 +30,18 @@ function AuthPage() {
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
   const { user, loading } = useAuth();
 
+  const goAfterAuth = () => {
+    if (next) window.location.replace(next);
+    else navigate({ to: "/me", replace: true });
+  };
+
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/me", replace: true });
-  }, [user, loading, navigate]);
+    if (!loading && user) goAfterAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, loading, next]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -41,13 +51,13 @@ function AuthPage() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Chào mừng trở lại!");
-        navigate({ to: "/me", replace: true });
+        goAfterAuth();
       } else {
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: next ? `${window.location.origin}${next}` : window.location.origin,
             data: { display_name: name || email.split("@")[0] },
           },
         });
@@ -64,7 +74,7 @@ function AuthPage() {
   async function handleGoogle() {
     setBusy(true);
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: next ? `${window.location.origin}${next}` : window.location.origin,
     });
     if (result.error) {
       setBusy(false);
@@ -72,8 +82,9 @@ function AuthPage() {
       return;
     }
     if (result.redirected) return;
-    navigate({ to: "/me", replace: true });
+    goAfterAuth();
   }
+
 
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-4 pb-32 pt-10">
