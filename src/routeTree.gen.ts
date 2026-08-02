@@ -31,6 +31,7 @@ import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]
 import { Route as BrowseTypeValueRouteImport } from './routes/browse.$type.$value'
 import { Route as ApiPublicVsmovStreamRouteImport } from './routes/api/public/vsmov-stream'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
 const WatchlistRoute = WatchlistRouteImport.update({
   id: '/watchlist',
@@ -145,6 +146,11 @@ const Char91DotmcpChar93InvokeToolToolRoute =
     path: '/.mcp/invoke-tool/$tool',
     getParentRoute: () => rootRouteImport,
   } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -166,6 +172,7 @@ export interface FileRoutesByFullPath {
   '/watch/$slug': typeof WatchSlugRoute
   '/browse/': typeof BrowseIndexRoute
   '/collections/': typeof CollectionsIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/vsmov-stream': typeof ApiPublicVsmovStreamRoute
   '/browse/$type/$value': typeof BrowseTypeValueRoute
@@ -190,6 +197,7 @@ export interface FileRoutesByTo {
   '/watch/$slug': typeof WatchSlugRoute
   '/browse': typeof BrowseIndexRoute
   '/collections': typeof CollectionsIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/vsmov-stream': typeof ApiPublicVsmovStreamRoute
   '/browse/$type/$value': typeof BrowseTypeValueRoute
@@ -215,6 +223,7 @@ export interface FileRoutesById {
   '/watch/$slug': typeof WatchSlugRoute
   '/browse/': typeof BrowseIndexRoute
   '/collections/': typeof CollectionsIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/vsmov-stream': typeof ApiPublicVsmovStreamRoute
   '/browse/$type/$value': typeof BrowseTypeValueRoute
@@ -241,6 +250,7 @@ export interface FileRouteTypes {
     | '/watch/$slug'
     | '/browse/'
     | '/collections/'
+    | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/vsmov-stream'
     | '/browse/$type/$value'
@@ -265,6 +275,7 @@ export interface FileRouteTypes {
     | '/watch/$slug'
     | '/browse'
     | '/collections'
+    | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/vsmov-stream'
     | '/browse/$type/$value'
@@ -289,6 +300,7 @@ export interface FileRouteTypes {
     | '/watch/$slug'
     | '/browse/'
     | '/collections/'
+    | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/vsmov-stream'
     | '/browse/$type/$value'
@@ -314,6 +326,7 @@ export interface RootRouteChildren {
   WatchSlugRoute: typeof WatchSlugRoute
   BrowseIndexRoute: typeof BrowseIndexRoute
   CollectionsIndexRoute: typeof CollectionsIndexRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicVsmovStreamRoute: typeof ApiPublicVsmovStreamRoute
   BrowseTypeValueRoute: typeof BrowseTypeValueRoute
@@ -475,6 +488,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -499,6 +519,7 @@ const rootRouteChildren: RootRouteChildren = {
   WatchSlugRoute: WatchSlugRoute,
   BrowseIndexRoute: BrowseIndexRoute,
   CollectionsIndexRoute: CollectionsIndexRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicVsmovStreamRoute: ApiPublicVsmovStreamRoute,
   BrowseTypeValueRoute: BrowseTypeValueRoute,
