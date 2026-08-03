@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import {
   ArrowLeft, Film, Gauge, Languages, LogOut, Monitor, Palette, PlayCircle,
   Save, ShieldCheck, Sparkles, Trash2, UserRound, KeyRound, Database, CloudUpload, Bookmark, RefreshCw,
-  Smartphone, SkipForward,
+  Smartphone,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
