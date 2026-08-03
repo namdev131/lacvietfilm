@@ -31,12 +31,14 @@ function PartyPage() {
   const { data: party, isLoading } = useParty(code);
   const isHost = !!user && party?.host_id === user.id;
   const sync = usePartySync(party, isHost);
+  const closeParty = useCloseParty();
   const meta = (user?.user_metadata ?? {}) as Record<string, string>;
   const myName = meta.display_name || meta.full_name || user?.email?.split("@")[0] || "Khán giả";
   const viewers = usePartyPresence(code, `${myName}-${user?.id ?? "guest"}`);
   const chat = usePartyChat(party?.id);
   const [text, setText] = useState("");
   const [mode, setMode] = useState<PlayMode>("hls");
+  const [followHost, setFollowHost] = useState(true);
   const listRef = useRef<HTMLDivElement>(null);
 
   const { data: detail } = useQuery({
@@ -52,9 +54,23 @@ function PartyPage() {
   const server = servers[party?.srv_index ?? 0] || servers[0];
   const episode = server?.items[party?.ep_index ?? 0];
 
+  // Trạng thái chủ phòng đẩy xuống cho người xem (bù trễ theo updated_at)
+  const syncState = useMemo(
+    () =>
+      !party || isHost || !followHost
+        ? null
+        : {
+            position: party.position_seconds,
+            isPlaying: party.is_playing,
+            at: new Date(party.updated_at).getTime(),
+          },
+    [party?.position_seconds, party?.is_playing, party?.updated_at, isHost, followHost],
+  );
+
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [chat.data?.length]);
+
 
   if (!loading && !user) {
     return <SignInPrompt title="Phòng xem chung" desc="Đăng nhập để vào phòng, đồng bộ phim và chat cùng bạn bè." />;
