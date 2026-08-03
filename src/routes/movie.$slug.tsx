@@ -11,6 +11,8 @@ import { FollowButton } from "@/components/FollowButton";
 import { RatingStars } from "@/components/RatingStars";
 import { CommentsSection } from "@/components/CommentsSection";
 import { AddToCollectionButton } from "@/components/AddToCollectionButton";
+import { CastCrew } from "@/components/CastCrew";
+
 
 const searchSchema = z.object({
   src: z.enum(["kkphim", "ophim", "nguonc", "vsmov"]).default("kkphim"),
