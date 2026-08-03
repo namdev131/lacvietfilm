@@ -21,6 +21,14 @@ export interface Settings {
   autoPlay: boolean;
   /** Bật mini player khi rời trang xem */
   miniPlayer: boolean;
+  /** Số giây intro để nút "Bỏ qua intro" tua tới (0 = tắt) */
+  introSkipSeconds: number;
+  /** Số giây trước khi hết tập thì hiện thẻ "Tập sau" (0 = tắt) */
+  nextEpCountdown: number;
+  /** Tốc độ phát mặc định */
+  playbackRate: number;
+  /** Chất lượng ưu tiên: auto | 1080 | 720 | 480 | 360 */
+  preferredQuality: string;
   /** Giảm hiệu ứng chuyển động */
   reduceMotion: boolean;
   /** Chế độ TV (focus lớn, điều khiển bằng remote) */
