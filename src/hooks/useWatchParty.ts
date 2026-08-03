@@ -185,6 +185,23 @@ export function usePartyChat(partyId?: string) {
     };
   }, [partyId, qc, typingKey]);
 
+  // Kéo lại tin nhắn đã lỡ khi quay lại tab
+  useEffect(() => {
+    if (!partyId) return;
+    const refetch = () => {
+      if (document.visibilityState === "visible") void query.refetch();
+    };
+    document.addEventListener("visibilitychange", refetch);
+    window.addEventListener("focus", refetch);
+    window.addEventListener("online", refetch);
+    return () => {
+      document.removeEventListener("visibilitychange", refetch);
+      window.removeEventListener("focus", refetch);
+      window.removeEventListener("online", refetch);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [partyId]);
+
   const send = useMutation({
     mutationFn: async (content: string) => {
       if (!user || !partyId) throw new Error("Bạn cần đăng nhập");
