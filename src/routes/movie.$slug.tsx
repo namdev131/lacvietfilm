@@ -12,6 +12,7 @@ import { RatingStars } from "@/components/RatingStars";
 import { CommentsSection } from "@/components/CommentsSection";
 import { AddToCollectionButton } from "@/components/AddToCollectionButton";
 import { CastCrew } from "@/components/CastCrew";
+import { SITE_URL, titleFromSlug } from "@/lib/seo";
 
 
 const searchSchema = z.object({
