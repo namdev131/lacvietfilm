@@ -15,7 +15,9 @@ export const Route = createFileRoute("/browse/")({
       { property: "og:description", content: "Thể loại, quốc gia, năm sản xuất — lọc và sắp xếp theo ý bạn." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:url", content: "https://lacvietcinema.lovable.app/browse" },
     ],
+    links: [{ rel: "canonical", href: "https://lacvietcinema.lovable.app/browse" }],
   }),
   component: BrowseIndex,
 });

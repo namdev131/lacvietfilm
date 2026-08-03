@@ -23,7 +23,9 @@ export const Route = createFileRoute("/collections/")({
       { property: "og:description", content: "Playlist phim tự tạo, chia sẻ link công khai." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:url", content: "https://lacvietcinema.lovable.app/collections" },
     ],
+    links: [{ rel: "canonical", href: "https://lacvietcinema.lovable.app/collections" }],
   }),
   component: CollectionsPage,
 });

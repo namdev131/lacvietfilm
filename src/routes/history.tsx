@@ -18,7 +18,9 @@ export const Route = createFileRoute("/history")({
       { property: "og:description", content: "Xem tiếp những tập phim bạn đang theo dõi." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:url", content: "https://lacvietcinema.lovable.app/history" },
     ],
+    links: [{ rel: "canonical", href: "https://lacvietcinema.lovable.app/history" }],
   }),
   component: HistoryPage,
 });
