@@ -138,13 +138,9 @@ function Header() {
           </Link>
           <nav className="hidden items-center gap-1 md:flex">
             <NavLink to="/" icon={<HomeIcon className="h-4 w-4" />} label="Trang nhà" />
-            <NavLink to="/latest" icon={<Flame className="h-4 w-4" />} label="Phim mới" />
-            <NavLink to="/browse" icon={<Compass className="h-4 w-4" />} label="Khám phá" />
-            <NavLink to="/upcoming" icon={<CalendarClock className="h-4 w-4" />} label="Sắp chiếu" />
-            <NavLink to="/collections" icon={<Library className="h-4 w-4" />} label="Bộ sưu tập" />
             <NavLink to="/search" icon={<Search className="h-4 w-4" />} label="Tìm phim" />
-            <NavLink to="/watchlist" icon={<Bookmark className="h-4 w-4" />} label="Xem sau" />
           </nav>
+
         </div>
         <div className="flex items-center gap-2">
           <button
