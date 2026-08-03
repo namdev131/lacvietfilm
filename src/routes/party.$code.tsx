@@ -71,6 +71,38 @@ function PartyPage() {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [chat.data?.length]);
 
+  // Đồng bộ lại khi quay lại phòng (đổi tab, khoá màn hình, mất mạng…)
+  useEffect(() => {
+    if (isHost) return;
+    let away = false;
+    const onHide = () => {
+      if (document.visibilityState === "hidden") away = true;
+    };
+    const onBack = () => {
+      if (document.visibilityState !== "visible" || !away) return;
+      away = false;
+      setFollowHost(true);
+      setResyncNonce((n) => n + 1);
+      toast.success("Đã đồng bộ lại theo chủ phòng");
+    };
+    document.addEventListener("visibilitychange", onHide);
+    document.addEventListener("visibilitychange", onBack);
+    window.addEventListener("online", onBack);
+    return () => {
+      document.removeEventListener("visibilitychange", onHide);
+      document.removeEventListener("visibilitychange", onBack);
+      window.removeEventListener("online", onBack);
+    };
+  }, [isHost]);
+
+  const canChat = !!party && (party.chat_mode !== "host" || isHost);
+  // Vị trí bắt đầu cho người mới vào: bù thời gian đã trôi nếu chủ phòng đang phát
+  const joinPosition = party
+    ? party.position_seconds +
+      (party.is_playing ? Math.max(0, (Date.now() - new Date(party.updated_at).getTime()) / 1000) : 0)
+    : 0;
+
+
 
   if (!loading && !user) {
     return <SignInPrompt title="Phòng xem chung" desc="Đăng nhập để vào phòng, đồng bộ phim và chat cùng bạn bè." />;
