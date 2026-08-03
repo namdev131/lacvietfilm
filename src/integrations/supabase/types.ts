@@ -465,35 +465,6 @@ export type Database = {
         }
         Relationships: []
       }
-      watch_party_members: {
-        Row: {
-          created_at: string
-          id: string
-          party_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          party_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          party_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "watch_party_members_party_id_fkey"
-            columns: ["party_id"]
-            isOneToOne: false
-            referencedRelation: "watch_parties"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       watch_party_messages: {
         Row: {
           content: string
@@ -581,18 +552,6 @@ export type Database = {
           slug: string
           source: string
           views: number
-        }[]
-      }
-      is_party_member: {
-        Args: { _party_id: string; _user_id: string }
-        Returns: boolean
-      }
-      join_party: { Args: { _code: string }; Returns: string }
-      rating_summary: {
-        Args: { _slug: string }
-        Returns: {
-          avg: number
-          count: number
         }[]
       }
     }

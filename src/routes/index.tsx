@@ -13,44 +13,14 @@ import type { SourceFilter } from "@/lib/types";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Lạc Việt Cinema – Hồn Việt trong từng khung hình" },
-      { name: "description", content: "Xem phim trực tuyến tại Lạc Việt Cinema với kho phim đa dạng, nhiều nguồn phát, chuyển server thông minh và giao diện đậm bản sắc văn hóa Việt." },
-      { property: "og:title", content: "Lạc Việt Cinema – Hồn Việt trong từng khung hình" },
-      { property: "og:description", content: "Xem phim trực tuyến tại Lạc Việt Cinema với kho phim đa dạng, nhiều nguồn phát, chuyển server thông minh và giao diện đậm bản sắc văn hóa Việt." },
+      { title: "Lạc Việt Cinema — Xem phim Vietsub & Thuyết minh miễn phí" },
+      { name: "description", content: "Xem phim online chất lượng cao: phim mới, bảng vàng realtime, HLS & Embed, nhiều nguồn phát để đổi khi giật lag." },
+      { property: "og:title", content: "Lạc Việt Cinema — Mở phim, chạm hồn Việt" },
+      { property: "og:description", content: "Phim mới mỗi ngày, bảng vàng realtime, xem Vietsub và Thuyết minh." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:url", content: "https://lacvietcinema.lovable.app/" },
-    ],
-    links: [{ rel: "canonical", href: "https://lacvietcinema.lovable.app/" }],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "WebSite",
-          name: "Lạc Việt Cinema",
-          url: "https://lacvietcinema.lovable.app/",
-          inLanguage: "vi-VN",
-          potentialAction: {
-            "@type": "SearchAction",
-            target: "https://lacvietcinema.lovable.app/search?q={search_term_string}",
-            "query-input": "required name=search_term_string",
-          },
-        }),
-      },
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Organization",
-          name: "Lạc Việt Cinema",
-          url: "https://lacvietcinema.lovable.app/",
-          logo: "https://files.catbox.moe/6ua430.png",
-        }),
-      },
     ],
   }),
-
   component: Home,
 });
 

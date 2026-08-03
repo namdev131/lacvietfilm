@@ -18,9 +18,7 @@ export const Route = createFileRoute("/auth")({
       { property: "og:description", content: "Tạo tài khoản để lưu phim yêu thích và lịch sử xem." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:url", content: "https://lacvietcinema.lovable.app/auth" },
     ],
-    links: [{ rel: "canonical", href: "https://lacvietcinema.lovable.app/auth" }],
   }),
   component: AuthPage,
 });

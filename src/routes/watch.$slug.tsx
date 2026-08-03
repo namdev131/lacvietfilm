@@ -15,7 +15,6 @@ import { WatchPartyButton } from "@/components/WatchPartyButton";
 import type { SourceId } from "@/lib/types";
 import { getLocalProgress, progressPercent, formatTime } from "@/lib/progress";
 import { useSettings } from "@/lib/settings";
-import { SITE_URL, titleFromSlug } from "@/lib/seo";
 
 
 const searchSchema = z.object({
@@ -26,36 +25,16 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/watch/$slug")({
   validateSearch: searchSchema,
-  head: ({ params }) => {
-    const name = titleFromSlug(params.slug);
-    const url = `${SITE_URL}/watch/${params.slug}`;
-    const desc = `Xem phim ${name} trực tuyến chất lượng cao tại Lạc Việt Cinema: nhiều server HLS và embed, vietsub, thuyết minh, lưu tiến độ xem và xem chung với bạn bè.`;
-    return {
-      meta: [
-        { title: `Xem ${name} vietsub HD | Lạc Việt Cinema` },
-        { name: "description", content: desc },
-        { property: "og:title", content: `Xem ${name} — Lạc Việt Cinema` },
-        { property: "og:description", content: desc },
-        { property: "og:type", content: "video.movie" },
-        { property: "og:url", content: url },
-        { name: "twitter:card", content: "summary_large_image" },
-      ],
-      links: [{ rel: "canonical", href: url }],
-      scripts: [
-        {
-          type: "application/ld+json",
-          children: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Movie",
-            name,
-            url,
-            description: desc,
-            inLanguage: "vi-VN",
-          }),
-        },
-      ],
-    };
-  },
+  head: () => ({
+    meta: [
+      { title: "Xem phim — Lạc Việt Cinema" },
+      { name: "description", content: "Xem phim trực tuyến trên Lạc Việt Cinema." },
+      { property: "og:title", content: "Xem phim — Lạc Việt Cinema" },
+      { property: "og:description", content: "Xem phim trực tuyến trên Lạc Việt Cinema." },
+      { property: "og:type", content: "video.movie" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: WatchPage,
 });
 

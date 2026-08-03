@@ -22,9 +22,7 @@ export const Route = createFileRoute("/settings")({
       { property: "og:description", content: "Tuỳ chỉnh trình phát, nguồn phim, giao diện và tài khoản." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:url", content: "https://lacvietcinema.lovable.app/settings" },
     ],
-    links: [{ rel: "canonical", href: "https://lacvietcinema.lovable.app/settings" }],
   }),
   component: SettingsPage,
 });

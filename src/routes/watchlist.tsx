@@ -17,9 +17,7 @@ export const Route = createFileRoute("/watchlist")({
       { property: "og:description", content: "Lưu phim để xem khi rảnh, đồng bộ trên mọi thiết bị." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:url", content: "https://lacvietcinema.lovable.app/watchlist" },
     ],
-    links: [{ rel: "canonical", href: "https://lacvietcinema.lovable.app/watchlist" }],
   }),
   component: WatchlistPage,
 });

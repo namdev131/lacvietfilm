@@ -17,9 +17,7 @@ export const Route = createFileRoute("/upcoming")({
       { property: "og:description", content: "Đón đầu những bộ phim sắp ra mắt." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:url", content: "https://lacvietcinema.lovable.app/upcoming" },
     ],
-    links: [{ rel: "canonical", href: "https://lacvietcinema.lovable.app/upcoming" }],
   }),
   component: UpcomingPage,
 });

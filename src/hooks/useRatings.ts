@@ -15,23 +15,15 @@ export function useRating(slug: string) {
     queryKey: ["rating", slug, user?.id ?? "anon"],
     enabled: !!slug,
     queryFn: async (): Promise<RatingSummary> => {
-      // Chỉ lấy số liệu tổng hợp công khai (không lộ ai đã chấm điểm)
-      const { data, error } = await supabase.rpc("rating_summary" as never, { _slug: slug } as never);
+      const { data, error } = await supabase
+        .from("movie_ratings")
+        .select("score,user_id")
+        .eq("slug", slug);
       if (error) throw error;
-      const row = (Array.isArray(data) ? data[0] : data) as { avg: number | string; count: number } | undefined;
-      const avg = Number(row?.avg ?? 0);
-      const count = Number(row?.count ?? 0);
-
-      let mine: number | null = null;
-      if (user) {
-        const { data: own } = await supabase
-          .from("movie_ratings")
-          .select("score")
-          .eq("slug", slug)
-          .eq("user_id", user.id)
-          .maybeSingle();
-        mine = (own as { score: number } | null)?.score ?? null;
-      }
+      const rows = data ?? [];
+      const count = rows.length;
+      const avg = count ? rows.reduce((s, r) => s + (r.score ?? 0), 0) / count : 0;
+      const mine = user ? (rows.find((r) => r.user_id === user.id)?.score ?? null) : null;
       return { avg, count, mine };
     },
   });

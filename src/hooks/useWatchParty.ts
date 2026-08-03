@@ -75,8 +75,6 @@ export function useParty(code: string) {
   const query = useQuery({
     queryKey: ["party", code],
     queryFn: async () => {
-      // Tham gia bằng mã phòng để có quyền đọc (RLS chỉ cho chủ phòng & thành viên)
-      await supabase.rpc("join_party" as never, { _code: code } as never);
       const { data, error } = await supabase.from("watch_parties").select("*").eq("code", code).maybeSingle();
       if (error) throw error;
       return (data as unknown as Party) ?? null;

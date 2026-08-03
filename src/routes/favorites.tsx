@@ -16,9 +16,7 @@ export const Route = createFileRoute("/favorites")({
       { property: "og:description", content: "Danh sách phim bạn đã lưu để xem sau." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:url", content: "https://lacvietcinema.lovable.app/favorites" },
     ],
-    links: [{ rel: "canonical", href: "https://lacvietcinema.lovable.app/favorites" }],
   }),
   component: FavoritesPage,
 });
