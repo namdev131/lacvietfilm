@@ -36,13 +36,15 @@ const MENUS: Record<string, { title: string; links: MenuLink[] }> = {
   },
 };
 
-const items = [
+type DockItem = { key: string; to: string; label: string; icon: typeof Home; menu?: keyof typeof MENUS; primary?: boolean };
+
+const items: DockItem[] = [
   { key: "explore", to: "/browse", label: "Khám phá", icon: Compass, menu: "explore" },
   { key: "history", to: "/history", label: "Lịch sử", icon: History },
   { key: "home", to: "/", label: "Trang chủ", icon: Home, primary: true },
   { key: "library", to: "/favorites", label: "Yêu thích", icon: Heart, menu: "library" },
   { key: "me", to: "/me", label: "Tôi", icon: User, menu: "me" },
-] as const;
+];
 
 export function DockBar() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
@@ -109,7 +111,7 @@ export function DockBar() {
       <nav className="fixed inset-x-0 bottom-0 z-50 flex justify-center pb-[env(safe-area-inset-bottom)]">
         <div className="pointer-events-auto mx-3 mb-3 flex w-full max-w-md items-end justify-around gap-1 rounded-2xl border border-border bg-card px-2 py-2 shadow-[0_-8px_30px_rgba(0,0,0,0.45)]">
           {items.map((item) => {
-            const group = "menu" in item && item.menu ? MENUS[item.menu] : null;
+            const group = item.menu ? MENUS[item.menu] : null;
             const active = group
               ? group.links.some((l) => pathname === l.to || pathname.startsWith(`${l.to}/`)) || open === item.menu
               : item.to === "/"
@@ -117,7 +119,7 @@ export function DockBar() {
                 : pathname.startsWith(item.to);
             const Icon = item.icon;
 
-            if ("primary" in item && item.primary) {
+            if (item.primary) {
               return (
                 <Link
                   key={item.key}
@@ -176,12 +178,7 @@ export function DockBar() {
               );
             }
 
-            const quick = item.to === "/search" && pathname.startsWith("/watch");
-            return quick ? (
-              <button key={item.key} type="button" onClick={openQuickSearch} aria-label={item.label} className={cls}>
-                {inner}
-              </button>
-            ) : (
+            return (
               <Link key={item.key} to={item.to} aria-label={item.label} onClick={() => setOpen(null)} className={cls}>
                 {inner}
               </Link>
