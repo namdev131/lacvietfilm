@@ -11,7 +11,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
-import { Search, Home as HomeIcon, Flame, Bookmark, Settings as SettingsIcon, Compass, CalendarClock, Library } from "lucide-react";
+import { Search, Home as HomeIcon } from "lucide-react";
 import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
@@ -138,13 +138,9 @@ function Header() {
           </Link>
           <nav className="hidden items-center gap-1 md:flex">
             <NavLink to="/" icon={<HomeIcon className="h-4 w-4" />} label="Trang nhà" />
-            <NavLink to="/latest" icon={<Flame className="h-4 w-4" />} label="Phim mới" />
-            <NavLink to="/browse" icon={<Compass className="h-4 w-4" />} label="Khám phá" />
-            <NavLink to="/upcoming" icon={<CalendarClock className="h-4 w-4" />} label="Sắp chiếu" />
-            <NavLink to="/collections" icon={<Library className="h-4 w-4" />} label="Bộ sưu tập" />
             <NavLink to="/search" icon={<Search className="h-4 w-4" />} label="Tìm phim" />
-            <NavLink to="/watchlist" icon={<Bookmark className="h-4 w-4" />} label="Xem sau" />
           </nav>
+
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -157,21 +153,6 @@ function Header() {
             <span className="hidden sm:inline">Tìm phim…</span>
             <kbd className="hidden rounded border border-border px-1 text-[10px] md:inline">Ctrl K</kbd>
           </button>
-          <Link
-            to="/watchlist"
-            aria-label="Danh sách Xem sau"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition hover:border-primary/60 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary md:hidden"
-          >
-            <Bookmark className="h-4 w-4" />
-          </Link>
-          <Link
-            to="/settings"
-            aria-label="Cài đặt"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition hover:border-primary/60 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            activeProps={{ className: "border-primary/60 text-primary" }}
-          >
-            <SettingsIcon className="h-4 w-4" />
-          </Link>
         </div>
       </div>
 
