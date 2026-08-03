@@ -23,6 +23,7 @@ import { QuickSearch, openQuickSearch } from "@/components/QuickSearch";
 import { PlayerHostProvider } from "@/components/PlayerHost";
 import { TvRemote } from "@/hooks/useTvRemote";
 import { SettingsProvider } from "@/lib/settings";
+import { registerPwa } from "@/components/InstallPrompt";
 
 
 const LOGO = "https://files.catbox.moe/6ua430.png";
@@ -91,6 +92,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "icon", href: LOGO, type: "image/png" },
+      { rel: "apple-touch-icon", href: "/pwa-icon-192.png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" },
@@ -190,6 +193,9 @@ function Footer() {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useEffect(() => {
+    registerPwa();
+  }, []);
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>

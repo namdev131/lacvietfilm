@@ -5,11 +5,13 @@ import { toast } from "sonner";
 import {
   ArrowLeft, Film, Gauge, Languages, LogOut, Monitor, Palette, PlayCircle,
   Save, ShieldCheck, Sparkles, Trash2, UserRound, KeyRound, Database, CloudUpload, Bookmark, RefreshCw,
+  Smartphone,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSettings, DEFAULT_SETTINGS } from "@/lib/settings";
 import { clearSearchHistory } from "@/lib/searchHistory";
+import { InstallAppCard } from "@/components/InstallPrompt";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -213,6 +215,43 @@ function SettingsPage() {
           checked={settings.autoNext} onChange={(v) => set("autoNext", v)} />
         <Toggle label="Mini player khi rời trang" desc="Phim tiếp tục chạy ở góc màn hình, kéo thả tự do."
           checked={settings.miniPlayer} onChange={(v) => set("miniPlayer", v)} />
+
+        <Row label="Chất lượng ưu tiên" desc="Áp dụng cho luồng HLS có nhiều mức. Chọn thấp khi mạng yếu.">
+          <Segmented
+            value={settings.preferredQuality}
+            options={[
+              { v: "auto", l: "Tự động" }, { v: "1080", l: "1080p" }, { v: "720", l: "720p" },
+              { v: "480", l: "480p" }, { v: "360", l: "360p" },
+            ]}
+            onChange={(v) => set("preferredQuality", v)}
+          />
+        </Row>
+        <Row label="Tốc độ phát mặc định" desc="Có thể đổi nhanh ngay trong trình phát.">
+          <Segmented
+            value={String(settings.playbackRate)}
+            options={[{ v: "0.75", l: "0.75x" }, { v: "1", l: "1x" }, { v: "1.25", l: "1.25x" }, { v: "1.5", l: "1.5x" }, { v: "2", l: "2x" }]}
+            onChange={(v) => set("playbackRate", Number(v))}
+          />
+        </Row>
+        <Row label="Bỏ qua intro tới giây" desc="Nút Bỏ qua intro sẽ tua tới mốc này. Chọn Tắt để ẩn nút.">
+          <Segmented
+            value={String(settings.introSkipSeconds)}
+            options={[{ v: "0", l: "Tắt" }, { v: "60", l: "60s" }, { v: "85", l: "85s" }, { v: "120", l: "120s" }]}
+            onChange={(v) => set("introSkipSeconds", Number(v))}
+          />
+        </Row>
+        <Row label="Thẻ Tập sau hiện trước" desc="Hiện thẻ chuyển tập ở cuối tập phim.">
+          <Segmented
+            value={String(settings.nextEpCountdown)}
+            options={[{ v: "0", l: "Tắt" }, { v: "10", l: "10s" }, { v: "15", l: "15s" }, { v: "30", l: "30s" }]}
+            onChange={(v) => set("nextEpCountdown", Number(v))}
+          />
+        </Row>
+      </Section>
+
+      {/* Ứng dụng & ngoại tuyến */}
+      <Section icon={<Smartphone className="h-4 w-4" />} title="Ứng dụng & ngoại tuyến">
+        <InstallAppCard />
       </Section>
 
       {/* Nguồn phim */}

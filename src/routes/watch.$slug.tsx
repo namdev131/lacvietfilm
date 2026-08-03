@@ -164,6 +164,14 @@ function WatchPage() {
       poster: data.thumb || data.poster,
       allowHls,
       mode: allowHls ? mode : "embed",
+      hasNext: ep + 1 < (currentServer?.items.length ?? 0),
+      nextLabel: currentServer?.items[ep + 1]?.name || `Tập ${ep + 2}`,
+      onNext: () => {
+        const total = currentServer?.items.length ?? 0;
+        if (ep + 1 < total) {
+          navigate({ to: "/watch/$slug", params: { slug }, search: { src: source, ep: ep + 1, srv } });
+        }
+      },
       onEnded: () => {
         if (!settings.autoNext) return;
         const total = currentServer?.items.length ?? 0;

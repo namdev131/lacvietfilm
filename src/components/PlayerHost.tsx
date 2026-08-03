@@ -31,6 +31,10 @@ export type Playback = {
   mode: PlayMode;
   /** Gọi khi tập hiện tại phát xong (dùng cho tự chuyển tập) */
   onEnded?: () => void;
+  /** Chuyển sang tập kế tiếp (thẻ "Tập sau") */
+  onNext?: () => void;
+  hasNext?: boolean;
+  nextLabel?: string;
 };
 
 type Ctx = {
@@ -117,7 +121,9 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
 
 
   const start = useCallback((p: Playback) => {
-    setPlayback((prev) => (sameMedia(prev, p) ? { ...prev!, name: p.name, epLabel: p.epLabel, onEnded: p.onEnded } : p));
+    setPlayback((prev) => (sameMedia(prev, p)
+        ? { ...prev!, name: p.name, epLabel: p.epLabel, onEnded: p.onEnded, onNext: p.onNext, hasNext: p.hasNext, nextLabel: p.nextLabel }
+        : p));
   }, []);
   const stop = useCallback(() => setPlayback(null), []);
   const setMode = useCallback(
@@ -244,6 +250,14 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
             fill={!mini}
             resumeAt={resumeAt}
             onProgress={handleProgress}
+            onNext={playback.onNext}
+            hasNext={!!playback.hasNext && !mini}
+            nextLabel={playback.nextLabel}
+            introSkipSeconds={mini ? 0 : settings.introSkipSeconds}
+            nextEpCountdown={mini ? 0 : settings.nextEpCountdown}
+            autoNext={settings.autoNext}
+            defaultRate={settings.playbackRate}
+            preferredQuality={settings.preferredQuality}
 
           />
         </div>
