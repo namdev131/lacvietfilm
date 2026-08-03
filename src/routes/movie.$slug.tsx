@@ -11,6 +11,8 @@ import { FollowButton } from "@/components/FollowButton";
 import { RatingStars } from "@/components/RatingStars";
 import { CommentsSection } from "@/components/CommentsSection";
 import { AddToCollectionButton } from "@/components/AddToCollectionButton";
+import { CastCrew } from "@/components/CastCrew";
+
 
 const searchSchema = z.object({
   src: z.enum(["kkphim", "ophim", "nguonc", "vsmov"]).default("kkphim"),
@@ -107,20 +109,18 @@ function MoviePage() {
               />
             )}
             <div className="grid gap-2 pt-2 text-sm md:grid-cols-2">
-              {data.director?.length ? (
-                <div><span className="text-muted-foreground">Đạo diễn:</span> {data.director.join(", ")}</div>
-              ) : null}
-              {data.actors?.length ? (
-                <div><span className="text-muted-foreground">Diễn viên:</span> {data.actors.slice(0, 8).join(", ")}</div>
-              ) : null}
               {data.country?.length ? (
                 <div><span className="text-muted-foreground">Quốc gia:</span> {data.country.join(", ")}</div>
               ) : null}
             </div>
+
           </div>
         </div>
 
+        <CastCrew directors={data.director} actors={data.actors} />
+
         {/* Server list preview */}
+
         {data.servers.length > 0 && (
           <div className="mt-10 space-y-4">
             <h2 className="text-lg font-semibold">Danh sách máy chủ</h2>
