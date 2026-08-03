@@ -11,6 +11,7 @@ import { type PlayMode } from "@/components/Player";
 import { usePlayerHost, usePlayerDock } from "@/components/PlayerHost";
 import { MovieRow } from "@/components/MovieRow";
 import { SourcePing } from "@/components/SourcePing";
+import { WatchPartyButton } from "@/components/WatchPartyButton";
 import type { SourceId } from "@/lib/types";
 import { getLocalProgress, progressPercent, formatTime } from "@/lib/progress";
 import { useSettings } from "@/lib/settings";
@@ -282,6 +283,14 @@ function WatchPage() {
             )}
           </div>
 
+
+          {/* Xem chung */}
+          {data && (
+            <div className="rounded-xl border border-border/60 bg-card/70 p-4">
+              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">Xem chung với bạn bè</p>
+              <WatchPartyButton slug={slug} name={data.name} poster={data.poster} source={source} ep={ep} srv={srv} />
+            </div>
+          )}
 
           {/* Source switcher */}
           <div className="rounded-xl border border-border/60 bg-card/70 p-4">
