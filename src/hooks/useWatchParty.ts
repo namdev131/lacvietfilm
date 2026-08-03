@@ -17,6 +17,8 @@ export interface Party {
   position_seconds: number;
   is_playing: boolean;
   closed: boolean;
+  /** 'all' = mọi người được chat, 'host' = chỉ chủ phòng */
+  chat_mode: "all" | "host";
   updated_at: string;
 }
 
