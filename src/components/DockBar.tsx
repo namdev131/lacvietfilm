@@ -2,7 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   History, Search, Home, Heart, User, Compass, Flame, CalendarClock,
-  Library, Bookmark, Settings as SettingsIcon, LogIn, Bell, Users,
+  Library, Bookmark, Settings as SettingsIcon, LogIn, Bell,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
