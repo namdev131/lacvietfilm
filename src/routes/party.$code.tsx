@@ -1,14 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Copy, Crown, Send, Users } from "lucide-react";
+import { ArrowLeft, Copy, Crown, DoorClosed, Pause, Play, RefreshCw, Send, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Player, type PlayMode } from "@/components/Player";
 import { fetchDetail } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
-import { useParty, usePartyChat, usePartyPresence, usePartySync } from "@/hooks/useWatchParty";
+import { useCloseParty, useParty, usePartyChat, usePartyPresence, usePartySync } from "@/hooks/useWatchParty";
 import { SignInPrompt } from "@/components/SignInPrompt";
 import type { SourceId } from "@/lib/types";
+
 
 export const Route = createFileRoute("/party/$code")({
   head: () => ({
