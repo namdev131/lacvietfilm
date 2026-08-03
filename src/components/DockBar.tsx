@@ -169,7 +169,7 @@ export function DockBar() {
                   type="button"
                   aria-label={item.label}
                   aria-expanded={open === item.menu}
-                  onClick={() => setOpen((o) => (o === item.menu ? null : item.menu))}
+                  onClick={() => setOpen((o) => (o === item.menu ? null : item.menu ?? null))}
                   className={cls}
                 >
                   {inner}
