@@ -23,6 +23,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CollectionsIndexRouteImport } from './routes/collections.index'
 import { Route as BrowseIndexRouteImport } from './routes/browse.index'
 import { Route as WatchSlugRouteImport } from './routes/watch.$slug'
+import { Route as PartyCodeRouteImport } from './routes/party.$code'
 import { Route as MovieSlugRouteImport } from './routes/movie.$slug'
 import { Route as CollectionsIdRouteImport } from './routes/collections.$id'
 import { Route as CCodeRouteImport } from './routes/c.$code'
@@ -103,6 +104,11 @@ const WatchSlugRoute = WatchSlugRouteImport.update({
   path: '/watch/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PartyCodeRoute = PartyCodeRouteImport.update({
+  id: '/party/$code',
+  path: '/party/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MovieSlugRoute = MovieSlugRouteImport.update({
   id: '/movie/$slug',
   path: '/movie/$slug',
@@ -169,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/c/$code': typeof CCodeRoute
   '/collections/$id': typeof CollectionsIdRoute
   '/movie/$slug': typeof MovieSlugRoute
+  '/party/$code': typeof PartyCodeRoute
   '/watch/$slug': typeof WatchSlugRoute
   '/browse/': typeof BrowseIndexRoute
   '/collections/': typeof CollectionsIndexRoute
@@ -194,6 +201,7 @@ export interface FileRoutesByTo {
   '/c/$code': typeof CCodeRoute
   '/collections/$id': typeof CollectionsIdRoute
   '/movie/$slug': typeof MovieSlugRoute
+  '/party/$code': typeof PartyCodeRoute
   '/watch/$slug': typeof WatchSlugRoute
   '/browse': typeof BrowseIndexRoute
   '/collections': typeof CollectionsIndexRoute
@@ -220,6 +228,7 @@ export interface FileRoutesById {
   '/c/$code': typeof CCodeRoute
   '/collections/$id': typeof CollectionsIdRoute
   '/movie/$slug': typeof MovieSlugRoute
+  '/party/$code': typeof PartyCodeRoute
   '/watch/$slug': typeof WatchSlugRoute
   '/browse/': typeof BrowseIndexRoute
   '/collections/': typeof CollectionsIndexRoute
@@ -247,6 +256,7 @@ export interface FileRouteTypes {
     | '/c/$code'
     | '/collections/$id'
     | '/movie/$slug'
+    | '/party/$code'
     | '/watch/$slug'
     | '/browse/'
     | '/collections/'
@@ -272,6 +282,7 @@ export interface FileRouteTypes {
     | '/c/$code'
     | '/collections/$id'
     | '/movie/$slug'
+    | '/party/$code'
     | '/watch/$slug'
     | '/browse'
     | '/collections'
@@ -297,6 +308,7 @@ export interface FileRouteTypes {
     | '/c/$code'
     | '/collections/$id'
     | '/movie/$slug'
+    | '/party/$code'
     | '/watch/$slug'
     | '/browse/'
     | '/collections/'
@@ -323,6 +335,7 @@ export interface RootRouteChildren {
   CCodeRoute: typeof CCodeRoute
   CollectionsIdRoute: typeof CollectionsIdRoute
   MovieSlugRoute: typeof MovieSlugRoute
+  PartyCodeRoute: typeof PartyCodeRoute
   WatchSlugRoute: typeof WatchSlugRoute
   BrowseIndexRoute: typeof BrowseIndexRoute
   CollectionsIndexRoute: typeof CollectionsIndexRoute
@@ -432,6 +445,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WatchSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/party/$code': {
+      id: '/party/$code'
+      path: '/party/$code'
+      fullPath: '/party/$code'
+      preLoaderRoute: typeof PartyCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/movie/$slug': {
       id: '/movie/$slug'
       path: '/movie/$slug'
@@ -516,6 +536,7 @@ const rootRouteChildren: RootRouteChildren = {
   CCodeRoute: CCodeRoute,
   CollectionsIdRoute: CollectionsIdRoute,
   MovieSlugRoute: MovieSlugRoute,
+  PartyCodeRoute: PartyCodeRoute,
   WatchSlugRoute: WatchSlugRoute,
   BrowseIndexRoute: BrowseIndexRoute,
   CollectionsIndexRoute: CollectionsIndexRoute,
