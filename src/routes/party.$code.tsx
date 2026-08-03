@@ -39,6 +39,7 @@ function PartyPage() {
   const [text, setText] = useState("");
   const [mode, setMode] = useState<PlayMode>("hls");
   const [followHost, setFollowHost] = useState(true);
+  const [resyncNonce, setResyncNonce] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
 
   const { data: detail } = useQuery({
