@@ -204,6 +204,45 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          poster: string | null
+          read: boolean
+          slug: string | null
+          source: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          poster?: string | null
+          read?: boolean
+          slug?: string | null
+          source?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          poster?: string | null
+          read?: boolean
+          slug?: string | null
+          source?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -225,6 +264,45 @@ export type Database = {
           display_name?: string | null
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      series_follows: {
+        Row: {
+          created_at: string
+          id: string
+          known_episodes: number
+          last_checked_at: string | null
+          name: string
+          poster: string | null
+          slug: string
+          source: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          known_episodes?: number
+          last_checked_at?: string | null
+          name: string
+          poster?: string | null
+          slug: string
+          source?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          known_episodes?: number
+          last_checked_at?: string | null
+          name?: string
+          poster?: string | null
+          slug?: string
+          source?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -332,6 +410,95 @@ export type Database = {
           watched_at?: string
         }
         Relationships: []
+      }
+      watch_parties: {
+        Row: {
+          closed: boolean
+          code: string
+          created_at: string
+          ep_index: number
+          host_id: string
+          id: string
+          is_playing: boolean
+          name: string
+          position_seconds: number
+          poster: string | null
+          slug: string
+          source: string
+          srv_index: number
+          updated_at: string
+        }
+        Insert: {
+          closed?: boolean
+          code: string
+          created_at?: string
+          ep_index?: number
+          host_id: string
+          id?: string
+          is_playing?: boolean
+          name: string
+          position_seconds?: number
+          poster?: string | null
+          slug: string
+          source?: string
+          srv_index?: number
+          updated_at?: string
+        }
+        Update: {
+          closed?: boolean
+          code?: string
+          created_at?: string
+          ep_index?: number
+          host_id?: string
+          id?: string
+          is_playing?: boolean
+          name?: string
+          position_seconds?: number
+          poster?: string | null
+          slug?: string
+          source?: string
+          srv_index?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      watch_party_messages: {
+        Row: {
+          content: string
+          created_at: string
+          display_name: string | null
+          id: string
+          party_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          party_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          party_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watch_party_messages_party_id_fkey"
+            columns: ["party_id"]
+            isOneToOne: false
+            referencedRelation: "watch_parties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       watchlist: {
         Row: {
