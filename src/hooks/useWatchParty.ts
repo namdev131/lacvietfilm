@@ -97,13 +97,31 @@ export function useParty(code: string) {
     };
   }, [id, code, qc]);
 
+  // Đồng bộ lại khi người dùng quay lại tab / có mạng trở lại
+  useEffect(() => {
+    const refetch = () => {
+      if (document.visibilityState === "visible") void query.refetch();
+    };
+    document.addEventListener("visibilitychange", refetch);
+    window.addEventListener("focus", refetch);
+    window.addEventListener("online", refetch);
+    return () => {
+      document.removeEventListener("visibilitychange", refetch);
+      window.removeEventListener("focus", refetch);
+      window.removeEventListener("online", refetch);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [code]);
+
   return query;
 }
 
 /** Chủ phòng đẩy trạng thái phát cho mọi người */
 export function usePartySync(party: Party | null | undefined, isHost: boolean) {
   const qc = useQueryClient();
-  return async (patch: Partial<Pick<Party, "ep_index" | "srv_index" | "position_seconds" | "is_playing" | "closed">>) => {
+  return async (
+    patch: Partial<Pick<Party, "ep_index" | "srv_index" | "position_seconds" | "is_playing" | "closed" | "chat_mode">>,
+  ) => {
     if (!party || !isHost) return;
     // cập nhật lạc quan để chủ phòng thấy ngay
     qc.setQueryData(["party", party.code], { ...party, ...patch, updated_at: new Date().toISOString() });
