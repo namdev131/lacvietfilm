@@ -3,7 +3,7 @@ import { useCollection } from "@/hooks/useCollections";
 import { CollectionView } from "@/components/CollectionView";
 
 export const Route = createFileRoute("/collections/$id")({
-  head: () => ({
+  head: ({ params }) => ({
     meta: [
       { title: "Chi tiết bộ sưu tập | Lạc Việt Cinema" },
       { name: "description", content: "Danh sách phim trong bộ sưu tập tự tạo của bạn." },
@@ -11,7 +11,9 @@ export const Route = createFileRoute("/collections/$id")({
       { property: "og:description", content: "Playlist phim tự tạo tại Lạc Việt Cinema." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:url", content: `https://lacvietcinema.lovable.app/collections/${params.id}` },
     ],
+    links: [{ rel: "canonical", href: `https://lacvietcinema.lovable.app/collections/${params.id}` }],
   }),
   component: CollectionDetail,
 });

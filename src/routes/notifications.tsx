@@ -24,7 +24,9 @@ export const Route = createFileRoute("/notifications")({
       { property: "og:description", content: "Nhận thông báo ngay khi phim bạn theo dõi có tập mới." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:url", content: "https://lacvietcinema.lovable.app/notifications" },
     ],
+    links: [{ rel: "canonical", href: "https://lacvietcinema.lovable.app/notifications" }],
   }),
   component: NotificationsPage,
 });

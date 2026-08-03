@@ -19,8 +19,38 @@ export const Route = createFileRoute("/")({
       { property: "og:description", content: "Xem phim trực tuyến tại Lạc Việt Cinema với kho phim đa dạng, nhiều nguồn phát, chuyển server thông minh và giao diện đậm bản sắc văn hóa Việt." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:url", content: "https://lacvietcinema.lovable.app/" },
+    ],
+    links: [{ rel: "canonical", href: "https://lacvietcinema.lovable.app/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "Lạc Việt Cinema",
+          url: "https://lacvietcinema.lovable.app/",
+          inLanguage: "vi-VN",
+          potentialAction: {
+            "@type": "SearchAction",
+            target: "https://lacvietcinema.lovable.app/search?q={search_term_string}",
+            "query-input": "required name=search_term_string",
+          },
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "Lạc Việt Cinema",
+          url: "https://lacvietcinema.lovable.app/",
+          logo: "https://files.catbox.moe/6ua430.png",
+        }),
+      },
     ],
   }),
+
   component: Home,
 });
 
