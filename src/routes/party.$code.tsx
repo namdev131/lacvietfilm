@@ -302,8 +302,13 @@ function PartyPage() {
 
         {/* Chat */}
         <div className="flex h-[520px] flex-col rounded-xl border border-border bg-card">
-          <div className="border-b border-border/60 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+          <div className="flex items-center gap-2 border-b border-border/60 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-muted-foreground">
             Chat phòng
+            {party.chat_mode === "host" && (
+              <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10px] normal-case tracking-normal text-muted-foreground">
+                <Lock className="h-3 w-3" /> Chỉ chủ phòng
+              </span>
+            )}
           </div>
           <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto p-4">
             {!chat.data?.length ? (
@@ -326,7 +331,7 @@ function PartyPage() {
             onSubmit={(e) => {
               e.preventDefault();
               const v = text.trim();
-              if (!v) return;
+              if (!v || !canChat) return;
               setText("");
               chat.send.mutate(v, { onError: () => toast.error("Không gửi được tin nhắn") });
             }}
@@ -336,10 +341,15 @@ function PartyPage() {
               value={text}
               onChange={(e) => setText(e.target.value)}
               maxLength={500}
-              placeholder="Nhắn gì đó…"
-              className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary/60"
+              disabled={!canChat}
+              placeholder={canChat ? "Nhắn gì đó…" : "Chủ phòng đã khoá chat"}
+              className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary/60 disabled:cursor-not-allowed disabled:opacity-60"
             />
-            <button className="rounded-xl bg-primary px-3 text-primary-foreground" aria-label="Gửi">
+            <button
+              disabled={!canChat}
+              className="rounded-xl bg-primary px-3 text-primary-foreground disabled:opacity-50"
+              aria-label="Gửi"
+            >
               <Send className="h-4 w-4" />
             </button>
           </form>
