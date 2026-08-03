@@ -7,6 +7,7 @@ import type { SourceId } from "@/lib/types";
 import DOMPurify from "isomorphic-dompurify";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { WatchLaterButton } from "@/components/WatchLaterButton";
+import { FollowButton } from "@/components/FollowButton";
 import { RatingStars } from "@/components/RatingStars";
 import { CommentsSection } from "@/components/CommentsSection";
 import { AddToCollectionButton } from "@/components/AddToCollectionButton";
@@ -95,6 +96,7 @@ function MoviePage() {
               )}
               <FavoriteButton slug={data.slug} name={data.name} poster={data.poster} source={source} />
               <WatchLaterButton slug={data.slug} name={data.name} poster={data.poster} source={source} />
+              <FollowButton slug={data.slug} name={data.name} poster={data.poster} source={source} episodes={totalEps} />
               <AddToCollectionButton slug={data.slug} name={data.name} poster={data.poster} source={source} />
             </div>
             <RatingStars slug={data.slug} name={data.name} poster={data.poster} source={source} />

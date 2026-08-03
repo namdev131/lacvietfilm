@@ -13,6 +13,7 @@ import { Route as WatchlistRouteImport } from './routes/watchlist'
 import { Route as UpcomingRouteImport } from './routes/upcoming'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as MeRouteImport } from './routes/me'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LatestRouteImport } from './routes/latest'
@@ -23,6 +24,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CollectionsIndexRouteImport } from './routes/collections.index'
 import { Route as BrowseIndexRouteImport } from './routes/browse.index'
 import { Route as WatchSlugRouteImport } from './routes/watch.$slug'
+import { Route as PartyCodeRouteImport } from './routes/party.$code'
 import { Route as MovieSlugRouteImport } from './routes/movie.$slug'
 import { Route as CollectionsIdRouteImport } from './routes/collections.$id'
 import { Route as CCodeRouteImport } from './routes/c.$code'
@@ -51,6 +53,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MeRoute = MeRouteImport.update({
@@ -101,6 +108,11 @@ const BrowseIndexRoute = BrowseIndexRouteImport.update({
 const WatchSlugRoute = WatchSlugRouteImport.update({
   id: '/watch/$slug',
   path: '/watch/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PartyCodeRoute = PartyCodeRouteImport.update({
+  id: '/party/$code',
+  path: '/party/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MovieSlugRoute = MovieSlugRouteImport.update({
@@ -160,6 +172,7 @@ export interface FileRoutesByFullPath {
   '/latest': typeof LatestRoute
   '/mcp': typeof McpRoute
   '/me': typeof MeRoute
+  '/notifications': typeof NotificationsRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/upcoming': typeof UpcomingRoute
@@ -169,6 +182,7 @@ export interface FileRoutesByFullPath {
   '/c/$code': typeof CCodeRoute
   '/collections/$id': typeof CollectionsIdRoute
   '/movie/$slug': typeof MovieSlugRoute
+  '/party/$code': typeof PartyCodeRoute
   '/watch/$slug': typeof WatchSlugRoute
   '/browse/': typeof BrowseIndexRoute
   '/collections/': typeof CollectionsIndexRoute
@@ -185,6 +199,7 @@ export interface FileRoutesByTo {
   '/latest': typeof LatestRoute
   '/mcp': typeof McpRoute
   '/me': typeof MeRoute
+  '/notifications': typeof NotificationsRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/upcoming': typeof UpcomingRoute
@@ -194,6 +209,7 @@ export interface FileRoutesByTo {
   '/c/$code': typeof CCodeRoute
   '/collections/$id': typeof CollectionsIdRoute
   '/movie/$slug': typeof MovieSlugRoute
+  '/party/$code': typeof PartyCodeRoute
   '/watch/$slug': typeof WatchSlugRoute
   '/browse': typeof BrowseIndexRoute
   '/collections': typeof CollectionsIndexRoute
@@ -211,6 +227,7 @@ export interface FileRoutesById {
   '/latest': typeof LatestRoute
   '/mcp': typeof McpRoute
   '/me': typeof MeRoute
+  '/notifications': typeof NotificationsRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/upcoming': typeof UpcomingRoute
@@ -220,6 +237,7 @@ export interface FileRoutesById {
   '/c/$code': typeof CCodeRoute
   '/collections/$id': typeof CollectionsIdRoute
   '/movie/$slug': typeof MovieSlugRoute
+  '/party/$code': typeof PartyCodeRoute
   '/watch/$slug': typeof WatchSlugRoute
   '/browse/': typeof BrowseIndexRoute
   '/collections/': typeof CollectionsIndexRoute
@@ -238,6 +256,7 @@ export interface FileRouteTypes {
     | '/latest'
     | '/mcp'
     | '/me'
+    | '/notifications'
     | '/search'
     | '/settings'
     | '/upcoming'
@@ -247,6 +266,7 @@ export interface FileRouteTypes {
     | '/c/$code'
     | '/collections/$id'
     | '/movie/$slug'
+    | '/party/$code'
     | '/watch/$slug'
     | '/browse/'
     | '/collections/'
@@ -263,6 +283,7 @@ export interface FileRouteTypes {
     | '/latest'
     | '/mcp'
     | '/me'
+    | '/notifications'
     | '/search'
     | '/settings'
     | '/upcoming'
@@ -272,6 +293,7 @@ export interface FileRouteTypes {
     | '/c/$code'
     | '/collections/$id'
     | '/movie/$slug'
+    | '/party/$code'
     | '/watch/$slug'
     | '/browse'
     | '/collections'
@@ -288,6 +310,7 @@ export interface FileRouteTypes {
     | '/latest'
     | '/mcp'
     | '/me'
+    | '/notifications'
     | '/search'
     | '/settings'
     | '/upcoming'
@@ -297,6 +320,7 @@ export interface FileRouteTypes {
     | '/c/$code'
     | '/collections/$id'
     | '/movie/$slug'
+    | '/party/$code'
     | '/watch/$slug'
     | '/browse/'
     | '/collections/'
@@ -314,6 +338,7 @@ export interface RootRouteChildren {
   LatestRoute: typeof LatestRoute
   McpRoute: typeof McpRoute
   MeRoute: typeof MeRoute
+  NotificationsRoute: typeof NotificationsRoute
   SearchRoute: typeof SearchRoute
   SettingsRoute: typeof SettingsRoute
   UpcomingRoute: typeof UpcomingRoute
@@ -323,6 +348,7 @@ export interface RootRouteChildren {
   CCodeRoute: typeof CCodeRoute
   CollectionsIdRoute: typeof CollectionsIdRoute
   MovieSlugRoute: typeof MovieSlugRoute
+  PartyCodeRoute: typeof PartyCodeRoute
   WatchSlugRoute: typeof WatchSlugRoute
   BrowseIndexRoute: typeof BrowseIndexRoute
   CollectionsIndexRoute: typeof CollectionsIndexRoute
@@ -360,6 +386,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/me': {
@@ -430,6 +463,13 @@ declare module '@tanstack/react-router' {
       path: '/watch/$slug'
       fullPath: '/watch/$slug'
       preLoaderRoute: typeof WatchSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/party/$code': {
+      id: '/party/$code'
+      path: '/party/$code'
+      fullPath: '/party/$code'
+      preLoaderRoute: typeof PartyCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/movie/$slug': {
@@ -506,6 +546,7 @@ const rootRouteChildren: RootRouteChildren = {
   LatestRoute: LatestRoute,
   McpRoute: McpRoute,
   MeRoute: MeRoute,
+  NotificationsRoute: NotificationsRoute,
   SearchRoute: SearchRoute,
   SettingsRoute: SettingsRoute,
   UpcomingRoute: UpcomingRoute,
@@ -516,6 +557,7 @@ const rootRouteChildren: RootRouteChildren = {
   CCodeRoute: CCodeRoute,
   CollectionsIdRoute: CollectionsIdRoute,
   MovieSlugRoute: MovieSlugRoute,
+  PartyCodeRoute: PartyCodeRoute,
   WatchSlugRoute: WatchSlugRoute,
   BrowseIndexRoute: BrowseIndexRoute,
   CollectionsIndexRoute: CollectionsIndexRoute,

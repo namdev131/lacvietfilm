@@ -2,7 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   History, Search, Home, Heart, User, Compass, Flame, CalendarClock,
-  Library, Bookmark, Settings as SettingsIcon, LogIn,
+  Library, Bookmark, Settings as SettingsIcon, LogIn, Bell,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -29,6 +29,7 @@ const MENUS: Record<string, { title: string; links: MenuLink[] }> = {
     title: "Tôi",
     links: [
       { to: "/me", label: "Tài khoản", icon: LogIn, desc: "Đăng nhập / đăng ký / hồ sơ" },
+      { to: "/notifications", label: "Thông báo", icon: Bell, desc: "Báo khi phim theo dõi có tập mới" },
       { to: "/settings", label: "Cài đặt", icon: SettingsIcon, desc: "Trình phát, nguồn, giao diện" },
     ],
   },
