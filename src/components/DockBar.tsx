@@ -13,14 +13,14 @@ const MENUS: Record<string, { title: string; links: MenuLink[] }> = {
     title: "Khám phá",
     links: [
       { to: "/latest", label: "Phim mới", icon: Flame, desc: "Cập nhật liên tục mỗi ngày" },
-      { to: "/browse", label: "Khám phá", icon: Compass, desc: "Thể loại · Quốc gia · Năm" },
+      { to: "/browse", label: "Thể loại · Quốc gia", icon: Compass, desc: "Lọc theo thể loại, quốc gia, năm" },
       { to: "/upcoming", label: "Sắp chiếu", icon: CalendarClock, desc: "Phim sắp ra mắt" },
     ],
   },
   library: {
     title: "Yêu thích",
     links: [
-      { to: "/favorites", label: "Yêu thích", icon: Heart, desc: "Phim bạn đã thả tim" },
+      { to: "/favorites", label: "Phim yêu thích", icon: Heart, desc: "Phim bạn đã thả tim" },
       { to: "/collections", label: "Bộ sưu tập", icon: Library, desc: "Playlist tự tạo, chia sẻ link" },
       { to: "/watchlist", label: "Xem sau", icon: Bookmark, desc: "Phim để dành xem sau" },
     ],
@@ -30,9 +30,9 @@ const MENUS: Record<string, { title: string; links: MenuLink[] }> = {
     links: [
       { to: "/me", label: "Tài khoản", icon: LogIn, desc: "Đăng nhập / đăng ký / hồ sơ" },
       { to: "/settings", label: "Cài đặt", icon: SettingsIcon, desc: "Trình phát, nguồn, giao diện" },
-      { to: "/history", label: "Lịch sử xem", icon: History, desc: "Xem tiếp phim đang dở" },
     ],
   },
+
 };
 
 type DockItem = { key: string; to: string; label: string; icon: typeof Home; menu?: keyof typeof MENUS; primary?: boolean };
