@@ -151,7 +151,7 @@ export function DockBar() {
                 to={item.to}
                 aria-label={item.label}
                 onClick={() => { tap(); setOpen(null); }}
-                className="group absolute -top-7 left-1/2 z-20 -translate-x-1/2"
+                className="group absolute -top-9 left-1/2 z-20 -translate-x-1/2"
               >
                 <span
                   aria-hidden
@@ -162,7 +162,7 @@ export function DockBar() {
                   whileHover={{ scale: 1.06 }}
                   animate={active ? { rotate: 45, y: [0, -2, 0] } : { rotate: 45, y: 0 }}
                   transition={{ type: "spring", stiffness: 420, damping: 20 }}
-                  className="relative flex h-[68px] w-[68px] items-center justify-center rounded-2xl border border-gold/30 bg-gradient-to-tr from-primary/80 to-primary text-primary-foreground shadow-[0_8px_24px_color-mix(in_oklab,var(--primary)_45%,transparent)]"
+                  className="relative flex h-[62px] w-[62px] items-center justify-center rounded-2xl border border-gold/30 bg-gradient-to-tr from-primary/80 to-primary text-primary-foreground shadow-[0_8px_24px_color-mix(in_oklab,var(--primary)_45%,transparent)]"
                 >
                   <Icon className="h-7 w-7" strokeWidth={1.8} style={{ transform: "rotate(-45deg)" }} />
                 </motion.span>
@@ -175,7 +175,7 @@ export function DockBar() {
             {/* Hõm lõm mờ sau nút giữa */}
             <span
               aria-hidden
-              className="pointer-events-none absolute left-1/2 top-0 h-[92px] w-[92px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-border/60 bg-background/60 shadow-[inset_0_-10px_24px_rgba(0,0,0,0.7)] backdrop-blur-md"
+              className="pointer-events-none absolute left-1/2 top-0 h-[96px] w-[96px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-gold/15 bg-background/85 shadow-[inset_0_-10px_24px_rgba(0,0,0,0.7)] backdrop-blur-md"
             />
 
             <div className="relative z-10 grid w-full grid-cols-5 items-center">
