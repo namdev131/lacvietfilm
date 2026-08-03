@@ -76,6 +76,7 @@ export function DockBar() {
 
   return (
     <>
+      {!menu && <ContinueWatching />}
       <AnimatePresence>
         {menu && (
           <motion.div
