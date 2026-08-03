@@ -117,7 +117,10 @@ function MoviePage() {
           </div>
         </div>
 
+        <CastCrew directors={data.director} actors={data.actors} />
+
         {/* Server list preview */}
+
         {data.servers.length > 0 && (
           <div className="mt-10 space-y-4">
             <h2 className="text-lg font-semibold">Danh sách máy chủ</h2>
