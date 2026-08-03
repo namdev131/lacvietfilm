@@ -171,7 +171,7 @@ export function DockBar() {
           })()}
 
           {/* Thanh dock */}
-          <div className="relative flex h-20 items-center justify-between overflow-hidden rounded-[36px] border border-border/70 bg-card/95 px-4 shadow-[0_20px_50px_rgba(0,0,0,0.8)] backdrop-blur-xl">
+          <div className="relative flex h-20 items-center overflow-hidden rounded-[36px] border border-border/70 bg-card/95 px-3 shadow-[0_20px_50px_rgba(0,0,0,0.8)] backdrop-blur-xl">
             {/* Hõm lõm mờ sau nút giữa */}
             <span
               aria-hidden
