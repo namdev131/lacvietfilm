@@ -45,11 +45,30 @@ const items: DockItem[] = [
   { key: "me", to: "/me", label: "Tôi", icon: User, menu: "me" },
 ];
 
+function tap() {
+  try { navigator.vibrate?.(8); } catch { /* ignore */ }
+}
+
 export function DockBar() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const [open, setOpen] = useState<string | null>(null);
+  const [hidden, setHidden] = useState(false);
 
   useEffect(() => { setOpen(null); }, [pathname]);
+
+  // Ẩn dock khi cuộn xuống, hiện lại khi cuộn lên
+  useEffect(() => {
+    let last = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (Math.abs(y - last) > 12) {
+        setHidden(y > last && y > 120);
+        last = y;
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const menu = open ? MENUS[open] : null;
 
@@ -78,14 +97,19 @@ export function DockBar() {
                   {menu.title}
                 </div>
                 <div className="p-2">
-                  {menu.links.map((l) => {
+                  {menu.links.map((l, i) => {
                     const Icon = l.icon;
                     const active = pathname === l.to || pathname.startsWith(`${l.to}/`);
                     return (
-                      <Link
+                      <motion.div
                         key={l.to}
+                        initial={{ opacity: 0, y: 14 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.04 * i, type: "spring", stiffness: 420, damping: 30 }}
+                      >
+                      <Link
                         to={l.to}
-                        onClick={() => setOpen(null)}
+                        onClick={() => { tap(); setOpen(null); }}
                         className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition hover:bg-muted/60 ${
                           active ? "bg-primary/10" : ""
                         }`}
@@ -98,6 +122,7 @@ export function DockBar() {
                           {l.desc && <span className="block truncate text-xs text-muted-foreground">{l.desc}</span>}
                         </span>
                       </Link>
+                      </motion.div>
                     );
                   })}
                 </div>
@@ -107,8 +132,18 @@ export function DockBar() {
         )}
       </AnimatePresence>
 
-      <nav className="fixed inset-x-0 bottom-0 z-50 flex justify-center pb-[env(safe-area-inset-bottom)]">
-        <div className="pointer-events-auto mx-3 mb-3 flex w-full max-w-md items-end justify-around gap-1 rounded-2xl border border-border bg-card px-2 py-2 shadow-[0_-8px_30px_rgba(0,0,0,0.45)]">
+      <motion.nav
+        animate={{ y: hidden && !menu ? 120 : 0, opacity: hidden && !menu ? 0 : 1 }}
+        transition={{ type: "spring", stiffness: 320, damping: 30 }}
+        className="fixed inset-x-0 bottom-0 z-50 flex justify-center pb-[env(safe-area-inset-bottom)]"
+      >
+        <div className="pointer-events-auto relative mx-3 mb-3 flex w-full max-w-md items-end justify-around gap-1 overflow-hidden rounded-2xl border border-border bg-card px-2 py-2 shadow-[0_-8px_30px_rgba(0,0,0,0.45)]">
+          <motion.span
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 bg-gradient-to-r from-transparent via-primary/10 to-transparent"
+            animate={{ x: ["0%", "400%"] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+          />
           {items.map((item) => {
             const group = item.menu ? MENUS[item.menu] : null;
             const active = group
@@ -124,11 +159,14 @@ export function DockBar() {
                   key={item.key}
                   to={item.to}
                   aria-label={item.label}
-                  onClick={() => setOpen(null)}
+                  onClick={() => { tap(); setOpen(null); }}
                   className="group relative -mt-7 flex flex-col items-center gap-1"
                 >
                   <motion.span
-                    whileTap={{ scale: 0.9 }}
+                    whileTap={{ scale: 0.88 }}
+                    whileHover={{ scale: 1.06, rotate: -4 }}
+                    animate={active ? { y: [0, -3, 0] } : { y: 0 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 18 }}
                     className={`flex h-14 w-14 items-center justify-center rounded-full ring-4 ring-background transition ${
                       active
                         ? "bg-primary text-primary-foreground shadow-[0_0_24px_hsl(var(--primary)/0.6)]"
@@ -148,12 +186,25 @@ export function DockBar() {
               <>
                 {active && (
                   <motion.span
+                    layoutId="dock-active-dot"
+                    className="absolute -top-0.5 h-1 w-1 rounded-full bg-primary"
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  />
+                )}
+                {active && (
+                  <motion.span
                     layoutId="dock-active"
                     className="absolute inset-0 rounded-xl bg-primary/15"
                     transition={{ type: "spring", stiffness: 400, damping: 32 }}
                   />
                 )}
-                <Icon className={`relative h-5 w-5 transition ${active ? "text-primary" : "text-muted-foreground"}`} />
+                <motion.span
+                  className="relative"
+                  animate={active ? { y: -2, scale: 1.12 } : { y: 0, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 22 }}
+                >
+                  <Icon className={`h-5 w-5 transition ${active ? "text-primary drop-shadow-[0_0_8px_hsl(var(--primary)/0.7)]" : "text-muted-foreground"}`} />
+                </motion.span>
                 <span className={`relative text-[10px] font-medium ${active ? "text-foreground" : "text-muted-foreground"}`}>
                   {item.label}
                 </span>
@@ -164,27 +215,28 @@ export function DockBar() {
 
             if (group) {
               return (
-                <button
+                <motion.button
                   key={item.key}
                   type="button"
+                  whileTap={{ scale: 0.9 }}
                   aria-label={item.label}
                   aria-expanded={open === item.menu}
-                  onClick={() => setOpen((o) => (o === item.menu ? null : item.menu ?? null))}
+                  onClick={() => { tap(); setOpen((o) => (o === item.menu ? null : item.menu ?? null)); }}
                   className={cls}
                 >
                   {inner}
-                </button>
+                </motion.button>
               );
             }
 
             return (
-              <Link key={item.key} to={item.to} aria-label={item.label} onClick={() => setOpen(null)} className={cls}>
+              <Link key={item.key} to={item.to} aria-label={item.label} onClick={() => { tap(); setOpen(null); }} className={cls}>
                 {inner}
               </Link>
             );
           })}
         </div>
-      </nav>
+      </motion.nav>
     </>
   );
 }
