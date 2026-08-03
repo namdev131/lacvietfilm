@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Copy, Crown, DoorClosed, Pause, Play, RefreshCw, Send, Users } from "lucide-react";
+import { ArrowLeft, Copy, Crown, DoorClosed, Lock, MessagesSquare, Pause, Play, RefreshCw, Send, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Player, type PlayMode } from "@/components/Player";
 import { fetchDetail } from "@/lib/api";
@@ -39,6 +39,7 @@ function PartyPage() {
   const [text, setText] = useState("");
   const [mode, setMode] = useState<PlayMode>("hls");
   const [followHost, setFollowHost] = useState(true);
+  const [resyncNonce, setResyncNonce] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
 
   const { data: detail } = useQuery({
@@ -70,6 +71,38 @@ function PartyPage() {
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [chat.data?.length]);
+
+  // Đồng bộ lại khi quay lại phòng (đổi tab, khoá màn hình, mất mạng…)
+  useEffect(() => {
+    if (isHost) return;
+    let away = false;
+    const onHide = () => {
+      if (document.visibilityState === "hidden") away = true;
+    };
+    const onBack = () => {
+      if (document.visibilityState !== "visible" || !away) return;
+      away = false;
+      setFollowHost(true);
+      setResyncNonce((n) => n + 1);
+      toast.success("Đã đồng bộ lại theo chủ phòng");
+    };
+    document.addEventListener("visibilitychange", onHide);
+    document.addEventListener("visibilitychange", onBack);
+    window.addEventListener("online", onBack);
+    return () => {
+      document.removeEventListener("visibilitychange", onHide);
+      document.removeEventListener("visibilitychange", onBack);
+      window.removeEventListener("online", onBack);
+    };
+  }, [isHost]);
+
+  const canChat = !!party && (party.chat_mode !== "host" || isHost);
+  // Vị trí bắt đầu cho người mới vào: bù thời gian đã trôi nếu chủ phòng đang phát
+  const joinPosition = party
+    ? party.position_seconds +
+      (party.is_playing ? Math.max(0, (Date.now() - new Date(party.updated_at).getTime()) / 1000) : 0)
+    : 0;
+
 
 
   if (!loading && !user) {
@@ -143,13 +176,13 @@ function PartyPage() {
         <div>
           <div className="overflow-hidden rounded-xl border border-border bg-card">
             <Player
-              key={`${party.slug}-${party.srv_index}-${party.ep_index}`}
+              key={`${party.slug}-${party.srv_index}-${party.ep_index}-${resyncNonce}`}
               m3u8={episode?.m3u8}
               embed={episode?.embed}
               poster={detail?.thumb || detail?.poster}
               mode={mode}
               onModeChange={setMode}
-              resumeAt={isHost ? 0 : party.position_seconds}
+              resumeAt={isHost ? 0 : joinPosition}
               syncState={syncState}
               onPlayState={
                 isHost
@@ -176,6 +209,21 @@ function PartyPage() {
                   >
                     {party.is_playing ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
                     {party.is_playing ? "Tạm dừng phòng" : "Phát cho phòng"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      const next = party.chat_mode === "host" ? "all" : "host";
+                      void sync({ chat_mode: next });
+                      toast.success(next === "host" ? "Chỉ chủ phòng được chat" : "Mọi người được chat");
+                    }}
+                    className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
+                      party.chat_mode === "host"
+                        ? "border-primary/60 bg-primary/10 text-primary"
+                        : "border-border hover:border-primary/60"
+                    }`}
+                  >
+                    {party.chat_mode === "host" ? <Lock className="h-3.5 w-3.5" /> : <MessagesSquare className="h-3.5 w-3.5" />}
+                    {party.chat_mode === "host" ? "Chat: chỉ chủ phòng" : "Chat: mọi người"}
                   </button>
                   <button
                     onClick={() => {
@@ -226,13 +274,27 @@ function PartyPage() {
                   : "Bạn đang xem tự do, không bám theo chủ phòng."}
               </span>
               <button
-                onClick={() => setFollowHost((v) => !v)}
+                onClick={() => {
+                  setFollowHost((v) => !v);
+                  if (!followHost) setResyncNonce((n) => n + 1);
+                }}
                 className={`ml-auto inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 font-semibold transition ${
                   followHost ? "border-primary/60 bg-primary/10 text-primary" : "border-border hover:border-primary/60"
                 }`}
               >
                 <RefreshCw className="h-3.5 w-3.5" /> {followHost ? "Tắt đồng bộ" : "Đồng bộ lại"}
               </button>
+              {followHost && (
+                <button
+                  onClick={() => {
+                    setResyncNonce((n) => n + 1);
+                    toast.success("Đã bắt kịp chủ phòng");
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 font-semibold hover:border-primary/60 hover:text-primary"
+                >
+                  Bắt kịp ngay
+                </button>
+              )}
             </div>
           )}
 
@@ -240,8 +302,13 @@ function PartyPage() {
 
         {/* Chat */}
         <div className="flex h-[520px] flex-col rounded-xl border border-border bg-card">
-          <div className="border-b border-border/60 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+          <div className="flex items-center gap-2 border-b border-border/60 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-muted-foreground">
             Chat phòng
+            {party.chat_mode === "host" && (
+              <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10px] normal-case tracking-normal text-muted-foreground">
+                <Lock className="h-3 w-3" /> Chỉ chủ phòng
+              </span>
+            )}
           </div>
           <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto p-4">
             {!chat.data?.length ? (
@@ -264,7 +331,7 @@ function PartyPage() {
             onSubmit={(e) => {
               e.preventDefault();
               const v = text.trim();
-              if (!v) return;
+              if (!v || !canChat) return;
               setText("");
               chat.send.mutate(v, { onError: () => toast.error("Không gửi được tin nhắn") });
             }}
@@ -274,10 +341,15 @@ function PartyPage() {
               value={text}
               onChange={(e) => setText(e.target.value)}
               maxLength={500}
-              placeholder="Nhắn gì đó…"
-              className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary/60"
+              disabled={!canChat}
+              placeholder={canChat ? "Nhắn gì đó…" : "Chủ phòng đã khoá chat"}
+              className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary/60 disabled:cursor-not-allowed disabled:opacity-60"
             />
-            <button className="rounded-xl bg-primary px-3 text-primary-foreground" aria-label="Gửi">
+            <button
+              disabled={!canChat}
+              className="rounded-xl bg-primary px-3 text-primary-foreground disabled:opacity-50"
+              aria-label="Gửi"
+            >
               <Send className="h-4 w-4" />
             </button>
           </form>

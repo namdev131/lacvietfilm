@@ -5,6 +5,7 @@ import {
   Library, Bookmark, Settings as SettingsIcon, LogIn, Bell,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { ContinueWatching } from "@/components/ContinueWatching";
 
 type MenuLink = { to: string; label: string; icon: typeof Home; desc?: string };
 
@@ -75,6 +76,7 @@ export function DockBar() {
 
   return (
     <>
+      {!menu && <ContinueWatching />}
       <AnimatePresence>
         {menu && (
           <motion.div
