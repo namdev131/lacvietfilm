@@ -179,7 +179,7 @@ export function DockBar() {
             />
 
             {[items.slice(0, 2), items.slice(3)].map((half, side) => (
-              <div key={side} className={`relative z-10 flex w-2/5 items-center justify-between ${side === 0 ? "" : ""}`}>
+              <div key={side} className={`relative z-10 flex w-2/5 items-center justify-between ${side === 0 ? "order-1" : "order-3"}`}>
                 {half.map((item) => {
                   const group = item.menu ? MENUS[item.menu] : null;
                   const active = group
@@ -246,7 +246,7 @@ export function DockBar() {
             ))}
 
             {/* Nhãn Trang chủ dưới nút giữa */}
-            <div className="relative z-10 flex w-16 flex-col items-center justify-end self-end pb-2.5">
+            <div className="relative z-10 order-2 flex w-16 flex-col items-center justify-end self-end pb-2.5">
               <span className={`text-[10px] font-bold uppercase tracking-widest ${pathname === "/" ? "text-primary" : "text-muted-foreground"}`}>
                 Trang chủ
               </span>
