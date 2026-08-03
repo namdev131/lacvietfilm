@@ -212,6 +212,21 @@ function PartyPage() {
                   </button>
                   <button
                     onClick={() => {
+                      const next = party.chat_mode === "host" ? "all" : "host";
+                      void sync({ chat_mode: next });
+                      toast.success(next === "host" ? "Chỉ chủ phòng được chat" : "Mọi người được chat");
+                    }}
+                    className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
+                      party.chat_mode === "host"
+                        ? "border-primary/60 bg-primary/10 text-primary"
+                        : "border-border hover:border-primary/60"
+                    }`}
+                  >
+                    {party.chat_mode === "host" ? <Lock className="h-3.5 w-3.5" /> : <MessagesSquare className="h-3.5 w-3.5" />}
+                    {party.chat_mode === "host" ? "Chat: chỉ chủ phòng" : "Chat: mọi người"}
+                  </button>
+                  <button
+                    onClick={() => {
                       closeParty.mutate(party, {
                         onSuccess: () => toast.success("Đã đóng phòng"),
                         onError: () => toast.error("Không đóng được phòng"),
