@@ -150,17 +150,46 @@ function PartyPage() {
               mode={mode}
               onModeChange={setMode}
               resumeAt={isHost ? 0 : party.position_seconds}
+              syncState={syncState}
+              onPlayState={
+                isHost
+                  ? (playing, pos) => void sync({ is_playing: playing, position_seconds: Math.floor(pos) })
+                  : undefined
+              }
               onProgress={(pos) => {
-                if (isHost && Math.abs(pos - party.position_seconds) > 4) void sync({ position_seconds: pos, is_playing: true });
+                if (isHost && Math.abs(pos - party.position_seconds) > 4)
+                  void sync({ position_seconds: Math.floor(pos), is_playing: true });
               }}
             />
           </div>
 
           {isHost && servers.length > 0 && (
             <div className="mt-4 space-y-3 rounded-xl border border-border bg-card/60 p-4">
-              <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
-                <Crown className="h-3.5 w-3.5 text-primary" /> Bạn là chủ phòng — chọn tập cho cả phòng
-              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                  <Crown className="h-3.5 w-3.5 text-primary" /> Bạn là chủ phòng — điều khiển cho cả phòng
+                </p>
+                <div className="ml-auto flex items-center gap-2">
+                  <button
+                    onClick={() => void sync({ is_playing: !party.is_playing })}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold hover:border-primary/60 hover:text-primary"
+                  >
+                    {party.is_playing ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+                    {party.is_playing ? "Tạm dừng phòng" : "Phát cho phòng"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      closeParty.mutate(party, {
+                        onSuccess: () => toast.success("Đã đóng phòng"),
+                        onError: () => toast.error("Không đóng được phòng"),
+                      });
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/50 px-3 py-1.5 text-xs font-semibold text-destructive hover:bg-destructive/10"
+                  >
+                    <DoorClosed className="h-3.5 w-3.5" /> Đóng phòng
+                  </button>
+                </div>
+              </div>
               <div className="flex flex-wrap gap-1.5">
                 {servers.map((s, i) => (
                   <button
@@ -190,10 +219,23 @@ function PartyPage() {
             </div>
           )}
           {!isHost && (
-            <p className="mt-3 text-xs text-muted-foreground">
-              Chủ phòng đang điều khiển tập phim. Bạn sẽ tự chuyển theo phòng.
-            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <span>
+                {followHost
+                  ? "Đang đồng bộ theo chủ phòng (tập & thời điểm phát)."
+                  : "Bạn đang xem tự do, không bám theo chủ phòng."}
+              </span>
+              <button
+                onClick={() => setFollowHost((v) => !v)}
+                className={`ml-auto inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 font-semibold transition ${
+                  followHost ? "border-primary/60 bg-primary/10 text-primary" : "border-border hover:border-primary/60"
+                }`}
+              >
+                <RefreshCw className="h-3.5 w-3.5" /> {followHost ? "Tắt đồng bộ" : "Đồng bộ lại"}
+              </button>
+            </div>
           )}
+
         </div>
 
         {/* Chat */}
