@@ -100,11 +100,31 @@ export function useParty(code: string) {
 
 /** Chủ phòng đẩy trạng thái phát cho mọi người */
 export function usePartySync(party: Party | null | undefined, isHost: boolean) {
+  const qc = useQueryClient();
   return async (patch: Partial<Pick<Party, "ep_index" | "srv_index" | "position_seconds" | "is_playing" | "closed">>) => {
     if (!party || !isHost) return;
-    await supabase.from("watch_parties").update(patch as never).eq("id", party.id);
+    // cập nhật lạc quan để chủ phòng thấy ngay
+    qc.setQueryData(["party", party.code], { ...party, ...patch, updated_at: new Date().toISOString() });
+    await supabase
+      .from("watch_parties")
+      .update({ ...patch, updated_at: new Date().toISOString() } as never)
+      .eq("id", party.id);
   };
 }
+
+/** Chủ phòng đóng phòng xem chung */
+export function useCloseParty() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (party: Party) => {
+      const { error } = await supabase.from("watch_parties").update({ closed: true } as never).eq("id", party.id);
+      if (error) throw error;
+      return party.code;
+    },
+    onSuccess: (code) => qc.invalidateQueries({ queryKey: ["party", code] }),
+  });
+}
+
 
 export function usePartyChat(partyId?: string) {
   const { user } = useAuth();

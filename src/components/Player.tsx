@@ -18,6 +18,8 @@ export function Player({
   onProgress,
   autoPlay = true,
   onEnded,
+  syncState,
+  onPlayState,
 }: {
   m3u8?: string;
   embed?: string;
@@ -32,6 +34,10 @@ export function Player({
   onProgress?: (position: number, duration: number) => void;
   autoPlay?: boolean;
   onEnded?: () => void;
+  /** Trạng thái phát do chủ phòng đẩy xuống (xem chung) */
+  syncState?: { position: number; isPlaying: boolean; at: number } | null;
+  /** Báo khi người xem play/pause/tua (dùng cho chủ phòng) */
+  onPlayState?: (playing: boolean, position: number) => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -41,6 +47,42 @@ export function Player({
   resumeRef.current = resumeAt;
   const endedRef = useRef(onEnded);
   endedRef.current = onEnded;
+  const playStateRef = useRef(onPlayState);
+  playStateRef.current = onPlayState;
+
+  // Chủ phòng: phát/dừng/tua đẩy cho cả phòng
+  useEffect(() => {
+    const video = videoRef.current;
+    if (mode !== "hls" || !video || !onPlayState) return;
+    const emit = () => playStateRef.current?.(!video.paused, video.currentTime);
+    video.addEventListener("play", emit);
+    video.addEventListener("pause", emit);
+    video.addEventListener("seeked", emit);
+    return () => {
+      video.removeEventListener("play", emit);
+      video.removeEventListener("pause", emit);
+      video.removeEventListener("seeked", emit);
+    };
+  }, [mode, m3u8, !!onPlayState]);
+
+  // Người xem: bám theo trạng thái chủ phòng
+  useEffect(() => {
+    const video = videoRef.current;
+    if (mode !== "hls" || !video || !syncState) return;
+    const apply = () => {
+      const drift = syncState.isPlaying ? (Date.now() - syncState.at) / 1000 : 0;
+      const target = syncState.position + drift;
+      if (Number.isFinite(target) && Math.abs(video.currentTime - target) > 2.5) {
+        video.currentTime = Math.max(0, target);
+      }
+      if (syncState.isPlaying && video.paused) void video.play().catch(() => {});
+      if (!syncState.isPlaying && !video.paused) video.pause();
+    };
+    if (video.readyState >= 1) apply();
+    video.addEventListener("loadedmetadata", apply);
+    return () => video.removeEventListener("loadedmetadata", apply);
+  }, [mode, syncState?.position, syncState?.isPlaying, syncState?.at]);
+
 
   // Tiếp tục xem + lưu tiến độ + phím tắt cho video / remote TV
   useEffect(() => {
