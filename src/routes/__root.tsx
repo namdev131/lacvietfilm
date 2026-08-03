@@ -18,6 +18,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/hooks/useAuth";
 import { DockBar } from "@/components/DockBar";
+import { NotificationBell } from "@/components/NotificationBell";
 import { QuickSearch, openQuickSearch } from "@/components/QuickSearch";
 import { PlayerHostProvider } from "@/components/PlayerHost";
 import { TvRemote } from "@/hooks/useTvRemote";
@@ -153,6 +154,7 @@ function Header() {
             <span className="hidden sm:inline">Tìm phim…</span>
             <kbd className="hidden rounded border border-border px-1 text-[10px] md:inline">Ctrl K</kbd>
           </button>
+          <NotificationBell />
         </div>
       </div>
 
