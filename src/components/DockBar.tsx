@@ -178,79 +178,80 @@ export function DockBar() {
               className="pointer-events-none absolute left-1/2 top-0 h-[92px] w-[92px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-border/60 bg-background/60 shadow-[inset_0_-10px_24px_rgba(0,0,0,0.7)] backdrop-blur-md"
             />
 
-            {[items.slice(0, 2), items.slice(3)].map((half, side) => (
-              <div key={side} className={`relative z-10 flex w-2/5 items-center justify-between ${side === 0 ? "order-1" : "order-3"}`}>
-                {half.map((item) => {
-                  const group = item.menu ? MENUS[item.menu] : null;
-                  const active = group
-                    ? group.links.some((l) => pathname === l.to || pathname.startsWith(`${l.to}/`)) || open === item.menu
-                    : pathname.startsWith(item.to);
-                  const Icon = item.icon;
-
-                  const inner = (
-                    <>
-                      <motion.span
-                        className="relative"
-                        animate={active ? { y: -1, scale: 1.12 } : { y: 0, scale: 1 }}
-                        transition={{ type: "spring", stiffness: 500, damping: 22 }}
-                      >
-                        <Icon
-                          strokeWidth={1.8}
-                          className={`h-6 w-6 transition-colors ${
-                            active ? "text-gold drop-shadow-[0_0_10px_color-mix(in_oklab,var(--gold)_60%,transparent)]" : "text-muted-foreground"
-                          }`}
-                        />
-                      </motion.span>
-                      <span
-                        className={`text-[10px] font-medium uppercase tracking-wide transition-colors ${
-                          active ? "text-gold" : "text-muted-foreground"
-                        }`}
-                      >
+            <div className="relative z-10 grid w-full grid-cols-5 items-center">
+              {items.map((item) => {
+                if (item.primary) {
+                  return (
+                    <div key={item.key} className="flex flex-col items-center justify-end self-end pb-2.5">
+                      <span className={`text-[10px] font-bold uppercase tracking-widest ${pathname === "/" ? "text-primary" : "text-muted-foreground"}`}>
                         {item.label}
                       </span>
-                      {active && (
-                        <motion.span
-                          layoutId="dock-active-underline"
-                          className="absolute -bottom-2 h-[3px] w-7 rounded-full bg-gold"
-                          transition={{ type: "spring", stiffness: 420, damping: 32 }}
-                        />
-                      )}
-                    </>
+                    </div>
                   );
+                }
+                const group = item.menu ? MENUS[item.menu] : null;
+                const active = group
+                  ? group.links.some((l) => pathname === l.to || pathname.startsWith(`${l.to}/`)) || open === item.menu
+                  : pathname.startsWith(item.to);
+                const Icon = item.icon;
 
-                  const cls = "relative flex flex-col items-center gap-1 px-1";
+                const inner = (
+                  <>
+                    <motion.span
+                      className="relative"
+                      animate={active ? { y: -1, scale: 1.12 } : { y: 0, scale: 1 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 22 }}
+                    >
+                      <Icon
+                        strokeWidth={1.8}
+                        className={`h-6 w-6 transition-colors ${
+                          active ? "text-gold drop-shadow-[0_0_10px_color-mix(in_oklab,var(--gold)_60%,transparent)]" : "text-muted-foreground"
+                        }`}
+                      />
+                    </motion.span>
+                    <span
+                      className={`whitespace-nowrap text-[10px] font-medium uppercase tracking-wide transition-colors ${
+                        active ? "text-gold" : "text-muted-foreground"
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+                    {active && (
+                      <motion.span
+                        layoutId="dock-active-underline"
+                        className="absolute -bottom-2 h-[3px] w-7 rounded-full bg-gold"
+                        transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                      />
+                    )}
+                  </>
+                );
 
-                  if (group) {
-                    return (
-                      <motion.button
-                        key={item.key}
-                        type="button"
-                        whileTap={{ scale: 0.92 }}
-                        aria-label={item.label}
-                        aria-expanded={open === item.menu}
-                        onClick={() => { tap(); setOpen((o) => (o === item.menu ? null : item.menu ?? null)); }}
-                        className={cls}
-                      >
-                        {inner}
-                      </motion.button>
-                    );
-                  }
+                const cls = "relative flex flex-col items-center gap-1";
 
+                if (group) {
                   return (
-                    <Link key={item.key} to={item.to} aria-label={item.label} onClick={() => { tap(); setOpen(null); }} className={cls}>
+                    <motion.button
+                      key={item.key}
+                      type="button"
+                      whileTap={{ scale: 0.92 }}
+                      aria-label={item.label}
+                      aria-expanded={open === item.menu}
+                      onClick={() => { tap(); setOpen((o) => (o === item.menu ? null : item.menu ?? null)); }}
+                      className={cls}
+                    >
                       {inner}
-                    </Link>
+                    </motion.button>
                   );
-                })}
-              </div>
-            ))}
+                }
 
-            {/* Nhãn Trang chủ dưới nút giữa */}
-            <div className="relative z-10 order-2 flex w-16 flex-col items-center justify-end self-end pb-2.5">
-              <span className={`text-[10px] font-bold uppercase tracking-widest ${pathname === "/" ? "text-primary" : "text-muted-foreground"}`}>
-                Trang chủ
-              </span>
+                return (
+                  <Link key={item.key} to={item.to} aria-label={item.label} onClick={() => { tap(); setOpen(null); }} className={cls}>
+                    {inner}
+                  </Link>
+                );
+              })}
             </div>
+
 
             {/* Vệt vàng sang trọng */}
             <span aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
