@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://lacvietcinema.lovable.app/sitemap.xml
