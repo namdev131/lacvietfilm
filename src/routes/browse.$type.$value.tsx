@@ -21,6 +21,7 @@ export const Route = createFileRoute("/browse/$type/$value")({
   validateSearch: searchSchema,
   head: ({ params }) => {
     const label = `${TYPE_LABEL[params.type] ?? "Phim"}: ${params.value.replace(/-/g, " ")}`;
+    const url = `https://lacvietcinema.lovable.app/browse/${params.type}/${params.value}`;
     return {
       meta: [
         { title: `${label} | Lạc Việt Cinema` },
@@ -29,6 +30,20 @@ export const Route = createFileRoute("/browse/$type/$value")({
         { property: "og:description", content: `Xem phim theo ${label.toLowerCase()} tại Lạc Việt Cinema.` },
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary_large_image" },
+        { property: "og:url", content: url },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            name: label,
+            url,
+            isPartOf: { "@type": "WebSite", name: "Lạc Việt Cinema", url: "https://lacvietcinema.lovable.app/" },
+          }),
+        },
       ],
     };
   },

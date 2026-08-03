@@ -18,6 +18,18 @@ export const Route = createFileRoute("/browse/")({
       { property: "og:url", content: "https://lacvietcinema.lovable.app/browse" },
     ],
     links: [{ rel: "canonical", href: "https://lacvietcinema.lovable.app/browse" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: "Khám phá phim theo thể loại, quốc gia và năm",
+          url: "https://lacvietcinema.lovable.app/browse",
+          isPartOf: { "@type": "WebSite", name: "Lạc Việt Cinema", url: "https://lacvietcinema.lovable.app/" },
+        }),
+      },
+    ],
   }),
   component: BrowseIndex,
 });

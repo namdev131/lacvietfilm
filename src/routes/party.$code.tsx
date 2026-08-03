@@ -12,7 +12,7 @@ import type { SourceId } from "@/lib/types";
 
 
 export const Route = createFileRoute("/party/$code")({
-  head: () => ({
+  head: ({ params }) => ({
     meta: [
       { title: "Phòng xem chung | Lạc Việt Cinema" },
       { name: "description", content: "Xem phim cùng bạn bè theo thời gian thực: đồng bộ tập, thời điểm phát và chat trực tiếp trong phòng." },
@@ -20,7 +20,9 @@ export const Route = createFileRoute("/party/$code")({
       { property: "og:description", content: "Đồng bộ phim và chat cùng bạn bè theo thời gian thực." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:url", content: `https://lacvietcinema.lovable.app/party/${params.code}` },
     ],
+    links: [{ rel: "canonical", href: `https://lacvietcinema.lovable.app/party/${params.code}` }],
   }),
   component: PartyPage,
 });
