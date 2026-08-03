@@ -107,16 +107,11 @@ function MoviePage() {
               />
             )}
             <div className="grid gap-2 pt-2 text-sm md:grid-cols-2">
-              {data.director?.length ? (
-                <div><span className="text-muted-foreground">Đạo diễn:</span> {data.director.join(", ")}</div>
-              ) : null}
-              {data.actors?.length ? (
-                <div><span className="text-muted-foreground">Diễn viên:</span> {data.actors.slice(0, 8).join(", ")}</div>
-              ) : null}
               {data.country?.length ? (
                 <div><span className="text-muted-foreground">Quốc gia:</span> {data.country.join(", ")}</div>
               ) : null}
             </div>
+
           </div>
         </div>
 
