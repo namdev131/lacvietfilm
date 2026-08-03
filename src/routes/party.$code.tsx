@@ -176,13 +176,13 @@ function PartyPage() {
         <div>
           <div className="overflow-hidden rounded-xl border border-border bg-card">
             <Player
-              key={`${party.slug}-${party.srv_index}-${party.ep_index}`}
+              key={`${party.slug}-${party.srv_index}-${party.ep_index}-${resyncNonce}`}
               m3u8={episode?.m3u8}
               embed={episode?.embed}
               poster={detail?.thumb || detail?.poster}
               mode={mode}
               onModeChange={setMode}
-              resumeAt={isHost ? 0 : party.position_seconds}
+              resumeAt={isHost ? 0 : joinPosition}
               syncState={syncState}
               onPlayState={
                 isHost
