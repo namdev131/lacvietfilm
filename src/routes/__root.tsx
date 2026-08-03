@@ -207,7 +207,7 @@ function RootComponent() {
             <Outlet />
           </main>
           <Footer />
-          <div className="h-24" />
+          <div className="h-28 md:h-32" />
           <DockBar />
           <QuickSearch />
           <TvRemote />

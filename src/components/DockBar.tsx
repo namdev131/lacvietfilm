@@ -164,7 +164,7 @@ export function DockBar() {
                   to={item.to}
                   aria-label={item.label}
                   onClick={() => { tap(); setOpen(null); }}
-                  className="group relative -mt-7 flex flex-col items-center gap-1"
+                  className="group relative -mt-7 flex flex-1 flex-col items-center gap-1"
                 >
                   <motion.span
                     whileTap={{ scale: 0.88 }}
