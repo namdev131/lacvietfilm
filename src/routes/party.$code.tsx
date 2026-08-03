@@ -92,6 +92,25 @@ function PartyPage() {
     );
   }
 
+  if (party.closed) {
+    return (
+      <div className="mx-auto max-w-lg px-4 pb-32 pt-20 text-center">
+        <DoorClosed className="mx-auto h-8 w-8 text-primary" />
+        <h1 className="mt-3 text-xl font-bold">Phòng “{party.code}” đã đóng</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Chủ phòng đã kết thúc buổi xem chung.</p>
+        <Link
+          to="/watch/$slug"
+          params={{ slug: party.slug }}
+          search={{ src: party.source as SourceId, ep: party.ep_index, srv: party.srv_index }}
+          className="mt-6 inline-block rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+        >
+          Xem tiếp một mình
+        </Link>
+      </div>
+    );
+  }
+
+
   return (
     <div className="mx-auto max-w-[1400px] px-4 pb-32 pt-6 md:px-10">
       <div className="flex flex-wrap items-center gap-3">
