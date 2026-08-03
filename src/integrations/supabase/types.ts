@@ -413,6 +413,7 @@ export type Database = {
       }
       watch_parties: {
         Row: {
+          chat_mode: string
           closed: boolean
           code: string
           created_at: string
@@ -429,6 +430,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          chat_mode?: string
           closed?: boolean
           code: string
           created_at?: string
@@ -445,6 +447,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          chat_mode?: string
           closed?: boolean
           code?: string
           created_at?: string
