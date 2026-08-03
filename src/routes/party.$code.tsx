@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Copy, Crown, DoorClosed, Pause, Play, RefreshCw, Send, Users } from "lucide-react";
+import { ArrowLeft, Copy, Crown, DoorClosed, Lock, MessagesSquare, Pause, Play, RefreshCw, Send, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Player, type PlayMode } from "@/components/Player";
 import { fetchDetail } from "@/lib/api";
