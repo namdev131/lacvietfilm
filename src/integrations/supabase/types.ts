@@ -588,6 +588,13 @@ export type Database = {
         Returns: boolean
       }
       join_party: { Args: { _code: string }; Returns: string }
+      rating_summary: {
+        Args: { _slug: string }
+        Returns: {
+          avg: number
+          count: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
