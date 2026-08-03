@@ -128,16 +128,49 @@ export function useMarkNotifications() {
   const { user } = useAuth();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (id?: string) => {
+    mutationFn: async (input?: string | { id?: string; read?: boolean }) => {
       if (!user) return;
-      let q = supabase.from("notifications").update({ read: true } as never).eq("user_id", user.id);
-      if (id) q = q.eq("id", id);
+      const opts = typeof input === "string" ? { id: input, read: true } : { read: true, ...(input ?? {}) };
+      let q = supabase.from("notifications").update({ read: opts.read } as never).eq("user_id", user.id);
+      if (opts.id) q = q.eq("id", opts.id);
       const { error } = await q;
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
   });
 }
+
+/** Xoá 1 thông báo, tất cả thông báo đã đọc, hoặc toàn bộ */
+export function useDeleteNotifications() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (target: { id?: string; onlyRead?: boolean } = {}) => {
+      if (!user) return;
+      let q = supabase.from("notifications").delete().eq("user_id", user.id);
+      if (target.id) q = q.eq("id", target.id);
+      else if (target.onlyRead) q = q.eq("read", true);
+      const { error } = await q;
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
+  });
+}
+
+/** Tắt theo dõi một phim bộ */
+export function useUnfollow() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      if (!user) return;
+      const { error } = await supabase.from("series_follows").delete().eq("user_id", user.id).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["follows"] }),
+  });
+}
+
 
 /** Quét phim đang theo dõi, tạo thông báo khi có tập mới (tối đa 1 lần / 30 phút) */
 export function useEpisodeWatcher() {
