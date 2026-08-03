@@ -7,8 +7,41 @@ import { SourcePing } from "@/components/SourcePing";
 import type { SourceFilter } from "@/lib/types";
 
 export const Route = createFileRoute("/latest")({
+  head: () => ({
+    meta: [
+      { title: "Phim mới cập nhật hôm nay | Lạc Việt Cinema" },
+      {
+        name: "description",
+        content:
+          "Danh sách phim mới cập nhật mỗi ngày từ nhiều nguồn: phim lẻ, phim bộ, vietsub và thuyết minh, xem trực tuyến miễn phí tại Lạc Việt Cinema.",
+      },
+      { property: "og:title", content: "Phim mới cập nhật hôm nay — Lạc Việt Cinema" },
+      {
+        property: "og:description",
+        content: "Cập nhật phim mới liên tục từ nhiều nguồn, vietsub và thuyết minh, xem ngay không cần đăng ký.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:url", content: "https://lacvietcinema.lovable.app/latest" },
+    ],
+    links: [{ rel: "canonical", href: "https://lacvietcinema.lovable.app/latest" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: "Phim mới cập nhật",
+          description: "Danh sách phim mới cập nhật mỗi ngày tại Lạc Việt Cinema.",
+          url: "https://lacvietcinema.lovable.app/latest",
+          isPartOf: { "@type": "WebSite", name: "Lạc Việt Cinema", url: "https://lacvietcinema.lovable.app/" },
+        }),
+      },
+    ],
+  }),
   component: LatestPage,
 });
+
 
 function LatestPage() {
   const [source, setSource] = useState<SourceFilter>("all");

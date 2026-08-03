@@ -20,8 +20,39 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/movie/$slug")({
   validateSearch: searchSchema,
+  head: ({ params }) => {
+    const name = titleFromSlug(params.slug);
+    const url = `${SITE_URL}/movie/${params.slug}`;
+    const desc = `Thông tin phim ${name}: nội dung, thể loại, diễn viên, đạo diễn, đánh giá và danh sách tập. Xem ${name} vietsub hoặc thuyết minh tại Lạc Việt Cinema.`;
+    return {
+      meta: [
+        { title: `${name} – Xem phim vietsub | Lạc Việt Cinema` },
+        { name: "description", content: desc },
+        { property: "og:title", content: `${name} — Lạc Việt Cinema` },
+        { property: "og:description", content: desc },
+        { property: "og:type", content: "video.movie" },
+        { property: "og:url", content: url },
+        { name: "twitter:card", content: "summary_large_image" },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Movie",
+            name,
+            url,
+            description: desc,
+            inLanguage: "vi-VN",
+          }),
+        },
+      ],
+    };
+  },
   component: MoviePage,
 });
+
 
 function MoviePage() {
   const { slug } = Route.useParams();
