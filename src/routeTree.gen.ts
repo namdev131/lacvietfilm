@@ -13,6 +13,7 @@ import { Route as WatchlistRouteImport } from './routes/watchlist'
 import { Route as UpcomingRouteImport } from './routes/upcoming'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as MeRouteImport } from './routes/me'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LatestRouteImport } from './routes/latest'
@@ -52,6 +53,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MeRoute = MeRouteImport.update({
@@ -166,6 +172,7 @@ export interface FileRoutesByFullPath {
   '/latest': typeof LatestRoute
   '/mcp': typeof McpRoute
   '/me': typeof MeRoute
+  '/notifications': typeof NotificationsRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/upcoming': typeof UpcomingRoute
@@ -192,6 +199,7 @@ export interface FileRoutesByTo {
   '/latest': typeof LatestRoute
   '/mcp': typeof McpRoute
   '/me': typeof MeRoute
+  '/notifications': typeof NotificationsRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/upcoming': typeof UpcomingRoute
@@ -219,6 +227,7 @@ export interface FileRoutesById {
   '/latest': typeof LatestRoute
   '/mcp': typeof McpRoute
   '/me': typeof MeRoute
+  '/notifications': typeof NotificationsRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/upcoming': typeof UpcomingRoute
@@ -247,6 +256,7 @@ export interface FileRouteTypes {
     | '/latest'
     | '/mcp'
     | '/me'
+    | '/notifications'
     | '/search'
     | '/settings'
     | '/upcoming'
@@ -273,6 +283,7 @@ export interface FileRouteTypes {
     | '/latest'
     | '/mcp'
     | '/me'
+    | '/notifications'
     | '/search'
     | '/settings'
     | '/upcoming'
@@ -299,6 +310,7 @@ export interface FileRouteTypes {
     | '/latest'
     | '/mcp'
     | '/me'
+    | '/notifications'
     | '/search'
     | '/settings'
     | '/upcoming'
@@ -326,6 +338,7 @@ export interface RootRouteChildren {
   LatestRoute: typeof LatestRoute
   McpRoute: typeof McpRoute
   MeRoute: typeof MeRoute
+  NotificationsRoute: typeof NotificationsRoute
   SearchRoute: typeof SearchRoute
   SettingsRoute: typeof SettingsRoute
   UpcomingRoute: typeof UpcomingRoute
@@ -373,6 +386,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/me': {
@@ -526,6 +546,7 @@ const rootRouteChildren: RootRouteChildren = {
   LatestRoute: LatestRoute,
   McpRoute: McpRoute,
   MeRoute: MeRoute,
+  NotificationsRoute: NotificationsRoute,
   SearchRoute: SearchRoute,
   SettingsRoute: SettingsRoute,
   UpcomingRoute: UpcomingRoute,
