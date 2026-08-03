@@ -274,13 +274,27 @@ function PartyPage() {
                   : "Bạn đang xem tự do, không bám theo chủ phòng."}
               </span>
               <button
-                onClick={() => setFollowHost((v) => !v)}
+                onClick={() => {
+                  setFollowHost((v) => !v);
+                  if (!followHost) setResyncNonce((n) => n + 1);
+                }}
                 className={`ml-auto inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 font-semibold transition ${
                   followHost ? "border-primary/60 bg-primary/10 text-primary" : "border-border hover:border-primary/60"
                 }`}
               >
                 <RefreshCw className="h-3.5 w-3.5" /> {followHost ? "Tắt đồng bộ" : "Đồng bộ lại"}
               </button>
+              {followHost && (
+                <button
+                  onClick={() => {
+                    setResyncNonce((n) => n + 1);
+                    toast.success("Đã bắt kịp chủ phòng");
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 font-semibold hover:border-primary/60 hover:text-primary"
+                >
+                  Bắt kịp ngay
+                </button>
+              )}
             </div>
           )}
 
