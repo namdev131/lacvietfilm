@@ -5,7 +5,6 @@ import {
   Library, Bookmark, Settings as SettingsIcon, LogIn,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { openQuickSearch } from "@/components/QuickSearch";
 
 type MenuLink = { to: string; label: string; icon: typeof Home; desc?: string };
 
