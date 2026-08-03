@@ -140,13 +140,14 @@ export function DockBar() {
         transition={{ type: "spring", stiffness: 320, damping: 30 }}
         className="fixed inset-x-0 bottom-0 z-50 flex justify-center pb-[env(safe-area-inset-bottom)]"
       >
-        <div className="pointer-events-auto relative mx-3 mb-3 flex w-full max-w-md items-end justify-around gap-1 overflow-hidden rounded-2xl border border-border bg-card px-2 py-2 shadow-[0_-8px_30px_rgba(0,0,0,0.45)]">
-          <motion.span
-            aria-hidden
-            className="pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 bg-gradient-to-r from-transparent via-primary/10 to-transparent"
-            animate={{ x: ["0%", "400%"] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-          />
+        <div className="pointer-events-auto relative mx-3 mb-3 flex w-full max-w-md items-end justify-around gap-1 rounded-2xl border border-border bg-card px-2 pb-2 pt-2 shadow-[0_-8px_30px_rgba(0,0,0,0.45)]">
+          <span aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
+            <motion.span
+              className="absolute inset-y-0 -left-1/3 block w-1/3 bg-gradient-to-r from-transparent via-primary/10 to-transparent"
+              animate={{ x: ["0%", "400%"] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+            />
+          </span>
           {items.map((item) => {
             const group = item.menu ? MENUS[item.menu] : null;
             const active = group
