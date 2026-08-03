@@ -164,7 +164,7 @@ export function DockBar() {
                   transition={{ type: "spring", stiffness: 420, damping: 20 }}
                   className="relative flex h-[68px] w-[68px] items-center justify-center rounded-2xl border border-gold/30 bg-gradient-to-tr from-primary/80 to-primary text-primary-foreground shadow-[0_8px_24px_color-mix(in_oklab,var(--primary)_45%,transparent)]"
                 >
-                  <Icon className="h-7 w-7 -rotate-45" strokeWidth={1.8} />
+                  <Icon className="h-7 w-7" strokeWidth={1.8} style={{ transform: "rotate(-45deg)" }} />
                 </motion.span>
               </Link>
             );
@@ -183,7 +183,7 @@ export function DockBar() {
                 if (item.primary) {
                   return (
                     <div key={item.key} className="flex flex-col items-center justify-end self-end pb-2.5">
-                      <span className={`text-[10px] font-bold uppercase tracking-widest ${pathname === "/" ? "text-primary" : "text-muted-foreground"}`}>
+                      <span className={`whitespace-nowrap text-[9px] font-bold uppercase tracking-wider ${pathname === "/" ? "text-primary" : "text-muted-foreground"}`}>
                         {item.label}
                       </span>
                     </div>
