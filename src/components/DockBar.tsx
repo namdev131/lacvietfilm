@@ -160,7 +160,7 @@ export function DockBar() {
                 <motion.span
                   whileTap={{ scale: 0.9 }}
                   whileHover={{ scale: 1.06 }}
-                  animate={active ? { y: [0, -2, 0] } : { y: 0 }}
+                  animate={{ y: active ? -2 : 0 }}
                   transition={{ type: "spring", stiffness: 420, damping: 20 }}
                   style={{ rotate: 45 }}
                   className="relative flex h-[62px] w-[62px] items-center justify-center rounded-2xl border border-gold/30 bg-gradient-to-tr from-primary/80 to-primary text-primary-foreground shadow-[0_8px_24px_color-mix(in_oklab,var(--primary)_45%,transparent)]"
