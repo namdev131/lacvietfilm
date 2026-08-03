@@ -116,3 +116,17 @@ export async function syncProgress(
   );
   if (error) console.error("syncProgress failed", error);
 }
+
+/** Mục đang xem dở gần nhất (local, dùng khi chưa đăng nhập) */
+export function getLatestUnfinishedProgress(): ProgressEntry | null {
+  if (typeof window === "undefined") return null;
+  const rows = Object.values(readAll())
+    .filter((r) => r.position > 30 && !isFinished(r.position, r.duration))
+    .sort((a, b) => b.updatedAt - a.updatedAt);
+  return rows[0] ?? null;
+}
+
+/** Đổi slug thành tên hiển thị tạm khi không có tên phim */
+export function slugToTitle(slug: string) {
+  return slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
