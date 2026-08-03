@@ -1,9 +1,19 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Bell, CheckCheck } from "lucide-react";
+import { Bell, BellOff, CheckCheck, Trash2, Undo2 } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { SignInPrompt } from "@/components/SignInPrompt";
-import { useEpisodeWatcher, useFollows, useMarkNotifications, useNotifications } from "@/hooks/useFollows";
+import {
+  useDeleteNotifications,
+  useEpisodeWatcher,
+  useFollows,
+  useMarkNotifications,
+  useNotifications,
+  useUnfollow,
+} from "@/hooks/useFollows";
 import type { SourceId } from "@/lib/types";
+
 
 export const Route = createFileRoute("/notifications")({
   head: () => ({
