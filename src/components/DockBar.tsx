@@ -136,111 +136,133 @@ export function DockBar() {
       </AnimatePresence>
 
       <motion.nav
-        animate={{ y: hidden && !menu ? 120 : 0, opacity: hidden && !menu ? 0 : 1 }}
+        animate={{ y: hidden && !menu ? 140 : 0, opacity: hidden && !menu ? 0 : 1 }}
         transition={{ type: "spring", stiffness: 320, damping: 30 }}
         className="fixed inset-x-0 bottom-0 z-50 flex justify-center pb-[env(safe-area-inset-bottom)]"
       >
-        <div className="pointer-events-auto relative mx-3 mb-3 flex w-full max-w-md items-end justify-around gap-1 rounded-2xl border border-border bg-card px-2 pb-2 pt-2 shadow-[0_-8px_30px_rgba(0,0,0,0.45)]">
-          <span aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
-            <motion.span
-              className="absolute inset-y-0 -left-1/3 block w-1/3 bg-gradient-to-r from-transparent via-primary/10 to-transparent"
-              animate={{ x: ["0%", "400%"] }}
-              transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-            />
-          </span>
-          {items.map((item) => {
-            const group = item.menu ? MENUS[item.menu] : null;
-            const active = group
-              ? group.links.some((l) => pathname === l.to || pathname.startsWith(`${l.to}/`)) || open === item.menu
-              : item.to === "/"
-                ? pathname === "/"
-                : pathname.startsWith(item.to);
+        <div className="pointer-events-auto relative mx-3 mb-3 w-full max-w-md">
+          {/* Nút Trang chủ nổi dạng huy hiệu kim cương */}
+          {(() => {
+            const item = items.find((i) => i.primary)!;
             const Icon = item.icon;
-
-            if (item.primary) {
-              return (
-                <Link
-                  key={item.key}
-                  to={item.to}
-                  aria-label={item.label}
-                  onClick={() => { tap(); setOpen(null); }}
-                  className="group relative -mt-7 flex flex-1 flex-col items-center gap-1"
-                >
-                  <motion.span
-                    whileTap={{ scale: 0.88 }}
-                    whileHover={{ scale: 1.06, rotate: -4 }}
-                    animate={active ? { y: [0, -3, 0] } : { y: 0 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 18 }}
-                    className={`flex h-14 w-14 items-center justify-center rounded-full ring-4 ring-background transition ${
-                      active
-                        ? "bg-primary text-primary-foreground shadow-[0_0_24px_hsl(var(--primary)/0.6)]"
-                        : "bg-secondary text-muted-foreground group-hover:text-foreground"
-                    }`}
-                  >
-                    <Icon className="h-6 w-6" />
-                  </motion.span>
-                  <span className={`text-[10px] font-semibold ${active ? "text-primary" : "text-muted-foreground"}`}>
-                    {item.label}
-                  </span>
-                </Link>
-              );
-            }
-
-            const inner = (
-              <>
-                {active && (
-                  <motion.span
-                    layoutId="dock-active-dot"
-                    className="absolute -top-0.5 h-1 w-1 rounded-full bg-primary"
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  />
-                )}
-                {active && (
-                  <motion.span
-                    layoutId="dock-active"
-                    className="absolute inset-0 rounded-xl bg-primary/15"
-                    transition={{ type: "spring", stiffness: 400, damping: 32 }}
-                  />
-                )}
-                <motion.span
-                  className="relative"
-                  animate={active ? { y: -2, scale: 1.12 } : { y: 0, scale: 1 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 22 }}
-                >
-                  <Icon className={`h-5 w-5 transition ${active ? "text-primary drop-shadow-[0_0_8px_hsl(var(--primary)/0.7)]" : "text-muted-foreground"}`} />
-                </motion.span>
-                <span className={`relative text-[10px] font-medium ${active ? "text-foreground" : "text-muted-foreground"}`}>
-                  {item.label}
-                </span>
-              </>
-            );
-
-            const cls = "relative flex flex-1 flex-col items-center gap-1 rounded-xl px-1 py-1.5";
-
-            if (group) {
-              return (
-                <motion.button
-                  key={item.key}
-                  type="button"
-                  whileTap={{ scale: 0.9 }}
-                  aria-label={item.label}
-                  aria-expanded={open === item.menu}
-                  onClick={() => { tap(); setOpen((o) => (o === item.menu ? null : item.menu ?? null)); }}
-                  className={cls}
-                >
-                  {inner}
-                </motion.button>
-              );
-            }
-
+            const active = pathname === "/";
             return (
-              <Link key={item.key} to={item.to} aria-label={item.label} onClick={() => { tap(); setOpen(null); }} className={cls}>
-                {inner}
+              <Link
+                to={item.to}
+                aria-label={item.label}
+                onClick={() => { tap(); setOpen(null); }}
+                className="group absolute -top-9 left-1/2 z-20 -translate-x-1/2"
+              >
+                <span
+                  aria-hidden
+                  className={`absolute inset-0 rounded-2xl bg-primary blur-xl transition-opacity ${active ? "opacity-50" : "opacity-25"} group-hover:opacity-60`}
+                />
+                <motion.span
+                  whileTap={{ scale: 0.9 }}
+                  whileHover={{ scale: 1.06 }}
+                  animate={active ? { y: [0, -2, 0] } : { y: 0 }}
+                  transition={{ type: "spring", stiffness: 420, damping: 20 }}
+                  style={{ rotate: 45 }}
+                  className="relative flex h-[62px] w-[62px] items-center justify-center rounded-2xl border border-gold/30 bg-gradient-to-tr from-primary/80 to-primary text-primary-foreground shadow-[0_8px_24px_color-mix(in_oklab,var(--primary)_45%,transparent)]"
+                >
+                  <span className="block -rotate-45">
+                    <Icon className="h-7 w-7" strokeWidth={1.8} />
+                  </span>
+                </motion.span>
+
               </Link>
             );
-          })}
+          })()}
+
+          {/* Thanh dock */}
+          <div className="relative flex h-20 items-center overflow-hidden rounded-[36px] border border-border/70 bg-card/95 px-3 shadow-[0_20px_50px_rgba(0,0,0,0.8)] backdrop-blur-xl">
+            {/* Hõm lõm mờ sau nút giữa */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 top-0 h-[96px] w-[96px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-gold/15 bg-background/85 shadow-[inset_0_-10px_24px_rgba(0,0,0,0.7)] backdrop-blur-md"
+            />
+
+            <div className="relative z-10 grid w-full grid-cols-5 items-center">
+              {items.map((item) => {
+                if (item.primary) {
+                  return (
+                    <div key={item.key} className="flex flex-col items-center justify-end self-end pb-2.5">
+                      <span className={`whitespace-nowrap text-[9px] font-bold uppercase tracking-wider ${pathname === "/" ? "text-primary" : "text-muted-foreground"}`}>
+                        {item.label}
+                      </span>
+                    </div>
+                  );
+                }
+                const group = item.menu ? MENUS[item.menu] : null;
+                const active = group
+                  ? group.links.some((l) => pathname === l.to || pathname.startsWith(`${l.to}/`)) || open === item.menu
+                  : pathname.startsWith(item.to);
+                const Icon = item.icon;
+
+                const inner = (
+                  <>
+                    <motion.span
+                      className="relative"
+                      animate={active ? { y: -1, scale: 1.12 } : { y: 0, scale: 1 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 22 }}
+                    >
+                      <Icon
+                        strokeWidth={1.8}
+                        className={`h-6 w-6 transition-colors ${
+                          active ? "text-gold drop-shadow-[0_0_10px_color-mix(in_oklab,var(--gold)_60%,transparent)]" : "text-muted-foreground"
+                        }`}
+                      />
+                    </motion.span>
+                    <span
+                      className={`whitespace-nowrap text-[10px] font-medium uppercase tracking-wide transition-colors ${
+                        active ? "text-gold" : "text-muted-foreground"
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+                    {active && (
+                      <motion.span
+                        layoutId="dock-active-underline"
+                        className="absolute -bottom-2 h-[3px] w-7 rounded-full bg-gold"
+                        transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                      />
+                    )}
+                  </>
+                );
+
+                const cls = "relative flex flex-col items-center gap-1";
+
+                if (group) {
+                  return (
+                    <motion.button
+                      key={item.key}
+                      type="button"
+                      whileTap={{ scale: 0.92 }}
+                      aria-label={item.label}
+                      aria-expanded={open === item.menu}
+                      onClick={() => { tap(); setOpen((o) => (o === item.menu ? null : item.menu ?? null)); }}
+                      className={cls}
+                    >
+                      {inner}
+                    </motion.button>
+                  );
+                }
+
+                return (
+                  <Link key={item.key} to={item.to} aria-label={item.label} onClick={() => { tap(); setOpen(null); }} className={cls}>
+                    {inner}
+                  </Link>
+                );
+              })}
+            </div>
+
+
+            {/* Vệt vàng sang trọng */}
+            <span aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
+          </div>
         </div>
       </motion.nav>
     </>
   );
 }
+
