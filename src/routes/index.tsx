@@ -13,10 +13,10 @@ import type { SourceFilter } from "@/lib/types";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Lạc Việt Cinema — Xem phim Vietsub & Thuyết minh miễn phí" },
-      { name: "description", content: "Xem phim online chất lượng cao: phim mới, bảng vàng realtime, HLS & Embed, nhiều nguồn phát để đổi khi giật lag." },
-      { property: "og:title", content: "Lạc Việt Cinema — Mở phim, chạm hồn Việt" },
-      { property: "og:description", content: "Phim mới mỗi ngày, bảng vàng realtime, xem Vietsub và Thuyết minh." },
+      { title: "Lạc Việt Cinema – Hồn Việt trong từng khung hình" },
+      { name: "description", content: "Xem phim trực tuyến tại Lạc Việt Cinema với kho phim đa dạng, nhiều nguồn phát, chuyển server thông minh và giao diện đậm bản sắc văn hóa Việt." },
+      { property: "og:title", content: "Lạc Việt Cinema – Hồn Việt trong từng khung hình" },
+      { property: "og:description", content: "Xem phim trực tuyến tại Lạc Việt Cinema với kho phim đa dạng, nhiều nguồn phát, chuyển server thông minh và giao diện đậm bản sắc văn hóa Việt." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
