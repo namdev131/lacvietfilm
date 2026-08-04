@@ -40,7 +40,7 @@ export function WatchPartyButton({
             { slug, name, poster, source, ep, srv },
             {
               onSuccess: (partyCode) => navigate({ to: "/party/$code", params: { code: partyCode } }),
-              onError: () => toast.error("Không mở được phòng, thử lại nhé"),
+              onError: (error) => toast.error(error instanceof Error ? error.message : "Không mở được phòng, thử lại nhé"),
             },
           );
         }}
