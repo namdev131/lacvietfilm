@@ -570,6 +570,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_watch_party: {
+        Args: {
+          _ep_index?: number
+          _name: string
+          _poster?: string
+          _slug: string
+          _source: string
+          _srv_index?: number
+        }
+        Returns: string
+      }
       gold_board: {
         Args: { _kind?: string; _limit?: number; _period?: string }
         Returns: {

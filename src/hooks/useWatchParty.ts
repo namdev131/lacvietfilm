@@ -31,11 +31,6 @@ export interface PartyMessage {
   created_at: string;
 }
 
-function makeCode() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-}
-
 export function useCreateParty() {
   const { user } = useAuth();
   return useMutation({
@@ -48,23 +43,17 @@ export function useCreateParty() {
       srv: number;
     }) => {
       if (!user) throw new Error("Bạn cần đăng nhập");
-      const code = makeCode();
-      const { data, error } = await supabase
-        .from("watch_parties")
-        .insert({
-          code,
-          host_id: user.id,
-          slug: movie.slug,
-          source: movie.source,
-          name: movie.name,
-          poster: movie.poster ?? null,
-          ep_index: movie.ep,
-          srv_index: movie.srv,
-        } as never)
-        .select("code")
-        .single();
+      const { data, error } = await supabase.rpc("create_watch_party", {
+        _slug: movie.slug,
+        _source: movie.source,
+        _name: movie.name,
+        _poster: movie.poster,
+        _ep_index: movie.ep,
+        _srv_index: movie.srv,
+      });
       if (error) throw error;
-      return (data as unknown as { code: string }).code;
+      if (typeof data !== "string") throw new Error("Không tạo được mã phòng");
+      return data;
     },
   });
 }
@@ -75,6 +64,9 @@ export function useParty(code: string) {
   const query = useQuery({
     queryKey: ["party", code],
     queryFn: async () => {
+      const { data: joined, error: joinError } = await supabase.rpc("join_party", { _code: code });
+      if (joinError) throw joinError;
+      if (!joined) return null;
       const { data, error } = await supabase.from("watch_parties").select("*").eq("code", code).maybeSingle();
       if (error) throw error;
       return (data as unknown as Party) ?? null;

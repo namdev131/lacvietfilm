@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
-import { Play, ArrowLeft } from "lucide-react";
+import { Play, ArrowLeft, Clapperboard, UsersRound } from "lucide-react";
 import { fetchDetail } from "@/lib/api";
 import type { SourceId } from "@/lib/types";
 import DOMPurify from "isomorphic-dompurify";
@@ -106,12 +106,18 @@ function MoviePage() {
                 dangerouslySetInnerHTML={{ __html: sanitized }}
               />
             )}
-            <div className="grid gap-2 pt-2 text-sm md:grid-cols-2">
+            <div className="grid gap-3 border-t border-border/60 pt-4 text-sm md:grid-cols-2">
               {data.director?.length ? (
-                <div><span className="text-muted-foreground">Đạo diễn:</span> {data.director.join(", ")}</div>
+                <div className="flex gap-3 rounded-md bg-card p-3">
+                  <Clapperboard className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <div><div className="text-xs text-muted-foreground">Đạo diễn</div><div className="mt-1 font-medium">{data.director.join(", ")}</div></div>
+                </div>
               ) : null}
               {data.actors?.length ? (
-                <div><span className="text-muted-foreground">Diễn viên:</span> {data.actors.slice(0, 8).join(", ")}</div>
+                <div className="flex gap-3 rounded-md bg-card p-3">
+                  <UsersRound className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+                  <div><div className="text-xs text-muted-foreground">Diễn viên</div><div className="mt-1 font-medium leading-6">{data.actors.join(", ")}</div></div>
+                </div>
               ) : null}
               {data.country?.length ? (
                 <div><span className="text-muted-foreground">Quốc gia:</span> {data.country.join(", ")}</div>
