@@ -107,7 +107,6 @@ function AuthPage() {
         <p className="mt-4 max-w-lg text-base leading-7 text-muted-foreground">Đăng nhập để tiếp tục xem trên mọi thiết bị, lưu phim yêu thích và tham gia phòng xem chung cùng bạn bè.</p>
         <div className="mt-8 grid max-w-lg grid-cols-2 gap-3 text-sm">
           {["Đồng bộ tiến độ xem", "Phòng xem chung", "Bộ sưu tập cá nhân", "Thông báo tập mới"].map((item) => <div key={item} className="flex items-center gap-2"><Check className="h-4 w-4 text-gold" />{item}</div>)}
-        </div>
       </section>
 
       <section>
