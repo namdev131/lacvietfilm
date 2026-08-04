@@ -25,7 +25,6 @@ import { PlayerHostProvider } from "@/components/PlayerHost";
 import { TvRemote } from "@/hooks/useTvRemote";
 import { SettingsProvider } from "@/lib/settings";
 import { registerPwa } from "@/components/InstallPrompt";
-import { JoinPartyDialog } from "@/components/JoinPartyDialog";
 
 
 const LOGO = "https://files.catbox.moe/6ua430.png";
@@ -159,7 +158,6 @@ function Header() {
             <span className="hidden sm:inline">Tìm phim…</span>
             <kbd className="hidden rounded border border-border px-1 text-[10px] md:inline">Ctrl K</kbd>
           </button>
-          <JoinPartyDialog />
           <JoinPartyDialog />
           <NotificationBell />
         </div>
