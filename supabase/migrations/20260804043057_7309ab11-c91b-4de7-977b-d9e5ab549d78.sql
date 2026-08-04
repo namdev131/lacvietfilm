@@ -1,3 +1,38 @@
+CREATE TABLE IF NOT EXISTS public.watch_party_members (
+  id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  party_id UUID NOT NULL REFERENCES public.watch_parties(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  UNIQUE(party_id, user_id)
+);
+
+GRANT SELECT, INSERT, DELETE ON public.watch_party_members TO authenticated;
+GRANT ALL ON public.watch_party_members TO service_role;
+
+ALTER TABLE public.watch_party_members ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Members can view their own memberships"
+  ON public.watch_party_members FOR SELECT TO authenticated
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "System can manage memberships"
+  ON public.watch_party_members FOR ALL TO service_role
+  USING (true) WITH CHECK (true);
+
+-- Realtime for members list if needed
+ALTER TABLE public.watch_party_members REPLICA IDENTITY FULL;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables 
+    WHERE pubname = 'supabase_realtime' 
+    AND schemaname = 'public' 
+    AND tablename = 'watch_party_members'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.watch_party_members;
+  END IF;
+END $$;
+
 CREATE OR REPLACE FUNCTION public.create_watch_party(
   _slug text,
   _source text,
