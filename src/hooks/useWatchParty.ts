@@ -47,7 +47,7 @@ export function useCreateParty() {
         _slug: movie.slug,
         _source: movie.source,
         _name: movie.name,
-        _poster: movie.poster ?? null,
+        _poster: movie.poster,
         _ep_index: movie.ep,
         _srv_index: movie.srv,
       });
