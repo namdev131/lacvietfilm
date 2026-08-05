@@ -211,7 +211,9 @@ function RootComponent() {
           <div className="h-28 md:h-32" />
           <DockBar />
           <QuickSearch />
+          <TvRemote />
           <CreditBadge />
+
 
           <Toaster position="top-center" richColors />
         </div>
