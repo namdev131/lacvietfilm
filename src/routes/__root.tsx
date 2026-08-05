@@ -26,6 +26,8 @@ import { TvRemote } from "@/hooks/useTvRemote";
 import { SettingsProvider } from "@/lib/settings";
 import { registerPwa } from "@/components/InstallPrompt";
 import { CreditBadge } from "@/components/CreditBadge";
+import { Onboarding } from "@/components/Onboarding";
+import { initTvPlatform } from "@/lib/tizen";
 const LOGO = "https://files.catbox.moe/6ua430.png";
 
 function NotFoundComponent() {
@@ -196,6 +198,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   useEffect(() => {
     registerPwa();
+    initTvPlatform();
   }, []);
   return (
     <QueryClientProvider client={queryClient}>
@@ -213,6 +216,7 @@ function RootComponent() {
           <QuickSearch />
           <TvRemote />
           <CreditBadge />
+          <Onboarding />
 
 
           <Toaster position="top-center" richColors />

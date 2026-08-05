@@ -123,3 +123,37 @@ html.reduce-motion *::after {
   transition-duration: 0.001ms !important;
   scroll-behavior: auto !important;
 }
+
+/* ===== Samsung Smart TV (Tizen) / Smart TV browsers ===== */
+html.tizen-tv {
+  /* Vùng an toàn tránh overscan của TV */
+  --tv-safe-x: 2.5vw;
+  --tv-safe-y: 2vh;
+  font-size: 18px;
+  cursor: none;
+}
+html.tizen-tv body {
+  padding-left: var(--tv-safe-x);
+  padding-right: var(--tv-safe-x);
+  padding-top: var(--tv-safe-y);
+  overflow-x: hidden;
+}
+html.tizen-tv *,
+html.tizen-tv *::before,
+html.tizen-tv *::after {
+  /* TV yếu: tắt hiệu ứng nặng cho mượt */
+  backdrop-filter: none !important;
+  animation-duration: 0.01ms !important;
+  transition-duration: 120ms !important;
+}
+html.tizen-tv :focus,
+html.tv-mode :focus-visible,
+html.tv-mode [tabindex]:focus {
+  outline: 3px solid hsl(45 96% 58%);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+html.tizen-tv .fixed.bottom-0,
+html.tizen-tv [data-dockbar] {
+  bottom: var(--tv-safe-y);
+}

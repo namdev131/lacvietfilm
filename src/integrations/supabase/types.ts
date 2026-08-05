@@ -570,6 +570,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_watch_parties: { Args: never; Returns: number }
       create_watch_party: {
         Args: {
           _ep_index?: number

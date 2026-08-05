@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { TIZEN_KEYCODE } from "@/lib/tizen";
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -56,8 +57,20 @@ export function useTvRemote() {
   const [tvMode, setTvMode] = useState(false);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
+    const onKey = (rawEvent: KeyboardEvent) => {
       const active = document.activeElement as HTMLElement | null;
+      // Remote Samsung (Tizen) gửi keyCode riêng, không có e.key chuẩn
+      const mapped = TIZEN_KEYCODE[rawEvent.keyCode];
+      const e =
+        mapped && (!rawEvent.key || rawEvent.key === "Unidentified" || rawEvent.key !== mapped)
+          ? (new Proxy(rawEvent, {
+              get(t, prop) {
+                if (prop === "key") return mapped;
+                const v = Reflect.get(t, prop);
+                return typeof v === "function" ? v.bind(t) : v;
+              },
+            }) as KeyboardEvent)
+          : rawEvent;
 
       // Phím media (remote)
       if (e.key === "MediaPlayPause" || e.key === "MediaPlay" || e.key === "MediaPause") {
