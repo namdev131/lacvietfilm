@@ -25,6 +25,7 @@ import { PlayerHostProvider } from "@/components/PlayerHost";
 import { TvRemote } from "@/hooks/useTvRemote";
 import { SettingsProvider } from "@/lib/settings";
 import { registerPwa } from "@/components/InstallPrompt";
+import { CreditBadge } from "@/components/CreditBadge";
 const LOGO = "https://files.catbox.moe/6ua430.png";
 
 function NotFoundComponent() {
