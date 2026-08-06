@@ -1,11 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Check, Eye, EyeOff, Loader2, Mail, Lock, Play, UserRound } from "lucide-react";
+import { ArrowLeft, Check, Eye, EyeOff, Loader2, Mail, MailCheck, Lock, Play, Sparkles, UserRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { authErrorMessage, passwordStrength } from "@/lib/auth-errors";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (s: Record<string, unknown>): { next?: string } =>
@@ -25,16 +26,21 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+type Tab = "login" | "signup" | "magic";
+
 function AuthPage() {
-  const [tab, setTab] = useState<"login" | "signup">("login");
+  const [tab, setTab] = useState<Tab>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [sentTo, setSentTo] = useState<string | null>(null);
   const navigate = useNavigate();
   const { next } = Route.useSearch();
   const { user, loading } = useAuth();
+
+  const redirectTo = next ? `${window.location.origin}${next}` : window.location.origin;
 
   const goAfterAuth = () => {
     if (next) window.location.replace(next);
@@ -46,6 +52,8 @@ function AuthPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, loading, next]);
 
+  const strength = passwordStrength(password);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
@@ -55,30 +63,53 @@ function AuthPage() {
         if (error) throw error;
         toast.success("Chào mừng trở lại!");
         goAfterAuth();
+      } else if (tab === "magic") {
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: { emailRedirectTo: redirectTo },
+        });
+        if (error) throw error;
+        setSentTo(email);
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo: next ? `${window.location.origin}${next}` : window.location.origin,
+            emailRedirectTo: redirectTo,
             data: { display_name: name || email.split("@")[0] },
           },
         });
         if (error) throw error;
-        toast.success("Đã tạo tài khoản! Kiểm tra email nếu cần xác minh.");
+        if (data.session) {
+          toast.success("Đã tạo tài khoản!");
+          goAfterAuth();
+        } else {
+          setSentTo(email);
+        }
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Có lỗi xảy ra");
+      toast.error(authErrorMessage(err));
     } finally {
       setBusy(false);
     }
   }
 
+  async function resend() {
+    if (!sentTo) return;
+    setBusy(true);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: sentTo,
+      options: { emailRedirectTo: redirectTo },
+    });
+    setBusy(false);
+    if (error) toast.error(authErrorMessage(error));
+    else toast.success("Đã gửi lại email xác minh");
+  }
+
   async function handleGoogle() {
     setBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: next ? `${window.location.origin}${next}` : window.location.origin,
-    });
+    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: redirectTo });
     if (result.error) {
       setBusy(false);
       toast.error("Không đăng nhập được bằng Google");
@@ -92,13 +123,12 @@ function AuthPage() {
     if (!email) return toast.info("Nhập email để đặt lại mật khẩu");
     setBusy(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/settings`,
+      redirectTo: `${window.location.origin}/reset-password`,
     });
     setBusy(false);
-    if (error) toast.error(error.message);
+    if (error) toast.error(authErrorMessage(error));
     else toast.success("Đã gửi liên kết đặt lại mật khẩu");
   }
-
 
   return (
     <div className="relative mx-auto grid min-h-[calc(100vh-3.5rem)] max-w-6xl items-center gap-10 overflow-hidden px-4 pb-32 pt-8 md:grid-cols-[1fr_440px] md:px-10">
@@ -114,82 +144,118 @@ function AuthPage() {
       <section>
         <Link to="/" className="mb-5 inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Trang chủ</Link>
         <div className="rounded-lg border border-border bg-card p-5 shadow-2xl md:p-7">
-          <h1 className="text-2xl font-black">{tab === "login" ? "Chào mừng trở lại" : "Tạo tài khoản"}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{tab === "login" ? "Tiếp tục hành trình điện ảnh của bạn." : "Bắt đầu lưu và xem phim theo cách của bạn."}</p>
-        <div className="mb-5 mt-6 grid grid-cols-2 gap-1 rounded-md bg-background p-1">
-          {(["login", "signup"] as const).map((t) => (
-            <Button
-              key={t}
-              type="button"
-              variant="ghost"
-              onClick={() => setTab(t)}
-              className={`rounded-md py-2 text-sm font-semibold transition ${
-                tab === t ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {t === "login" ? "Đăng nhập" : "Đăng ký"}
-            </Button>
-          ))}
-        </div>
+          {sentTo ? (
+            <div className="text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/15 text-primary">
+                <MailCheck className="h-7 w-7" />
+              </div>
+              <h1 className="mt-4 text-2xl font-black">Kiểm tra hộp thư của bạn</h1>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Chúng tôi đã gửi liên kết tới <span className="font-semibold text-foreground">{sentTo}</span>. Mở email và bấm vào liên kết để hoàn tất.
+              </p>
+              <div className="mt-6 space-y-2">
+                <Button type="button" onClick={resend} disabled={busy} className="w-full">
+                  {busy && <Loader2 className="h-4 w-4 animate-spin" />} Gửi lại email
+                </Button>
+                <Button type="button" variant="outline" onClick={() => setSentTo(null)} className="w-full">
+                  Dùng email khác
+                </Button>
+              </div>
+              <p className="mt-4 text-[11px] text-muted-foreground">Không thấy email? Hãy kiểm tra mục Spam / Quảng cáo.</p>
+            </div>
+          ) : (
+            <>
+              <h1 className="text-2xl font-black">
+                {tab === "login" ? "Chào mừng trở lại" : tab === "signup" ? "Tạo tài khoản" : "Đăng nhập không mật khẩu"}
+              </h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {tab === "login"
+                  ? "Tiếp tục hành trình điện ảnh của bạn."
+                  : tab === "signup"
+                    ? "Bắt đầu lưu và xem phim theo cách của bạn."
+                    : "Chúng tôi sẽ gửi liên kết đăng nhập tới email của bạn."}
+              </p>
+              <div className="mb-5 mt-6 grid grid-cols-3 gap-1 rounded-md bg-background p-1">
+                {(["login", "signup", "magic"] as const).map((t) => (
+                  <Button
+                    key={t}
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setTab(t)}
+                    className={`rounded-md py-2 text-xs font-semibold transition sm:text-sm ${
+                      tab === t ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {t === "login" ? "Đăng nhập" : t === "signup" ? "Đăng ký" : "Magic link"}
+                  </Button>
+                ))}
+              </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
-          {tab === "signup" && (
-            <Field icon={<UserRound className="h-4 w-4" />}>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Tên hiển thị"
-                required
-                className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-              />
-            </Field>
+              <form onSubmit={handleSubmit} className="space-y-3">
+                {tab === "signup" && (
+                  <Field icon={<UserRound className="h-4 w-4" />}>
+                    <input
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Tên hiển thị"
+                      required
+                      className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                    />
+                  </Field>
+                )}
+                <Field icon={<Mail className="h-4 w-4" />}>
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Email"
+                    className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                  />
+                </Field>
+                {tab !== "magic" && (
+                  <Field icon={<Lock className="h-4 w-4" />} action={<button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"} className="text-muted-foreground hover:text-foreground">{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button>}>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      required
+                      minLength={6}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Mật khẩu"
+                      className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                    />
+                  </Field>
+                )}
+                {tab === "signup" && password.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-1.5 flex-1 gap-1">
+                      {[0, 1, 2, 3].map((i) => (
+                        <span
+                          key={i}
+                          className={`h-full flex-1 rounded-full ${i < strength.score ? "bg-gold" : "bg-border"}`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-[11px] text-muted-foreground">{strength.label}</span>
+                  </div>
+                )}
+                {tab === "login" && <button type="button" onClick={resetPassword} className="block w-full text-right text-xs text-primary hover:underline">Quên mật khẩu?</button>}
+                <Button type="submit" disabled={busy} className="w-full">
+                  {busy && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {tab === "login" ? "Đăng nhập" : tab === "signup" ? "Tạo tài khoản" : (<><Sparkles className="h-4 w-4" /> Gửi liên kết đăng nhập</>)}
+                </Button>
+              </form>
+
+              <div className="my-4 flex items-center gap-3 text-[11px] uppercase tracking-wider text-muted-foreground">
+                <span className="h-px flex-1 bg-border" /> hoặc <span className="h-px flex-1 bg-border" />
+              </div>
+
+              <Button type="button" variant="outline" onClick={handleGoogle} disabled={busy} className="w-full">
+                <GoogleIcon /> Tiếp tục với Google
+              </Button>
+              <p className="mt-5 text-center text-[11px] leading-5 text-muted-foreground">Bằng việc tiếp tục, bạn đồng ý với điều khoản sử dụng và chính sách riêng tư của Lạc Việt Cinema.</p>
+            </>
           )}
-          <Field icon={<Mail className="h-4 w-4" />}>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email"
-              className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-            />
-          </Field>
-          <Field icon={<Lock className="h-4 w-4" />} action={<button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"} className="text-muted-foreground hover:text-foreground">{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button>}>
-            <input
-              type={showPassword ? "text" : "password"}
-              required
-              minLength={6}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Mật khẩu"
-              className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-            />
-          </Field>
-          {tab === "login" && <button type="button" onClick={resetPassword} className="block w-full text-right text-xs text-primary hover:underline">Quên mật khẩu?</button>}
-          <Button
-            type="submit"
-            disabled={busy}
-            className="w-full"
-          >
-            {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-            {tab === "login" ? "Đăng nhập" : "Tạo tài khoản"}
-          </Button>
-        </form>
-
-        <div className="my-4 flex items-center gap-3 text-[11px] uppercase tracking-wider text-muted-foreground">
-          <span className="h-px flex-1 bg-border" /> hoặc <span className="h-px flex-1 bg-border" />
-        </div>
-
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleGoogle}
-          disabled={busy}
-          className="w-full"
-        >
-          <GoogleIcon /> Tiếp tục với Google
-        </Button>
-        <p className="mt-5 text-center text-[11px] leading-5 text-muted-foreground">Bằng việc tiếp tục, bạn đồng ý với điều khoản sử dụng và chính sách riêng tư của Lạc Việt Cinema.</p>
         </div>
       </section>
     </div>
