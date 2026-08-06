@@ -1,0 +1,12 @@
+REVOKE ALL ON FUNCTION public.cleanup_watch_parties() FROM anon, authenticated, public;
+REVOKE ALL ON FUNCTION public.handle_new_user() FROM anon, authenticated, public;
+REVOKE ALL ON FUNCTION public.update_updated_at_column() FROM anon, authenticated, public;
+GRANT EXECUTE ON FUNCTION public.cleanup_watch_parties() TO service_role;
+GRANT EXECUTE ON FUNCTION public.handle_new_user() TO service_role;
+GRANT EXECUTE ON FUNCTION public.update_updated_at_column() TO service_role;
+REVOKE ALL ON FUNCTION public.create_watch_party(text, text, text, text, integer, integer) FROM anon, public;
+REVOKE ALL ON FUNCTION public.join_party(text) FROM anon, public;
+GRANT EXECUTE ON FUNCTION public.create_watch_party(text, text, text, text, integer, integer) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.join_party(text) TO authenticated, service_role;
+REVOKE ALL ON FUNCTION public.is_party_member(uuid, uuid) FROM anon, public;
+GRANT EXECUTE ON FUNCTION public.is_party_member(uuid, uuid) TO authenticated, service_role;
