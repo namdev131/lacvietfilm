@@ -133,3 +133,22 @@ export function initTvPlatform() {
   // TV không có chuột: luôn hiện focus ring và tắt hover-only
   document.body.classList.add("no-hover");
 }
+
+type TizenApp = {
+  getCurrentApplication?: () => { exit?: () => void; hide?: () => void };
+};
+
+/** Thoát ứng dụng trên Tizen (dùng cho nút Back/Exit ở màn hình gốc). */
+export function exitTvApp(): boolean {
+  const app = (globalThis as TizenGlobal & { tizen?: { application?: TizenApp } }).tizen?.application;
+  try {
+    const cur = app?.getCurrentApplication?.();
+    if (cur?.exit) {
+      cur.exit();
+      return true;
+    }
+  } catch {
+    /* không chạy trên Tizen */
+  }
+  return false;
+}
