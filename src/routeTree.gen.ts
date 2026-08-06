@@ -13,6 +13,7 @@ import { Route as WatchlistRouteImport } from './routes/watchlist'
 import { Route as UpcomingRouteImport } from './routes/upcoming'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as MeRouteImport } from './routes/me'
 import { Route as McpRouteImport } from './routes/mcp'
@@ -53,6 +54,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NotificationsRoute = NotificationsRouteImport.update({
@@ -173,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/mcp': typeof McpRoute
   '/me': typeof MeRoute
   '/notifications': typeof NotificationsRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/upcoming': typeof UpcomingRoute
@@ -200,6 +207,7 @@ export interface FileRoutesByTo {
   '/mcp': typeof McpRoute
   '/me': typeof MeRoute
   '/notifications': typeof NotificationsRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/upcoming': typeof UpcomingRoute
@@ -228,6 +236,7 @@ export interface FileRoutesById {
   '/mcp': typeof McpRoute
   '/me': typeof MeRoute
   '/notifications': typeof NotificationsRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/upcoming': typeof UpcomingRoute
@@ -257,6 +266,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/me'
     | '/notifications'
+    | '/reset-password'
     | '/search'
     | '/settings'
     | '/upcoming'
@@ -284,6 +294,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/me'
     | '/notifications'
+    | '/reset-password'
     | '/search'
     | '/settings'
     | '/upcoming'
@@ -311,6 +322,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/me'
     | '/notifications'
+    | '/reset-password'
     | '/search'
     | '/settings'
     | '/upcoming'
@@ -339,6 +351,7 @@ export interface RootRouteChildren {
   McpRoute: typeof McpRoute
   MeRoute: typeof MeRoute
   NotificationsRoute: typeof NotificationsRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SearchRoute: typeof SearchRoute
   SettingsRoute: typeof SettingsRoute
   UpcomingRoute: typeof UpcomingRoute
@@ -386,6 +399,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/notifications': {
@@ -547,6 +567,7 @@ const rootRouteChildren: RootRouteChildren = {
   McpRoute: McpRoute,
   MeRoute: MeRoute,
   NotificationsRoute: NotificationsRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SearchRoute: SearchRoute,
   SettingsRoute: SettingsRoute,
   UpcomingRoute: UpcomingRoute,
