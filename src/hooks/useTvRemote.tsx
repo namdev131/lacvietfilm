@@ -92,12 +92,35 @@ export function useTvRemote() {
         return;
       }
 
-      // Nút Back trên remote (một số TV gửi keyCode 461 / "GoBack" / Backspace)
-      if ((e.key === "GoBack" || (e as KeyboardEvent).keyCode === 461) && !isTypingTarget(active)) {
+      // Phím màu trên remote: lối tắt điều hướng nhanh
+      const colorRoutes: Record<string, string> = {
+        ColorF0Red: "/search",
+        ColorF1Green: "/favorites",
+        ColorF2Yellow: "/history",
+        ColorF3Blue: "/settings",
+      };
+      const colorTarget = colorRoutes[e.key];
+      if (colorTarget && !isTypingTarget(active)) {
         e.preventDefault();
+        window.location.assign(colorTarget);
+        return;
+      }
+
+      // Nút Back / Exit trên remote (một số TV gửi keyCode 461 / 10009 / "GoBack")
+      if (
+        (e.key === "GoBack" || e.key === "Exit" || (e as KeyboardEvent).keyCode === 461) &&
+        !isTypingTarget(active)
+      ) {
+        e.preventDefault();
+        const atRoot = window.location.pathname === "/";
+        if (e.key === "Exit" || atRoot) {
+          if (exitTvApp()) return;
+        }
+        if (atRoot) return;
         window.history.back();
         return;
       }
+
 
       if (isTypingTarget(active)) return;
 
