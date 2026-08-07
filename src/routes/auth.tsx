@@ -109,7 +109,7 @@ function AuthPage() {
 
   async function handleGoogle() {
     setBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: redirectTo });
+    const result = await signInWithGoogle(redirectTo);
     if (result.error) {
       setBusy(false);
       toast.error("Không đăng nhập được bằng Google");
