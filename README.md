@@ -2,203 +2,361 @@
 
 <div align="center">
 
-# Lạc Việt Cinema
+# 🎬 Lạc Việt Cinema
 
-### Mở phim, chạm hồn Việt.
+### **Mở phim, chạm hồn Việt.**
 
-Nền tảng xem phim đa nguồn với giao diện hiện đại, hỗ trợ **Vietsub**, **Thuyết minh**, **HLS**, **Embed**, đồng bộ tài khoản và nhiều tính năng cá nhân hóa trải nghiệm xem phim.
+Nền tảng xem phim đa nguồn được xây dựng với **React 19**, **TanStack Start**, **Supabase** và **HLS.js**.
 
-**Website:** `https://lacvietfilm.vercel.app`
+Tập trung vào tốc độ, trải nghiệm xem phim, khả năng chuyển nguồn linh hoạt và đồng bộ dữ liệu người dùng trên nhiều thiết bị.
 
-**Lovable:** `https://lacvietfilm.lovable.app`
+<br />
+
+[![GitHub Repo](https://img.shields.io/badge/GitHub-lacvietfilm-181717?style=for-the-badge\&logo=github)](https://github.com/lacvietfilm/lacvietfilm)
+[![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge\&logo=react\&logoColor=61DAFB)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge\&logo=typescript\&logoColor=white)](https://www.typescriptlang.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-Backend-3FCF8E?style=for-the-badge\&logo=supabase\&logoColor=white)](https://supabase.com/)
+[![Vercel](https://img.shields.io/badge/Vercel-Deploy-000000?style=for-the-badge\&logo=vercel\&logoColor=white)](https://vercel.com/)
+
+<br />
+
+**[🌐 Website](https://lacvietfilm.vercel.app)** ·
+**[💻 Mã nguồn](https://github.com/lacvietfilm/lacvietfilm)** ·
+**[🐛 Báo lỗi](https://github.com/lacvietfilm/lacvietfilm/issues)**
 
 </div>
 
 ---
 
-## Giới thiệu
+## ✦ Tổng quan
 
-**Lạc Việt Cinema** là ứng dụng web xem phim được xây dựng theo hướng hiện đại, responsive và tập trung vào trải nghiệm người dùng.
+**Lạc Việt Cinema** là nền tảng xem phim trên web được xây dựng theo kiến trúc hiện đại, hỗ trợ nhiều nguồn dữ liệu và nhiều phương thức phát video.
 
-Hệ thống tổng hợp dữ liệu từ nhiều nguồn API, cho phép người dùng chủ động chuyển nguồn khi một API gặp sự cố hoặc có tốc độ phản hồi không tốt.
+Thay vì phụ thuộc vào một API duy nhất, hệ thống có thể lấy dữ liệu từ nhiều nhà cung cấp và cho phép người dùng chuyển nguồn khi cần.
 
-Ngoài việc xem phim, Lạc Việt Cinema còn cung cấp hệ thống tài khoản, lịch sử xem, yêu thích, xem sau, bộ sưu tập, bình luận, đánh giá, thông báo và phòng xem chung.
+```text
+                         LẠC VIỆT CINEMA
 
-> Nội dung và khả năng phát phim phụ thuộc vào API cùng máy chủ của các bên cung cấp dữ liệu.
+            ┌──────────────────────────────────┐
+            │          Giao diện người dùng     │
+            │      Desktop · Mobile · TV       │
+            └────────────────┬─────────────────┘
+                             │
+                    ┌────────▼────────┐
+                    │  Movie Service  │
+                    └────────┬────────┘
+                             │
+             ┌───────────────┼───────────────┐
+             │               │               │
+          KKPhim           OPhim          NguonC
+             │               │               │
+             └───────────────┼───────────────┘
+                             │
+                           VSMov
+                             │
+                    ┌────────▼────────┐
+                    │     Player      │
+                    │ HLS · Embed     │
+                    └─────────────────┘
+```
 
 ---
 
-## Nguồn dữ liệu
+# ✨ Điểm nổi bật
 
-Lạc Việt Cinema hiện hỗ trợ:
+<table>
+<tr>
+<td width="50%" valign="top">
 
-| Nguồn  | Dữ liệu phim | HLS | Embed | Ping |
-| ------ | :----------: | :-: | :---: | :--: |
-| KKPhim |      Có      |  Có |   Có  |  Có  |
-| OPhim  |      Có      |  Có |   Có  |  Có  |
-| NguonC |      Có      |  —  |   Có  |  Có  |
-| VSMov  |      Có      |  Có |   Có  |  Có  |
+### 🎞 Đa nguồn phim
 
-Hệ thống kiểm tra độ trễ của từng API định kỳ và hiển thị ping trực tiếp để người dùng có thể lựa chọn nguồn phù hợp.
+Hỗ trợ nhiều nguồn dữ liệu:
 
----
+* KKPhim
+* OPhim
+* NguonC
+* VSMov
 
-## Tính năng chính
+Người dùng có thể chuyển nguồn trực tiếp nếu một API gặp lỗi hoặc phản hồi chậm.
 
-### Trình phát phim
+</td>
+<td width="50%" valign="top">
 
-* Phát trực tiếp bằng **HLS / m3u8**
-* Phát bằng **Embed**
-* Chuyển thủ công giữa HLS và Embed
-* Tự động fallback sang Embed khi HLS không phát được
-* Tự phục hồi một số lỗi media của HLS
-* Tự động lựa chọn chất lượng video
-* Chọn chất lượng HLS thủ công
-* Điều chỉnh tốc độ phát
-* Ghi nhớ tiến độ xem
-* Tiếp tục xem từ vị trí trước đó
-* Bỏ qua intro
-* Hiển thị tập tiếp theo
-* Tự động chuyển tập
-* Hỗ trợ toàn màn hình
-* Hỗ trợ Picture-in-Picture tùy trình duyệt
-* Tối ưu cho desktop, mobile và thiết bị TV
+### ⚡ Kiểm tra tốc độ nguồn
 
-### Quản lý tập phim
+Hệ thống kiểm tra trạng thái API định kỳ.
 
-Server phim được tự động phân loại theo:
+Hiển thị:
 
-* Vietsub
-* Thuyết minh
-* Server khác
+* Trạng thái online
+* Độ trễ nguồn
+* Khả năng kết nối
+* Nguồn đang được sử dụng
 
-Danh sách tập dài được chia thành từng nhóm:
+</td>
+</tr>
 
-```text
-1–10
-11–20
-21–30
-31–40
-...
-```
+<tr>
+<td width="50%" valign="top">
 
-Giúp điều hướng nhanh hơn đối với phim bộ có số lượng tập lớn.
-
-### Chuyển nguồn API
-
-Người dùng có thể chuyển giữa:
-
-```text
-KKPhim
-OPhim
-NguonC
-VSMov
-```
-
-Ping của từng nguồn được cập nhật định kỳ để hỗ trợ lựa chọn máy chủ có tốc độ phản hồi tốt.
-
-### Tài khoản
-
-Hệ thống xác thực sử dụng **Supabase Auth**.
+### ▶ Player thông minh
 
 Hỗ trợ:
 
-* Đăng ký tài khoản
-* Đăng nhập bằng email và mật khẩu
+* HLS / `.m3u8`
+* Embed
+* Chuyển chất lượng
+* Tốc độ phát
+* Fullscreen
+* Picture-in-Picture
+* Khôi phục tiến độ xem
+
+</td>
+<td width="50%" valign="top">
+
+### 🔄 Tự động dự phòng
+
+Nếu HLS gặp lỗi nghiêm trọng:
+
+```text
+HLS
+ │
+ ├─ Hoạt động ───► Tiếp tục phát
+ │
+ └─ Lỗi ─────────► Embed dự phòng
+```
+
+Giảm tối đa tình trạng phim không thể phát.
+
+</td>
+</tr>
+
+<tr>
+<td width="50%" valign="top">
+
+### 👤 Đồng bộ tài khoản
+
+Supabase cung cấp:
+
+* Đăng ký
+* Đăng nhập
+* Google OAuth
 * Magic Link
-* Đăng nhập Google
+* Quên mật khẩu
+* Hồ sơ cá nhân
+
+</td>
+<td width="50%" valign="top">
+
+### ❤️ Cá nhân hóa
+
+Người dùng có thể lưu:
+
+* Phim yêu thích
+* Xem sau
+* Lịch sử
+* Tiến độ xem
+* Bộ sưu tập
+* Tùy chọn player
+
+</td>
+</tr>
+</table>
+
+---
+
+# 🎬 Trình phát phim
+
+Player là một trong những thành phần trọng tâm của Lạc Việt Cinema.
+
+### Hỗ trợ
+
+| Tính năng          | Trạng thái |
+| ------------------ | :--------: |
+| HLS / M3U8         |      ✅     |
+| Embed              |      ✅     |
+| Chuyển HLS ↔ Embed |      ✅     |
+| Tự động fallback   |      ✅     |
+| Chọn chất lượng    |      ✅     |
+| Chọn tốc độ phát   |      ✅     |
+| Tiếp tục xem       |      ✅     |
+| Lưu tiến độ        |      ✅     |
+| Bỏ qua intro       |      ✅     |
+| Tập tiếp theo      |      ✅     |
+| Fullscreen         |      ✅     |
+| Picture-in-Picture |      ✅     |
+| Mobile Responsive  |      ✅     |
+
+---
+
+## Luồng xử lý Player
+
+```mermaid
+flowchart TD
+
+A[Người dùng chọn phim] --> B[Chọn tập]
+B --> C[Chọn nguồn API]
+
+C --> D{Có HLS?}
+
+D -->|Có| E[Khởi tạo HLS.js]
+D -->|Không| H[Phát Embed]
+
+E --> F{Phát thành công?}
+
+F -->|Có| G[Phát video]
+F -->|Không| H
+
+G --> I[Lưu tiến độ xem]
+I --> J[Tập tiếp theo]
+```
+
+---
+
+# 🌐 Nguồn dữ liệu
+
+| Nguồn      | Danh sách phim | HLS | Embed | Kiểm tra Ping |
+| ---------- | :------------: | :-: | :---: | :-----------: |
+| **KKPhim** |        ✅       |  ✅  |   ✅   |       ✅       |
+| **OPhim**  |        ✅       |  ✅  |   ✅   |       ✅       |
+| **NguonC** |        ✅       |  —  |   ✅   |       ✅       |
+| **VSMov**  |        ✅       |  ✅  |   ✅   |       ✅       |
+
+> Khả năng phát video phụ thuộc vào dữ liệu mà từng nguồn cung cấp tại thời điểm truy cập.
+
+---
+
+# 🔥 Hệ thống tính năng
+
+## Khám phá phim
+
+* Trang chủ
+* Phim mới cập nhật
+* Tìm kiếm phim
+* Thể loại
+* Quốc gia
+* Phim bộ
+* Phim lẻ
+* Phim sắp chiếu
+* Bộ sưu tập
+
+---
+
+## Tài khoản
+
+* Đăng ký
+* Đăng nhập
+* Google OAuth
+* Magic Link
 * Xác minh email
 * Quên mật khẩu
 * Đặt lại mật khẩu
 * Hồ sơ người dùng
 
-### Cá nhân hóa
+---
 
-Người dùng đăng nhập có thể sử dụng:
+## Thư viện cá nhân
 
-* Phim yêu thích
-* Danh sách xem sau
-* Lịch sử xem
-* Tiếp tục xem
-* Theo dõi phim
-* Bộ sưu tập phim
-* Cài đặt trình phát
-* Lưu chất lượng mặc định
-* Lưu tốc độ phát
-* Chọn ngôn ngữ server ưu tiên
+```text
+Thư viện của tôi
+│
+├── ❤️ Yêu thích
+├── 🕒 Lịch sử
+├── 🔖 Xem sau
+├── ▶ Tiếp tục xem
+├── 📚 Bộ sưu tập
+└── ⚙ Cài đặt Player
+```
 
-### Tương tác cộng đồng
+---
 
-Hệ thống bao gồm:
+## Cộng đồng
 
-* Bình luận
-* Đánh giá phim
-* Theo dõi
-* Thông báo
-* Watch Party / xem phim cùng nhau
+Lạc Việt Cinema còn tích hợp các tính năng tương tác:
 
-### Bảng Vàng
+* 💬 Bình luận
+* ⭐ Đánh giá phim
+* 🔔 Thông báo
+* 👥 Theo dõi
+* 🎉 Watch Party
+* 🏆 Bảng Vàng
 
-Bảng xếp hạng phim theo lượt xem thời gian thực với các khoảng:
+---
+
+# 🏆 Bảng Vàng
+
+Hệ thống bảng xếp hạng phim theo lượt xem.
+
+### Bộ lọc thời gian
 
 ```text
 Hôm nay
-Tuần
-Tháng
+Tuần này
+Tháng này
 Mọi lúc
 ```
 
-Có thể lọc theo loại phim và nguồn dữ liệu.
-
-### Khám phá phim
-
-Các khu vực chính bao gồm:
-
-* Trang chủ
-* Phim mới cập nhật
-* Tìm kiếm
-* Duyệt theo thể loại
-* Duyệt theo quốc gia
-* Bộ sưu tập
-* Phim sắp chiếu
-* Phim yêu thích
-* Lịch sử
-* Danh sách xem sau
-* Trang cá nhân
-* Thông báo
+Hỗ trợ lọc thêm theo nguồn và loại phim.
 
 ---
 
-## Công nghệ sử dụng
+# 🎉 Watch Party
 
-| Thành phần         | Công nghệ       |
-| ------------------ | --------------- |
-| Frontend           | React 19        |
-| Ngôn ngữ           | TypeScript      |
-| Framework          | TanStack Start  |
-| Router             | TanStack Router |
-| Build Tool         | Vite            |
-| Styling            | Tailwind CSS 4  |
-| UI primitives      | Radix UI        |
-| Animation          | Framer Motion   |
-| Backend / Database | Supabase        |
-| Authentication     | Supabase Auth   |
-| Data fetching      | TanStack Query  |
-| Video              | HLS.js          |
-| Validation         | Zod             |
-| Forms              | React Hook Form |
-| Icons              | Lucide React    |
-| Charts             | Recharts        |
+Watch Party cho phép nhiều người cùng tham gia một phòng xem.
+
+```text
+Người tạo phòng
+       │
+       ▼
+  Mã phòng / Link
+       │
+       ▼
+ ┌─────────────┐
+ │ Watch Party │
+ └─────────────┘
+    │   │   │
+    ▼   ▼   ▼
+ User User User
+```
 
 ---
 
-## Cấu trúc dự án
+# 🧰 Công nghệ
+
+<div align="center">
+
+|                       | Công nghệ       |
+| --------------------- | --------------- |
+| ⚛ **Frontend**        | React 19        |
+| 🔷 **Ngôn ngữ**       | TypeScript      |
+| 🛣 **Router**         | TanStack Router |
+| ⚙ **Framework**       | TanStack Start  |
+| ⚡ **Build**           | Vite            |
+| 🎨 **CSS**            | Tailwind CSS 4  |
+| 🧱 **UI**             | Radix UI        |
+| 🎞 **Animation**      | Framer Motion   |
+| 🗄 **Database**       | Supabase        |
+| 🔐 **Authentication** | Supabase Auth   |
+| 🔄 **Data Fetching**  | TanStack Query  |
+| ▶ **Video**           | HLS.js          |
+| ✅ **Validation**      | Zod             |
+| 📝 **Forms**          | React Hook Form |
+| 📊 **Charts**         | Recharts        |
+| ✦ **Icons**           | Lucide React    |
+
+</div>
+
+---
+
+# 📁 Cấu trúc dự án
 
 ```text
 lacvietfilm/
+│
 ├── public/
 │
 ├── src/
+│   │
 │   ├── components/
 │   │   ├── ui/
 │   │   ├── Player.tsx
@@ -208,8 +366,7 @@ lacvietfilm/
 │   │   ├── SourcePing.tsx
 │   │   ├── GoldBoard.tsx
 │   │   ├── CommentsSection.tsx
-│   │   ├── ContinueWatching.tsx
-│   │   └── ...
+│   │   └── ContinueWatching.tsx
 │   │
 │   ├── hooks/
 │   │
@@ -218,12 +375,12 @@ lacvietfilm/
 │   ├── lib/
 │   │   ├── sources/
 │   │   │   └── vsmov.ts
+│   │   │
 │   │   ├── api.ts
 │   │   ├── browse.ts
 │   │   ├── oauth.ts
 │   │   ├── progress.ts
-│   │   ├── settings.tsx
-│   │   └── ...
+│   │   └── settings.tsx
 │   │
 │   ├── routes/
 │   │   ├── index.tsx
@@ -236,8 +393,7 @@ lacvietfilm/
 │   │   ├── watchlist.tsx
 │   │   ├── collections.index.tsx
 │   │   ├── notifications.tsx
-│   │   ├── party.$code.tsx
-│   │   └── ...
+│   │   └── party.$code.tsx
 │   │
 │   ├── router.tsx
 │   ├── server.ts
@@ -251,38 +407,50 @@ lacvietfilm/
 ├── package.json
 ├── vite.config.ts
 ├── tsconfig.json
-├── DEPLOY_VERCEL.md
 └── README.md
 ```
 
 ---
 
-## Cài đặt
+# 🚀 Bắt đầu
 
-### 1. Clone repository
+## 1. Clone repository
 
 ```bash
 git clone https://github.com/lacvietfilm/lacvietfilm.git
+```
+
+```bash
 cd lacvietfilm
 ```
 
-### 2. Cài dependency
+---
 
-Với npm:
+## 2. Cài đặt dependency
+
+### npm
 
 ```bash
 npm install
 ```
 
-Hoặc Bun:
+### Bun
 
 ```bash
 bun install
 ```
 
-### 3. Cấu hình biến môi trường
+---
 
-Tạo file `.env`:
+## 3. Cấu hình môi trường
+
+Tạo:
+
+```text
+.env
+```
+
+Ví dụ:
 
 ```env
 VITE_SUPABASE_URL=your_supabase_url
@@ -294,45 +462,52 @@ SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
 SUPABASE_PROJECT_ID=your_supabase_project_id
 ```
 
-> Không đưa `service_role` key hoặc các secret có quyền quản trị vào mã nguồn frontend.
+> [!WARNING]
+> Không đưa `service_role`, private key hoặc secret có quyền quản trị vào frontend hay repository công khai.
 
-### 4. Chạy development server
+---
+
+## 4. Chạy Development
 
 ```bash
 npm run dev
 ```
 
-Sau đó mở địa chỉ được Vite hiển thị trong terminal.
+Sau đó truy cập địa chỉ được Vite hiển thị trong terminal.
 
 ---
 
-## Các lệnh
+# 📜 Scripts
 
-```bash
-# Development
-npm run dev
+| Lệnh                | Chức năng                    |
+| ------------------- | ---------------------------- |
+| `npm run dev`       | Khởi động development server |
+| `npm run build`     | Production build             |
+| `npm run build:dev` | Development build            |
+| `npm run preview`   | Preview bản build            |
+| `npm run lint`      | Kiểm tra ESLint              |
+| `npm run format`    | Format source code           |
 
-# Production build
-npm run build
+---
 
-# Development build
-npm run build:dev
+# 🗄 Supabase
 
-# Preview production build
-npm run preview
+Supabase được sử dụng cho:
 
-# Kiểm tra ESLint
-npm run lint
-
-# Format source code
-npm run format
+```text
+Supabase
+│
+├── Authentication
+├── Profiles
+├── Favorites
+├── History
+├── Watchlist
+├── Collections
+├── Comments
+├── Ratings
+├── Notifications
+└── Watch Party
 ```
-
----
-
-## Supabase
-
-Lạc Việt Cinema sử dụng Supabase cho các chức năng liên quan đến tài khoản và dữ liệu người dùng.
 
 Database migrations nằm tại:
 
@@ -340,121 +515,77 @@ Database migrations nằm tại:
 supabase/migrations/
 ```
 
-Khi tự triển khai dự án, cần cấu hình Supabase tương ứng và áp dụng migrations cần thiết trước khi sử dụng đầy đủ các tính năng.
+Khi triển khai một instance riêng, cần áp dụng đầy đủ migration trước khi sử dụng các chức năng liên quan đến tài khoản.
 
 ---
 
-## Google OAuth
+# 🔐 Google OAuth
 
-Để đăng nhập bằng Google trên bản triển khai riêng, cần:
+Để bật Google Login:
 
-1. Tạo OAuth Client trong Google Cloud Console.
-2. Bật Google Provider trong Supabase Authentication.
-3. Cấu hình Client ID và Client Secret.
-4. Thêm callback URL của Supabase vào Google OAuth.
-5. Thêm domain ứng dụng vào danh sách Redirect URLs của Supabase.
+1. Tạo OAuth Client trong **Google Cloud Console**.
+2. Bật Google Provider trong **Supabase Authentication**.
+3. Điền **Client ID**.
+4. Điền **Client Secret**.
+5. Thêm Callback URL của Supabase.
+6. Cấu hình Redirect URL của ứng dụng.
 
 ---
 
-## Deploy Vercel
+# ☁️ Deploy
 
-Build command:
+## Vercel
+
+Build:
 
 ```bash
 npm run build
 ```
 
-Ứng dụng sử dụng Nitro để tạo output phù hợp với Vercel.
-
-Nếu môi trường triển khai không tự nhận Vercel, có thể cấu hình:
+Có thể cấu hình:
 
 ```env
 NITRO_PRESET=vercel
 ```
 
-Chi tiết xem:
-
-```text
-DEPLOY_VERCEL.md
-```
-
-Sau khi thêm hoặc thay đổi biến môi trường trên Vercel, cần redeploy ứng dụng.
+Sau khi cập nhật biến môi trường trên Vercel, hãy redeploy ứng dụng.
 
 ---
 
-## Player HLS
+# 🛣 Routing
 
-Lạc Việt Cinema sử dụng `hls.js` trên các trình duyệt hỗ trợ Media Source Extensions.
-
-Luồng xử lý cơ bản:
-
-```text
-Chọn phim
-   │
-   ▼
-Chọn nguồn API
-   │
-   ▼
-Lấy server + tập phim
-   │
-   ├── Có HLS ──► HLS.js ──► Phát video
-   │                 │
-   │                 └── Lỗi nghiêm trọng
-   │                         │
-   │                         ▼
-   │                    Embed fallback
-   │
-   └── Không có HLS ──► Embed
-```
-
-Các nguồn có HLS hiện tại:
-
-```text
-KKPhim
-OPhim
-VSMov
-```
-
-NguonC được sử dụng theo chế độ phát phù hợp với dữ liệu mà nguồn cung cấp.
-
----
-
-## Routing
-
-Dự án sử dụng **file-based routing** của TanStack Router.
-
-Ví dụ:
+Dự án sử dụng **file-based routing**.
 
 ```text
 src/routes/index.tsx
-→ /
+        ↓
+        /
 
 src/routes/search.tsx
-→ /search
+        ↓
+     /search
 
 src/routes/movie.$slug.tsx
-→ /movie/:slug
+        ↓
+ /movie/:slug
 
 src/routes/watch.$slug.tsx
-→ /watch/:slug
+        ↓
+ /watch/:slug
 
 src/routes/party.$code.tsx
-→ /party/:code
+        ↓
+ /party/:code
 ```
 
-Không chỉnh sửa thủ công:
-
-```text
-src/routeTree.gen.ts
-```
-
-File này được tạo tự động bởi TanStack Router.
+> [!IMPORTANT]
+> Không chỉnh sửa thủ công `src/routeTree.gen.ts`. File này được TanStack Router sinh tự động.
 
 ---
 
-## Đóng góp
+# 🤝 Đóng góp
 
-Nếu muốn đóng góp cho dự án:
+Fork repository và tạo branch mới:
 
 ```bash
 git checkout -b feature/ten-tinh-nang
@@ -468,9 +599,9 @@ git commit -m "feat: thêm tính năng mới"
 git push origin feature/ten-tinh-nang
 ```
 
-Sau đó tạo Pull Request về nhánh `main`.
+Sau đó tạo **Pull Request** vào nhánh `main`.
 
-Nên đảm bảo trước khi gửi PR:
+Trước khi gửi PR:
 
 ```bash
 npm run lint
@@ -479,48 +610,71 @@ npm run build
 
 ---
 
-## Lưu ý về nguồn nội dung
+# 🗺 Định hướng phát triển
 
-Lạc Việt Cinema sử dụng dữ liệu và đường dẫn phát từ các API bên thứ ba.
+Một số hạng mục có thể tiếp tục được mở rộng:
 
-Dự án không kiểm soát tính ổn định, thời gian hoạt động, nội dung hoặc chính sách của các nguồn API đó. Một nguồn có thể thay đổi endpoint, giới hạn truy cập hoặc ngừng hoạt động bất kỳ lúc nào.
-
-Người triển khai dự án có trách nhiệm đảm bảo việc sử dụng dữ liệu và nội dung phù hợp với pháp luật, điều khoản của nhà cung cấp và quyền sở hữu trí tuệ tại khu vực của mình.
-
----
-
-## Trạng thái dự án
-
-Dự án đang được phát triển và có thể tiếp tục thay đổi về:
-
-* Giao diện
-* API
-* Database schema
-* Player
-* Authentication
-* Hệ thống tài khoản
-* Watch Party
-* Bảng xếp hạng
-* Hệ thống đề xuất phim
-
-Các thay đổi mới nên được theo dõi trực tiếp qua lịch sử commit của repository.
+* [ ] Nâng cấp hệ thống đề xuất phim
+* [ ] Đồng bộ Watch Party tốt hơn
+* [ ] Thống kê lịch sử xem
+* [ ] Tối ưu player trên Smart TV
+* [ ] Cache dữ liệu API
+* [ ] Hệ thống phụ đề nâng cao
+* [ ] Tìm kiếm thông minh
+* [ ] Hồ sơ người dùng mở rộng
+* [ ] Thành tích và huy hiệu
+* [ ] Progressive Web App
+* [ ] Tối ưu hiệu năng và Core Web Vitals
 
 ---
 
-## Giấy phép
+# ⚠️ Miễn trừ trách nhiệm
+
+> [!NOTE]
+> Lạc Việt Cinema là dự án phần mềm tổng hợp dữ liệu từ các API bên thứ ba.
+
+Dự án không trực tiếp kiểm soát:
+
+* Nội dung do API cung cấp
+* Máy chủ video bên thứ ba
+* Tính ổn định của nguồn phim
+* Bản quyền nội dung do nguồn cung cấp
+* Thời gian hoạt động của API
+
+Các API có thể thay đổi endpoint, giới hạn truy cập hoặc dừng hoạt động bất kỳ lúc nào.
+
+Người triển khai có trách nhiệm đảm bảo việc sử dụng phần mềm và nội dung tuân thủ luật pháp, quyền sở hữu trí tuệ và điều khoản của các nhà cung cấp liên quan.
+
+---
+
+# 📄 Giấy phép
 
 Repository hiện chưa công bố giấy phép mã nguồn riêng.
 
-Nếu có nhu cầu sử dụng, phân phối hoặc phát triển lại mã nguồn cho mục đích khác, vui lòng kiểm tra giấy phép mới nhất của repository hoặc liên hệ chủ dự án.
+Việc sử dụng, sao chép, chỉnh sửa hoặc phân phối lại mã nguồn cần tuân theo giấy phép được chủ repository công bố trong tương lai.
 
 ---
 
 <div align="center">
 
-### Lạc Việt Cinema
+<br />
 
-**Mở phim, chạm hồn Việt.**
+## 🎬 Lạc Việt Cinema
 
-Code bởi **Nam NpT**
+### **Mở phim, chạm hồn Việt.**
+
+Một trải nghiệm điện ảnh hiện đại mang dấu ấn riêng của **Lạc Việt**.
+
+<br />
+
+**Built with React · TypeScript · Supabase · HLS.js**
+
+<br />
+
+Made with ❤️ by **Nam NpT**
+
+<br />
+
+[⬆ Về đầu trang](#-lạc-việt-cinema)
 
 </div>
