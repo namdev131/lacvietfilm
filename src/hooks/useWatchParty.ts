@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import type { SourceId } from "@/lib/types";
+import { partyIdentity, type AdminRole } from "@/lib/admin-role";
 
 export interface Party {
   id: string;
@@ -197,11 +198,11 @@ export function usePartyChat(partyId?: string) {
   const send = useMutation({
     mutationFn: async (content: string) => {
       if (!user || !partyId) throw new Error("Bạn cần đăng nhập");
-      const meta = (user.user_metadata ?? {}) as Record<string, string>;
+      const identity = partyIdentity(user);
       const { error } = await supabase.from("watch_party_messages").insert({
         party_id: partyId,
         user_id: user.id,
-        display_name: meta.display_name || meta.full_name || user.email?.split("@")[0] || "Khán giả",
+        display_name: identity.name,
         content,
       } as never);
       if (error) throw error;
@@ -212,20 +213,33 @@ export function usePartyChat(partyId?: string) {
 }
 
 /** Số người đang trong phòng (presence) */
-export function usePartyPresence(code: string, name: string) {
+export interface PartyStaffNotice { id: string; name: string; role: Exclude<AdminRole, "member"> }
+
+export function usePartyPresence(code: string) {
+  const { user } = useAuth();
   const [count, setCount] = useState(1);
+  const [staffNotice, setStaffNotice] = useState<PartyStaffNotice | null>(null);
   useEffect(() => {
-    const channel = supabase.channel(`party-presence-${code}`, { config: { presence: { key: name } } });
+    if (!user) return;
+    const identity = partyIdentity(user);
+    const channel = supabase.channel(`party-presence-${code}`, { config: { presence: { key: user.id } } });
     channel
       .on("presence", { event: "sync" }, () => {
-        setCount(Object.keys(channel.presenceState()).length || 1);
+        const state = channel.presenceState<PartyStaffNotice & { at: number }>();
+        setCount(Object.keys(state).length || 1);
+      })
+      .on("presence", { event: "join" }, ({ newPresences }) => {
+        const staff = (newPresences as unknown as Array<PartyStaffNotice & { at: number }>).find(
+          (entry) => entry.id !== user.id && entry.role !== "member",
+        );
+        if (staff) setStaffNotice({ id: staff.id, name: staff.name, role: staff.role });
       })
       .subscribe((status) => {
-        if (status === "SUBSCRIBED") void channel.track({ at: Date.now() });
+        if (status === "SUBSCRIBED") void channel.track({ ...identity, at: Date.now() });
       });
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [code, name]);
-  return count;
+  }, [code, user]);
+  return { count, staffNotice, clearStaffNotice: () => setStaffNotice(null) };
 }
