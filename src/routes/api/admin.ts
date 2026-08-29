@@ -7,7 +7,7 @@ let pool: Pool | undefined;
 function db() {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) throw new Error("DATABASE_URL is required");
-  return (pool ??= new Pool({ connectionString, ssl: false, max: 2 }));
+  return (pool ??= new Pool({ connectionString, ssl: { rejectUnauthorized: false }, max: 2 }));
 }
 
 function json(data: unknown, status = 200) {
