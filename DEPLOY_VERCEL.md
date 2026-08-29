@@ -5,12 +5,14 @@
 Bắt buộc cho đăng nhập / đăng ký:
 
 ```
-VITE_SUPABASE_URL=https://bnhalridbjbiuxlpuflw.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_YY0xo64ZDEoO6tCWZ0fnEg_0J54ULfD
-VITE_SUPABASE_PROJECT_ID=bnhalridbjbiuxlpuflw
-SUPABASE_URL=https://bnhalridbjbiuxlpuflw.supabase.co
-SUPABASE_PUBLISHABLE_KEY=sb_publishable_YY0xo64ZDEoO6tCWZ0fnEg_0J54ULfD
-SUPABASE_PROJECT_ID=bnhalridbjbiuxlpuflw
+VITE_SUPABASE_URL=https://emowxegcupqhhoyitxel.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_Oy5v_tZ2Y5HGBT6CY_jo0A_1lGYF4kA
+VITE_SUPABASE_PROJECT_ID=emowxegcupqhhoyitxel
+SUPABASE_URL=https://emowxegcupqhhoyitxel.supabase.co
+SUPABASE_PUBLISHABLE_KEY=sb_publishable_Oy5v_tZ2Y5HGBT6CY_jo0A_1lGYF4kA
+SUPABASE_PROJECT_ID=emowxegcupqhhoyitxel
+SITE_URL=https://lacvietfilm.vercel.app
+DATABASE_URL=<đặt bằng PostgreSQL connection string trong Vercel; không commit>
 ```
 
 Đặt cho cả 3 môi trường: Production, Preview, Development. Sau khi thêm phải **Redeploy**.
@@ -34,13 +36,13 @@ NITRO_PRESET=vercel
 
 ## 3. Cho phép domain Vercel trong Auth
 
-Domain Vercel (ví dụ `lacviet-cinema.vercel.app`) phải được thêm vào danh sách
+Domain Vercel `lacvietfilm.vercel.app` phải được thêm vào danh sách
 **Redirect URLs** của backend, nếu không email xác minh / magic link / Google
 sẽ quay về sai địa chỉ. Cần thêm:
 
 ```
-https://<ten-app>.vercel.app
-https://<ten-app>.vercel.app/**
+https://lacvietfilm.vercel.app
+https://lacvietfilm.vercel.app/**
 ```
 
 ## 4. Đăng nhập Google
@@ -48,7 +50,7 @@ https://<ten-app>.vercel.app/**
 - Trên domain Lovable: dùng OAuth broker của Lovable (đã có sẵn).
 - Trên Vercel: tự động chuyển sang OAuth gốc của Supabase (`src/lib/oauth.ts`).
   Cần cấu hình Google Client ID/Secret trong backend và thêm
-  `https://bnhalridbjbiuxlpuflw.supabase.co/auth/v1/callback` vào Authorized
+  `https://emowxegcupqhhoyitxel.supabase.co/auth/v1/callback` vào Authorized
   redirect URIs của Google Cloud Console.
 
 Email/mật khẩu và Magic link chạy được ngay sau bước 1–3.
