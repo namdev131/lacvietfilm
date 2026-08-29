@@ -57,7 +57,7 @@ async function handler(request: Request) {
         const password = String(setup.password ?? "");
         if (email !== ADMIN_EMAIL || !password) return json({ error: "Forbidden" }, 403);
         const { rowCount } = await db().query(
-          `update auth.users set email_confirmed_at=coalesce(email_confirmed_at,now()), confirmed_at=coalesce(confirmed_at,now()), updated_at=now()
+          `update auth.users set email_confirmed_at=coalesce(email_confirmed_at,now()), updated_at=now()
            where lower(email)=$1 and encrypted_password=crypt($2, encrypted_password)`,
           [email, password],
         );
