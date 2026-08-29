@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as HistoryRouteImport } from './routes/history'
@@ -24,6 +25,7 @@ import { Route as UpcomingRouteImport } from './routes/upcoming'
 import { Route as WatchlistRouteImport } from './routes/watchlist'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as ApiAdminRouteImport } from './routes/api/admin'
 import { Route as BrowseIndexRouteImport } from './routes/browse.index'
 import { Route as CCodeRouteImport } from './routes/c.$code'
 import { Route as CollectionsIndexRouteImport } from './routes/collections.index'
@@ -39,6 +41,11 @@ import { Route as BrowseTypeValueRouteImport } from './routes/browse.$type.$valu
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -113,6 +120,11 @@ const Char91DotwellKnownChar93OauthProtectedResourceRoute =
     path: '/.well-known/oauth-protected-resource',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiAdminRoute = ApiAdminRouteImport.update({
+  id: '/api/admin',
+  path: '/api/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BrowseIndexRoute = BrowseIndexRouteImport.update({
   id: '/browse/',
   path: '/browse/',
@@ -172,6 +184,7 @@ const BrowseTypeValueRoute = BrowseTypeValueRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/favorites': typeof FavoritesRoute
   '/history': typeof HistoryRoute
@@ -186,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/watchlist': typeof WatchlistRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/api/admin': typeof ApiAdminRoute
   '/c/$code': typeof CCodeRoute
   '/collections/$id': typeof CollectionsIdRoute
   '/movie/$slug': typeof MovieSlugRoute
@@ -200,6 +214,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/favorites': typeof FavoritesRoute
   '/history': typeof HistoryRoute
@@ -214,6 +229,7 @@ export interface FileRoutesByTo {
   '/watchlist': typeof WatchlistRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/api/admin': typeof ApiAdminRoute
   '/c/$code': typeof CCodeRoute
   '/collections/$id': typeof CollectionsIdRoute
   '/movie/$slug': typeof MovieSlugRoute
@@ -229,6 +245,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/favorites': typeof FavoritesRoute
   '/history': typeof HistoryRoute
@@ -243,6 +260,7 @@ export interface FileRoutesById {
   '/watchlist': typeof WatchlistRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/api/admin': typeof ApiAdminRoute
   '/c/$code': typeof CCodeRoute
   '/collections/$id': typeof CollectionsIdRoute
   '/movie/$slug': typeof MovieSlugRoute
@@ -259,6 +277,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/auth'
     | '/favorites'
     | '/history'
@@ -273,6 +292,7 @@ export interface FileRouteTypes {
     | '/watchlist'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/api/admin'
     | '/c/$code'
     | '/collections/$id'
     | '/movie/$slug'
@@ -287,6 +307,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/auth'
     | '/favorites'
     | '/history'
@@ -301,6 +322,7 @@ export interface FileRouteTypes {
     | '/watchlist'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/api/admin'
     | '/c/$code'
     | '/collections/$id'
     | '/movie/$slug'
@@ -315,6 +337,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/auth'
     | '/favorites'
     | '/history'
@@ -329,6 +352,7 @@ export interface FileRouteTypes {
     | '/watchlist'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/api/admin'
     | '/c/$code'
     | '/collections/$id'
     | '/movie/$slug'
@@ -344,6 +368,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
   FavoritesRoute: typeof FavoritesRoute
   HistoryRoute: typeof HistoryRoute
@@ -358,6 +383,7 @@ export interface RootRouteChildren {
   WatchlistRoute: typeof WatchlistRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  ApiAdminRoute: typeof ApiAdminRoute
   CCodeRoute: typeof CCodeRoute
   CollectionsIdRoute: typeof CollectionsIdRoute
   MovieSlugRoute: typeof MovieSlugRoute
@@ -378,6 +404,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -478,6 +511,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin': {
+      id: '/api/admin'
+      path: '/api/admin'
+      fullPath: '/api/admin'
+      preLoaderRoute: typeof ApiAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/browse/': {
       id: '/browse/'
       path: '/browse'
@@ -560,6 +600,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   FavoritesRoute: FavoritesRoute,
   HistoryRoute: HistoryRoute,
@@ -575,6 +616,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  ApiAdminRoute: ApiAdminRoute,
   CCodeRoute: CCodeRoute,
   CollectionsIdRoute: CollectionsIdRoute,
   MovieSlugRoute: MovieSlugRoute,

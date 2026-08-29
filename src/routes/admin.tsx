@@ -1,0 +1,87 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { Film, Loader2, Plus, RefreshCw, Shield, Trash2, Users } from "lucide-react";
+import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+
+const ADMIN_EMAIL = "lacviet55@proton.me";
+
+type AdminUser = { id: string; email: string; display_name: string | null; created_at: string; last_sign_in_at: string | null };
+type Party = { id: string; code: string; name: string; host_email: string | null; closed: boolean; created_at: string };
+
+export const Route = createFileRoute("/admin")({
+  head: () => ({ meta: [{ title: "Dashboard Admin | Lạc Việt Film" }] }),
+  component: AdminPage,
+});
+
+function AdminPage() {
+  const { user, session, loading } = useAuth();
+  const navigate = useNavigate();
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [parties, setParties] = useState<Party[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [tab, setTab] = useState<"users" | "parties">("users");
+  const [form, setForm] = useState({ email: "", password: "", displayName: "" });
+  const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL;
+
+  async function request(body?: Record<string, unknown>) {
+    const response = await fetch("/api/admin", {
+      method: body ? "POST" : "GET",
+      headers: { authorization: `Bearer ${session?.access_token}`, ...(body ? { "content-type": "application/json" } : {}) },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Thao tác thất bại");
+    return data;
+  }
+
+  async function load() {
+    setBusy(true);
+    try {
+      const data = await request();
+      setUsers(data.users);
+      setParties(data.parties);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Không tải được dashboard");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!loading && !user) navigate({ to: "/auth", search: { next: "/admin" }, replace: true });
+    else if (!loading && isAdmin) void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, user?.id]);
+
+  async function act(body: Record<string, unknown>, message: string) {
+    setBusy(true);
+    try { await request(body); toast.success(message); await load(); }
+    catch (error) { toast.error(error instanceof Error ? error.message : "Thao tác thất bại"); setBusy(false); }
+  }
+
+  if (loading) return <div className="grid min-h-[60vh] place-items-center"><Loader2 className="animate-spin" /></div>;
+  if (!isAdmin) return <div className="mx-auto max-w-xl px-4 py-20 text-center"><Shield className="mx-auto h-12 w-12 text-destructive" /><h1 className="mt-4 text-2xl font-black">Không có quyền truy cập</h1><Link to="/" className="mt-6 inline-block bg-primary px-5 py-3 font-bold text-primary-foreground">Về trang phim</Link></div>;
+
+  return (
+    <main className="mx-auto max-w-7xl px-4 pb-32 pt-8">
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        <div><p className="text-xs font-bold uppercase tracking-widest text-primary">Quản trị hệ thống</p><h1 className="text-3xl font-black">Dashboard Admin</h1></div>
+        <div className="flex gap-2"><Link to="/" className="flex items-center gap-2 border border-border px-4 py-2 text-sm font-bold"><Film className="h-4 w-4" /> Xem phim</Link><button onClick={load} disabled={busy} className="flex items-center gap-2 bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"><RefreshCw className={`h-4 w-4 ${busy ? "animate-spin" : ""}`} /> Làm mới</button></div>
+      </header>
+
+      <div className="mt-8 grid grid-cols-2 gap-3"><button onClick={() => setTab("users")} className={`p-4 text-left ${tab === "users" ? "bg-primary text-primary-foreground" : "bg-card"}`}><Users className="mb-2" /><strong>Quản lý người dùng</strong><small className="block">{users.length} tài khoản</small></button><button onClick={() => setTab("parties")} className={`p-4 text-left ${tab === "parties" ? "bg-primary text-primary-foreground" : "bg-card"}`}><Film className="mb-2" /><strong>Quản lý Watch Party</strong><small className="block">{parties.length} phòng</small></button></div>
+
+      {tab === "users" ? <section className="mt-6">
+        <form onSubmit={(e) => { e.preventDefault(); void act({ action: "createUser", ...form }, "Đã tạo người dùng"); setForm({ email: "", password: "", displayName: "" }); }} className="grid gap-2 bg-card p-4 md:grid-cols-4"><input required type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="border border-input bg-background px-3 py-2" /><input required minLength={6} type="password" placeholder="Mật khẩu" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="border border-input bg-background px-3 py-2" /><input placeholder="Tên hiển thị" value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} className="border border-input bg-background px-3 py-2" /><button disabled={busy} className="flex items-center justify-center gap-2 bg-primary px-4 py-2 font-bold text-primary-foreground"><Plus className="h-4 w-4" /> Thêm</button></form>
+        <div className="mt-3 overflow-x-auto"><table className="w-full min-w-[760px] bg-card text-sm"><thead><tr className="border-b border-border text-left"><th className="p-3">Email</th><th>Tên</th><th>Ngày tạo</th><th>Đăng nhập cuối</th><th className="p-3 text-right">Thao tác</th></tr></thead><tbody>{users.map((item) => <UserRow key={item.id} item={item} adminId={user!.id} busy={busy} act={act} />)}</tbody></table></div>
+      </section> : <section className="mt-6 overflow-x-auto"><table className="w-full min-w-[760px] bg-card text-sm"><thead><tr className="border-b border-border text-left"><th className="p-3">Mã</th><th>Phim</th><th>Chủ phòng</th><th>Trạng thái</th><th className="p-3 text-right">Thao tác</th></tr></thead><tbody>{parties.map((party) => <tr key={party.id} className="border-b border-border/60"><td className="p-3 font-bold">{party.code}</td><td>{party.name}</td><td>{party.host_email || "—"}</td><td>{party.closed ? "Đã đóng" : "Đang mở"}</td><td className="p-3 text-right"><button disabled={busy || party.closed} onClick={() => void act({ action: "closeParty", id: party.id }, "Đã đóng phòng")} className="mr-2 border border-border px-3 py-1.5 disabled:opacity-40">Đóng phòng</button><button disabled={busy} onClick={() => confirm("Xóa Watch Party này?") && void act({ action: "deleteParty", id: party.id }, "Đã xóa phòng")} className="bg-destructive px-3 py-1.5 text-destructive-foreground">Xóa</button></td></tr>)}</tbody></table></section>}
+    </main>
+  );
+}
+
+function UserRow({ item, adminId, busy, act }: { item: AdminUser; adminId: string; busy: boolean; act: (body: Record<string, unknown>, message: string) => Promise<void> }) {
+  const [email, setEmail] = useState(item.email);
+  const [displayName, setDisplayName] = useState(item.display_name || "");
+  return <tr className="border-b border-border/60"><td className="p-3"><input value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-transparent" /></td><td><input value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="w-full bg-transparent" /></td><td>{new Date(item.created_at).toLocaleDateString("vi-VN")}</td><td>{item.last_sign_in_at ? new Date(item.last_sign_in_at).toLocaleString("vi-VN") : "—"}</td><td className="p-3 text-right"><button disabled={busy} onClick={() => void act({ action: "updateUser", id: item.id, email, displayName }, "Đã cập nhật")} className="mr-2 border border-border px-3 py-1.5">Lưu</button><button disabled={busy || item.id === adminId} onClick={() => confirm("Xóa người dùng này? Dữ liệu liên quan cũng sẽ bị xóa.") && void act({ action: "deleteUser", id: item.id }, "Đã xóa người dùng")} className="bg-destructive px-3 py-1.5 text-destructive-foreground disabled:opacity-40"><Trash2 className="h-4 w-4" /></button></td></tr>;
+}

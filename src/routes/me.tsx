@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   LogOut, Heart, History, LogIn, UserRound, Settings as SettingsIcon, Bookmark,
-  Ticket, Library, Bell, CalendarClock, Film, CheckCircle2,
+  Ticket, Library, Bell, CalendarClock, Film, CheckCircle2, Shield,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -61,6 +61,7 @@ function MePage() {
   const finished = (history.data ?? []).filter((item) => item.finished).length;
   const owner = ticketOwnerLabel({ displayName, email: user.email });
   const memberCode = `LV-${user.id.replace(/-/g, "").slice(0, 8).toUpperCase()}`;
+  const isAdmin = user.email?.toLowerCase() === "lacviet55@proton.me";
 
   return (
     <div className="profile-page mx-auto max-w-6xl px-4 pb-32 pt-8 md:px-8">
@@ -106,6 +107,7 @@ function MePage() {
           <QuickLink to="/notifications" icon={<Bell />} title="Thông báo" text="Theo dõi tập mới và hoạt động" />
           <QuickLink to="/upcoming" icon={<CalendarClock />} title="Lịch sắp chiếu" text="Đón phim sắp ra mắt" />
           <QuickLink to="/settings" icon={<SettingsIcon />} title="Cài đặt" text="Hồ sơ, trình phát, quyền riêng tư" />
+          {isAdmin && <QuickLink to="/admin" icon={<Shield />} title="Dashboard Admin" text="Quản lý người dùng và Watch Party" />}
           <button onClick={signOut} className="profile-signout"><LogOut className="h-4 w-4" /> Đăng xuất</button>
         </aside>
         <div className="bento-member-card">
