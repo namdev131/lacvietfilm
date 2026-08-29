@@ -40,7 +40,10 @@ function AuthPage() {
   const { next } = Route.useSearch();
   const { user, loading } = useAuth();
 
-  const redirectTo = next ? `${window.location.origin}${next}` : window.location.origin;
+  const redirectTo = () => {
+    const origin = window.location.origin;
+    return next ? `${origin}${next}` : origin;
+  };
 
   const goAfterAuth = () => {
     if (next) window.location.replace(next);
@@ -66,7 +69,7 @@ function AuthPage() {
       } else if (tab === "magic") {
         const { error } = await supabase.auth.signInWithOtp({
           email,
-          options: { emailRedirectTo: redirectTo },
+          options: { emailRedirectTo: redirectTo() },
         });
         if (error) throw error;
         setSentTo(email);
@@ -75,7 +78,7 @@ function AuthPage() {
           email,
           password,
           options: {
-            emailRedirectTo: redirectTo,
+            emailRedirectTo: redirectTo(),
             data: { display_name: name || email.split("@")[0] },
           },
         });
@@ -100,7 +103,7 @@ function AuthPage() {
     const { error } = await supabase.auth.resend({
       type: "signup",
       email: sentTo,
-      options: { emailRedirectTo: redirectTo },
+      options: { emailRedirectTo: redirectTo() },
     });
     setBusy(false);
     if (error) toast.error(authErrorMessage(error));
@@ -109,7 +112,7 @@ function AuthPage() {
 
   async function handleGoogle() {
     setBusy(true);
-    const result = await signInWithGoogle(redirectTo);
+    const result = await signInWithGoogle(redirectTo());
     if (result.error) {
       setBusy(false);
       toast.error("Không đăng nhập được bằng Google");
