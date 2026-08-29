@@ -1,4 +1,4 @@
-/* Lạc Việt Cinema — service worker
+/* Lạc Việt Film — service worker
    - Điều hướng: network-first, có trang offline dự phòng
    - Ảnh poster: cache-first (dùng lại khi mạng yếu / offline)
    - Tài nguyên tĩnh: stale-while-revalidate
@@ -9,7 +9,7 @@ const IMAGES = `${VERSION}-img`;
 const MAX_IMAGES = 300;
 
 const OFFLINE_HTML = `<!doctype html><html lang="vi"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>Ngoại tuyến — Lạc Việt Cinema</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Ngoại tuyến — Lạc Việt Film</title>
 <style>body{margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:#0A0A0A;color:#fafafa;font-family:system-ui,-apple-system,"Be Vietnam Pro",sans-serif;text-align:center}
 h1{font-size:20px;margin:0 0 8px}p{color:#a1a1aa;font-size:14px;margin:0 0 20px}
 button{background:#E50914;color:#fff;border:0;border-radius:10px;padding:10px 18px;font-weight:600;font-size:14px}</style></head>

@@ -14,12 +14,12 @@ import {
 export const Route = createFileRoute("/collections/")({
   head: () => ({
     meta: [
-      { title: "Bộ sưu tập phim của bạn | Lạc Việt Cinema" },
+      { title: "Bộ sưu tập phim của bạn | Lạc Việt Film" },
       {
         name: "description",
         content: "Tạo playlist phim theo ý thích, đặt công khai và chia sẻ link cho bạn bè.",
       },
-      { property: "og:title", content: "Bộ sưu tập — Lạc Việt Cinema" },
+      { property: "og:title", content: "Bộ sưu tập — Lạc Việt Film" },
       { property: "og:description", content: "Playlist phim tự tạo, chia sẻ link công khai." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

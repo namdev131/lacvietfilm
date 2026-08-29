@@ -8,12 +8,12 @@ import { fetchUpcoming } from "@/lib/browse";
 export const Route = createFileRoute("/upcoming")({
   head: () => ({
     meta: [
-      { title: "Phim sắp chiếu mới nhất | Lạc Việt Cinema" },
+      { title: "Phim sắp chiếu mới nhất | Lạc Việt Film" },
       {
         name: "description",
         content: "Danh sách phim sắp chiếu được cập nhật liên tục — đón đầu những bộ phim đáng chờ đợi nhất.",
       },
-      { property: "og:title", content: "Phim sắp chiếu — Lạc Việt Cinema" },
+      { property: "og:title", content: "Phim sắp chiếu — Lạc Việt Film" },
       { property: "og:description", content: "Đón đầu những bộ phim sắp ra mắt." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

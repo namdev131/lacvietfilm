@@ -38,18 +38,29 @@ export function detectKind(d: Pick<MovieDetail, "category" | "servers">): GoldKi
   return eps > 1 ? "series" : "single";
 }
 
+export function canonicalMovieKey(name: string) {
+  return name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/[^a-z0-9]/g, "");
+}
+
 /** Ghi nhận 1 lượt xem cho Bảng Vàng (chống spam bằng sessionStorage 10 phút) */
 export async function recordView(entry: {
   slug: string;
   name: string;
+  canonicalName?: string;
   poster?: string;
   source: SourceId;
   kind?: GoldKind;
   lang?: string;
   userId?: string | null;
 }) {
+  const movieKey = canonicalMovieKey(entry.canonicalName || entry.name);
   try {
-    const key = `lv-view:${entry.slug}`;
+    const key = `lv-view:${movieKey}`;
     const last = Number(sessionStorage.getItem(key) || 0);
     if (Date.now() - last < 10 * 60 * 1000) return;
     sessionStorage.setItem(key, String(Date.now()));
@@ -58,6 +69,7 @@ export async function recordView(entry: {
   }
   const { error } = await supabase.from("view_events").insert({
     user_id: entry.userId ?? null,
+    movie_key: movieKey,
     slug: entry.slug,
     name: entry.name,
     poster: entry.poster ?? null,

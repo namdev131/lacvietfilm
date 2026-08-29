@@ -11,6 +11,9 @@ import { FollowButton } from "@/components/FollowButton";
 import { RatingStars } from "@/components/RatingStars";
 import { CommentsSection } from "@/components/CommentsSection";
 import { AddToCollectionButton } from "@/components/AddToCollectionButton";
+import { CinemaTicket } from "@/components/CinemaTicket";
+import { useAuth } from "@/hooks/useAuth";
+import { ticketOwnerLabel } from "@/lib/tickets";
 
 const searchSchema = z.object({
   src: z.enum(["kkphim", "ophim", "nguonc", "vsmov"]).default("kkphim"),
@@ -25,6 +28,7 @@ function MoviePage() {
   const { slug } = Route.useParams();
   const { src } = Route.useSearch();
   const source = src as SourceId;
+  const { user } = useAuth();
   const { data, isLoading, error } = useQuery({
     queryKey: ["detail", source, slug],
     queryFn: () => fetchDetail(slug, source),
@@ -44,6 +48,10 @@ function MoviePage() {
 
   const totalEps = data.servers[0]?.items.length || 0;
   const sanitized = DOMPurify.sanitize(data.content || "");
+  const owner = ticketOwnerLabel(user ? {
+    displayName: (user.user_metadata?.display_name || user.user_metadata?.full_name) as string | undefined,
+    email: user.email,
+  } : null);
 
   return (
     <div className="relative">
@@ -100,6 +108,7 @@ function MoviePage() {
               <AddToCollectionButton slug={data.slug} name={data.name} poster={data.poster} source={source} />
             </div>
             <RatingStars slug={data.slug} name={data.name} poster={data.poster} source={source} />
+            <CinemaTicket slug={data.slug} name={data.name} poster={data.poster} source={source} userId={user?.id} owner={owner} />
             {sanitized && (
               <div
                 className="prose prose-invert prose-sm max-w-none text-muted-foreground"

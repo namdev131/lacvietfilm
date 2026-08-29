@@ -14,7 +14,7 @@ export default defineMcp({
   title: "CineStream Hub",
   version: "0.1.0",
   instructions:
-    "Tools for Lạc Việt Cinema. Search the movie catalog, read movie details, and manage the signed-in user's favorites, watch-later list, watch history and ratings.",
+    "Tools for Lạc Việt Film. Search the movie catalog, read movie details, and manage the signed-in user's favorites, watch-later list, watch history and ratings.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated",

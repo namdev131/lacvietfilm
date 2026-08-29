@@ -18,9 +18,9 @@ import type { SourceId } from "@/lib/types";
 export const Route = createFileRoute("/notifications")({
   head: () => ({
     meta: [
-      { title: "Thông báo tập mới | Lạc Việt Cinema" },
-      { name: "description", content: "Theo dõi phim bộ yêu thích và nhận thông báo ngay khi có tập mới trên Lạc Việt Cinema." },
-      { property: "og:title", content: "Thông báo — Lạc Việt Cinema" },
+      { title: "Thông báo tập mới | Lạc Việt Film" },
+      { name: "description", content: "Theo dõi phim bộ yêu thích và nhận thông báo ngay khi có tập mới trên Lạc Việt Film." },
+      { property: "og:title", content: "Thông báo — Lạc Việt Film" },
       { property: "og:description", content: "Nhận thông báo ngay khi phim bạn theo dõi có tập mới." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

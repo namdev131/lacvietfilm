@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import Hls from "hls.js";
-import { Film, Zap, AlertTriangle, SkipForward, Settings2, Check, Gauge, MonitorPlay } from "lucide-react";
+import {
+  AlertTriangle, Check, ChevronLeft, Film, Gauge, ListVideo, Maximize,
+  MonitorPlay, Pause, Play, RotateCcw, Settings2, SkipForward, Volume2,
+  VolumeX, Zap,
+} from "lucide-react";
+import { beginNextEpisode, cancelNextEpisode, tickNextEpisode, type NextEpisodeState } from "@/lib/nextEpisode";
 
 export type PlayMode = "hls" | "embed";
 
@@ -32,6 +37,8 @@ export function Player({
   preferredQuality = "auto",
   onQualityChange,
   onRateChange,
+  title,
+  episodeLabel,
 }: {
   m3u8?: string;
   embed?: string;
@@ -63,17 +70,23 @@ export function Player({
   preferredQuality?: string;
   onQualityChange?: (q: string) => void;
   onRateChange?: (r: number) => void;
+  title?: string;
+  episodeLabel?: string;
 }) {
+  const frameRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [time, setTime] = useState({ current: 0, duration: 0 });
   const [skipped, setSkipped] = useState(false);
-  const [dismissNext, setDismissNext] = useState(false);
+  const [nextState, setNextState] = useState<NextEpisodeState>({ status: "idle", seconds: 10 });
   const [menu, setMenu] = useState(false);
   const [levels, setLevels] = useState<{ index: number; height: number }[]>([]);
   const [rate, setRate] = useState(defaultRate);
   const [quality, setQuality] = useState(preferredQuality);
+  const [playing, setPlaying] = useState(false);
+  const [volume, setVolume] = useState(1);
+  const [muted, setMuted] = useState(false);
   const progressRef = useRef(onProgress);
   progressRef.current = onProgress;
   const resumeRef = useRef(resumeAt);
@@ -130,7 +143,7 @@ export function Player({
   // Reset overlay khi đổi nguồn / đổi tập
   useEffect(() => {
     setSkipped(false);
-    setDismissNext(false);
+    setNextState({ status: "idle", seconds: 10 });
     setTime({ current: 0, duration: 0 });
   }, [m3u8, embed, mode]);
 
@@ -178,7 +191,10 @@ export function Player({
 
     video.addEventListener("loadedmetadata", onLoaded);
     video.addEventListener("timeupdate", onTime);
-    const onEndedEv = () => endedRef.current?.();
+    const onEndedEv = () => {
+      endedRef.current?.();
+      setNextState(beginNextEpisode(hasNext, autoNext && nextEpCountdown > 0));
+    };
     video.addEventListener("pause", flush);
     video.addEventListener("ended", onEndedEv);
     window.addEventListener("keydown", onKey);
@@ -192,7 +208,18 @@ export function Player({
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("beforeunload", flush);
     };
-  }, [mode, m3u8]);
+  }, [mode, m3u8, hasNext, autoNext, nextEpCountdown]);
+
+  useEffect(() => {
+    if (nextState.status !== "counting") return;
+    const timer = window.setTimeout(() => setNextState((state) => tickNextEpisode(state)), 1000);
+    return () => window.clearTimeout(timer);
+  }, [nextState.status, nextState.seconds]);
+
+  useEffect(() => {
+    if (nextState.status !== "ready") return;
+    nextRef.current?.();
+  }, [nextState.status]);
 
 
   useEffect(() => {
@@ -293,7 +320,7 @@ export function Player({
   const canEmbed = !!embed;
 
   const inHls = mode === "hls" && canHls;
-  const remaining = time.duration > 0 ? time.duration - time.current : 0;
+
   const showSkipIntro =
     inHls &&
     introSkipSeconds > 0 &&
@@ -301,32 +328,54 @@ export function Player({
     time.current > 2 &&
     time.current < introSkipSeconds &&
     time.duration > introSkipSeconds + 60;
-  const showNextCard =
-    inHls &&
-    hasNext &&
-    nextEpCountdown > 0 &&
-    !dismissNext &&
-    time.duration > 0 &&
-    remaining > 0 &&
-    remaining <= nextEpCountdown;
+  const showNextCard = inHls && hasNext && (nextState.status === "counting" || nextState.status === "manual");
+
+  const formatClock = (seconds: number) => {
+    if (!Number.isFinite(seconds)) return "0:00";
+    return `${Math.floor(seconds / 60)}:${Math.floor(seconds % 60).toString().padStart(2, "0")}`;
+  };
+  const togglePlay = () => {
+    const video = videoRef.current;
+    if (video) video.paused ? void video.play() : video.pause();
+  };
+  const seekBy = (seconds: number) => {
+    const video = videoRef.current;
+    if (video) video.currentTime = Math.max(0, Math.min(video.duration || Infinity, video.currentTime + seconds));
+  };
+  const toggleMute = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = !video.muted;
+    setMuted(video.muted);
+  };
+  const requestFull = () => {
+    if (document.fullscreenElement) void document.exitFullscreen();
+    else void frameRef.current?.requestFullscreen();
+  };
 
   return (
     <div className={fill ? "flex h-full flex-col" : "space-y-3"}>
       <div
-        className={`relative overflow-hidden bg-black ${
+        ref={frameRef}
+        className={`player-frame relative overflow-hidden bg-black ${
           fill ? "h-full w-full rounded-lg ring-1 ring-border/60" : "aspect-video rounded-lg ring-1 ring-border/60"
         }`}
       >
         {mode === "hls" && canHls && (
           <video
             ref={videoRef}
-            controls
+            controls={false}
             autoPlay={autoPlay}
             tabIndex={0}
-
             playsInline
             poster={poster}
-            className="h-full w-full"
+            className="h-full w-full object-contain"
+            onPlay={() => setPlaying(true)}
+            onPause={() => setPlaying(false)}
+            onVolumeChange={(e) => {
+              setVolume(e.currentTarget.volume);
+              setMuted(e.currentTarget.muted);
+            }}
           />
         )}
         {mode === "embed" && canEmbed && (
@@ -349,6 +398,53 @@ export function Player({
           </div>
         )}
 
+        {inHls && (
+          <div className="player-chrome group/player absolute inset-0 z-10 flex flex-col justify-between bg-gradient-to-b from-black/65 via-transparent to-black/90 opacity-100 transition-opacity md:opacity-0 md:hover:opacity-100 md:focus-within:opacity-100">
+            <div className="flex items-start justify-between gap-3 p-3 md:p-4">
+              <div className="flex min-w-0 items-center gap-3">
+                <button type="button" onClick={() => history.back()} aria-label="Quay lại" className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/15 bg-black/45 text-white backdrop-blur hover:border-amber-400/60">
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <div className="min-w-0 text-white">
+                  <p className="truncate text-sm font-semibold md:text-base">{title || "Lạc Việt Film"}{episodeLabel ? ` · ${episodeLabel}` : ""}</p>
+                  <p className="mt-0.5 hidden truncate text-[11px] text-white/55 sm:block">Phim bộ › {title || "Đang phát"} › {episodeLabel || "Tập hiện tại"}</p>
+                </div>
+              </div>
+              <div className="flex shrink-0 gap-2">
+                <button type="button" className="inline-flex h-9 items-center gap-1.5 rounded-md border border-white/15 bg-black/45 px-3 text-xs text-white/80 backdrop-blur hover:border-amber-400/60 hover:text-amber-300">
+                  <AlertTriangle className="h-4 w-4" /><span className="hidden sm:inline">Báo lỗi</span>
+                </button>
+                <button type="button" aria-label="Danh sách tập" className="grid h-9 w-9 place-items-center rounded-md border border-white/15 bg-black/45 text-white backdrop-blur hover:border-amber-400/60">
+                  <ListVideo className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="px-3 pb-3 md:px-5 md:pb-4">
+              <div className="mb-2 flex items-center gap-3 text-[11px] tabular-nums text-white/70">
+                <span>{formatClock(time.current)} / {formatClock(time.duration)}</span>
+                <input type="range" min={0} max={time.duration || 0} step={0.1} value={Math.min(time.current, time.duration || 0)} onChange={(e) => { if (videoRef.current) videoRef.current.currentTime = Number(e.target.value); }} aria-label="Tiến trình video" className="h-1 flex-1 cursor-pointer accent-amber-400" />
+              </div>
+              <div className="flex items-center justify-between gap-2 text-white">
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <button type="button" onClick={togglePlay} aria-label="Phát / Tạm dừng" className="grid h-10 w-10 place-items-center rounded-full border border-amber-400 text-white hover:bg-amber-400 hover:text-black">
+                    {playing ? <Pause className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}
+                  </button>
+                  <button type="button" onClick={() => nextRef.current?.()} disabled={!hasNext} aria-label="Chuyển thủ công sang tập tiếp theo" className="player-next-button grid h-9 w-9 place-items-center rounded-md text-white/75 hover:bg-white/10 hover:text-white disabled:opacity-30"><SkipForward className="h-4 w-4" /></button>
+                  <button type="button" onClick={() => seekBy(-10)} aria-label="Tua lùi 10 giây" className="grid h-9 w-9 place-items-center rounded-md text-white/75 hover:bg-white/10 hover:text-white"><RotateCcw className="h-4 w-4" /></button>
+                  <button type="button" onClick={toggleMute} aria-label="Bật / Tắt âm" className="grid h-9 w-9 place-items-center rounded-md text-white/75 hover:bg-white/10 hover:text-white">{muted || volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}</button>
+                  <input type="range" min={0} max={1} step={0.05} value={muted ? 0 : volume} onChange={(e) => { const v = Number(e.target.value); if (videoRef.current) { videoRef.current.volume = v; videoRef.current.muted = false; } setVolume(v); setMuted(false); }} aria-label="Âm lượng" className="hidden h-1 w-20 accent-amber-400 lg:block" />
+                </div>
+                <div className="flex items-center gap-1">
+                  <button type="button" onClick={() => setMenu((v) => !v)} className="hidden min-w-14 rounded-md px-2 py-1.5 text-center text-[10px] text-white/60 hover:bg-white/10 sm:block"><b className="block text-xs font-semibold text-amber-300">{rate.toFixed(1)}x</b>Tốc độ</button>
+                  <button type="button" onClick={() => setMenu((v) => !v)} className="hidden min-w-16 rounded-md px-2 py-1.5 text-center text-[10px] text-white/60 hover:bg-white/10 md:block"><b className="block text-xs font-semibold text-amber-300">{quality === "auto" ? "AUTO" : `${quality}P`}</b>Chất lượng</button>
+                  <button type="button" onClick={requestFull} aria-label="Toàn màn hình" className="h-10 min-w-14 rounded-md px-2 text-[10px] text-white/60 hover:bg-white/10"><Maximize className="mx-auto mb-0.5 h-4 w-4 text-white" />Toàn màn hình</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Bỏ qua intro */}
         {showSkipIntro && (
           <button
@@ -365,54 +461,42 @@ export function Player({
 
         {/* Thẻ tập sau */}
         {showNextCard && (
-          <div className="absolute bottom-16 right-3 z-20 w-[min(260px,70%)] animate-in fade-in slide-in-from-bottom-2 rounded-xl border border-white/15 bg-black/85 p-3 backdrop-blur">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Tập tiếp theo</p>
-            <p className="mt-0.5 line-clamp-1 text-sm font-bold text-white">{nextLabel || "Tập kế tiếp"}</p>
-            <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/20">
-              <div
-                className="h-full bg-primary transition-all duration-500"
-                style={{ width: `${Math.max(0, 100 - (remaining / nextEpCountdown) * 100)}%` }}
-              />
-            </div>
-            <div className="mt-2.5 flex items-center gap-2">
+          <div className="next-episode-overlay absolute inset-0 z-20 grid place-items-center bg-black/70 p-4 backdrop-blur-sm">
+            <div className="next-episode-card w-full max-w-sm border border-white/15 bg-[#0a0e13]/95 p-5 text-center shadow-2xl">
+              <p className="text-[10px] font-semibold uppercase tracking-[.18em] text-amber-300">Tập tiếp theo</p>
+              <p className="mt-2 line-clamp-2 text-lg font-bold text-white">{nextLabel || "Tập kế tiếp"}</p>
+              {nextState.status === "counting" && (
+                <div className="next-countdown mx-auto mt-4 grid h-16 w-16 place-items-center rounded-full border border-amber-300/45 text-2xl font-black text-amber-300">
+                  {nextState.seconds}
+                </div>
+              )}
+              <p className="mt-3 text-xs text-white/55">
+                {nextState.status === "counting" ? `Tự chuyển sau ${nextState.seconds} giây` : "Chọn chuyển tập khi bạn sẵn sàng"}
+              </p>
+              <div className="mt-4 flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => nextRef.current?.()}
-                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground"
+                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md bg-amber-300 px-3 py-2.5 text-xs font-bold text-black"
               >
-                <SkipForward className="h-3.5 w-3.5" /> Xem ngay
+                <SkipForward className="h-3.5 w-3.5" /> Chuyển ngay
               </button>
               <button
                 type="button"
-                onClick={() => setDismissNext(true)}
-                className="rounded-lg border border-white/25 px-3 py-1.5 text-xs font-medium text-white/80 hover:bg-white/10"
+                onClick={() => setNextState(cancelNextEpisode())}
+                className="rounded-md border border-white/25 px-3 py-2.5 text-xs font-medium text-white/80 hover:bg-white/10"
               >
-                Ẩn
+                Ở lại tập này
               </button>
+              </div>
             </div>
-            {autoNext && (
-              <p className="mt-1.5 text-center text-[10px] text-white/50">
-                Tự chuyển sau {Math.ceil(remaining)}s
-              </p>
-            )}
           </div>
         )}
 
         {/* Chất lượng & tốc độ */}
-        {inHls && (
-          <div className="absolute left-3 top-3 z-20">
-            <button
-              type="button"
-              onClick={() => setMenu((v) => !v)}
-              aria-label="Chất lượng và tốc độ phát"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-black/60 px-2.5 py-1.5 text-[11px] font-semibold text-white/90 backdrop-blur transition hover:border-primary hover:text-white"
-            >
-              <Settings2 className="h-3.5 w-3.5" />
-              {quality === "auto" ? "Auto" : `${quality}p`}
-              {rate !== 1 && <span className="text-primary">{rate}x</span>}
-            </button>
-            {menu && (
-              <div className="mt-2 w-44 overflow-hidden rounded-xl border border-white/15 bg-black/90 p-1.5 text-white backdrop-blur">
+        {inHls && menu && (
+          <div className="absolute bottom-20 right-3 z-30 md:right-5">
+              <div className="w-44 overflow-hidden rounded-xl border border-white/15 bg-black/90 p-1.5 text-white backdrop-blur">
                 <p className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-white/50">
                   <MonitorPlay className="h-3 w-3" /> Chất lượng
                 </p>
@@ -448,12 +532,11 @@ export function Player({
                   ))}
                 </div>
               </div>
-            )}
           </div>
         )}
 
         <div className="pointer-events-none absolute right-3 top-3 rounded bg-black/60 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-white/80 backdrop-blur">
-          Lạc Việt Cinema
+          Lạc Việt Film
         </div>
       </div>
 

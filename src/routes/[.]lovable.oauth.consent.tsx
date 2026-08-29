@@ -78,7 +78,7 @@ function Consent() {
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           {clientName} sẽ có thể tìm phim, đọc và cập nhật danh sách yêu thích, Xem sau, lịch sử xem và
-          đánh giá của bạn trên Lạc Việt Cinema.
+          đánh giá của bạn trên Lạc Việt Film.
         </p>
         {error && (
           <p role="alert" className="mt-3 text-sm text-destructive">

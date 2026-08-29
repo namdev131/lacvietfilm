@@ -96,7 +96,7 @@ export function GoldBoard() {
   const rest = rows.slice(3, 10);
 
   return (
-    <section className="px-4 md:px-10">
+    <section className="gold-board px-4 md:px-10">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 className="flex items-center gap-2 text-lg md:text-xl font-semibold tracking-tight">
           <Crown className="h-5 w-5 text-[color:var(--color-gold)]" />

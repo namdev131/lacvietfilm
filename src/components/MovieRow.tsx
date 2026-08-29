@@ -45,8 +45,8 @@ export function MovieRow({
     "absolute top-1/2 z-20 hidden h-16 w-11 -translate-y-1/2 items-center justify-center rounded-xl border border-border bg-card text-foreground shadow-lg transition hover:border-primary hover:bg-primary hover:text-primary-foreground focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:pointer-events-none disabled:opacity-0 md:flex";
 
   return (
-    <section className="relative">
-      <div className="mb-3 flex items-baseline justify-between px-4 md:px-10">
+    <section className="movie-shelf relative">
+      <div className="movie-row-inner shelf-heading mb-3 flex items-baseline justify-between">
         <h2 className="text-lg md:text-xl font-semibold tracking-tight">
           {title}
           {accent && <span className="ml-2 text-xs text-muted-foreground">{accent}</span>}
@@ -65,7 +65,7 @@ export function MovieRow({
         <div
           ref={ref}
           tabIndex={0}
-          className="scroll-row flex gap-3 overflow-x-auto scroll-smooth px-4 pb-6 outline-none focus-visible:ring-2 focus-visible:ring-primary/50 md:gap-4 md:px-14"
+          className="scroll-row movie-row-inner shelf-track flex gap-3 overflow-x-auto scroll-smooth pb-6 outline-none focus-visible:ring-2 focus-visible:ring-primary/50 md:gap-4"
         >
           {movies.map((m, i) => (
             <MovieCard key={`${m.source}-${m.slug}-${i}`} movie={m} index={i} />

@@ -20,13 +20,13 @@ export const Route = createFileRoute("/search")({
   component: SearchPage,
   head: () => ({
     meta: [
-      { title: "Tìm phim đa nguồn · Lạc Việt Cinema" },
+      { title: "Tìm phim đa nguồn · Lạc Việt Film" },
       {
         name: "description",
         content:
-          "Tìm phim realtime trên nhiều nguồn cùng lúc, kết quả gợi ý ngay khi bạn gõ tại Lạc Việt Cinema.",
+          "Tìm phim realtime trên nhiều nguồn cùng lúc, kết quả gợi ý ngay khi bạn gõ tại Lạc Việt Film.",
       },
-      { property: "og:title", content: "Tìm phim đa nguồn · Lạc Việt Cinema" },
+      { property: "og:title", content: "Tìm phim đa nguồn · Lạc Việt Film" },
       {
         property: "og:description",
         content: "Gõ tới đâu, kết quả hiện tới đó — tìm phim nhanh trên nhiều nguồn.",

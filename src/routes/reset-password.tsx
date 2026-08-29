@@ -8,10 +8,10 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
     meta: [
-      { title: "Đặt lại mật khẩu | Lạc Việt Cinema" },
-      { name: "description", content: "Tạo mật khẩu mới cho tài khoản Lạc Việt Cinema của bạn." },
-      { property: "og:title", content: "Đặt lại mật khẩu — Lạc Việt Cinema" },
-      { property: "og:description", content: "Tạo mật khẩu mới cho tài khoản Lạc Việt Cinema." },
+      { title: "Đặt lại mật khẩu | Lạc Việt Film" },
+      { name: "description", content: "Tạo mật khẩu mới cho tài khoản Lạc Việt Film của bạn." },
+      { property: "og:title", content: "Đặt lại mật khẩu — Lạc Việt Film" },
+      { property: "og:description", content: "Tạo mật khẩu mới cho tài khoản Lạc Việt Film." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

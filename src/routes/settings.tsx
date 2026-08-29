@@ -16,9 +16,9 @@ import { InstallAppCard } from "@/components/InstallPrompt";
 export const Route = createFileRoute("/settings")({
   head: () => ({
     meta: [
-      { title: "Cài đặt | Lạc Việt Cinema" },
-      { name: "description", content: "Tuỳ chỉnh trình phát, nguồn phim, giao diện, quyền riêng tư và tài khoản trên Lạc Việt Cinema." },
-      { property: "og:title", content: "Cài đặt — Lạc Việt Cinema" },
+      { title: "Cài đặt | Lạc Việt Film" },
+      { name: "description", content: "Tuỳ chỉnh trình phát, nguồn phim, giao diện, quyền riêng tư và tài khoản trên Lạc Việt Film." },
+      { property: "og:title", content: "Cài đặt — Lạc Việt Film" },
       { property: "og:description", content: "Tuỳ chỉnh trình phát, nguồn phim, giao diện và tài khoản." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -240,10 +240,10 @@ function SettingsPage() {
             onChange={(v) => set("introSkipSeconds", Number(v))}
           />
         </Row>
-        <Row label="Thẻ Tập sau hiện trước" desc="Hiện thẻ chuyển tập ở cuối tập phim.">
+        <Row label="Đếm ngược tập tiếp theo" desc="Khi hết tập, hiện nút và đếm ngược trước khi chuyển.">
           <Segmented
             value={String(settings.nextEpCountdown)}
-            options={[{ v: "0", l: "Tắt" }, { v: "10", l: "10s" }, { v: "15", l: "15s" }, { v: "30", l: "30s" }]}
+            options={[{ v: "0", l: "Thủ công" }, { v: "10", l: "10s" }]}
             onChange={(v) => set("nextEpCountdown", Number(v))}
           />
         </Row>
@@ -277,6 +277,13 @@ function SettingsPage() {
 
       {/* Giao diện */}
       <Section icon={<Palette className="h-4 w-4" />} title="Giao diện & thiết bị">
+        <Row label="Sắc trời" desc="Giấy dó ban ngày, bầu trời sao Việt cổ ban đêm.">
+          <Segmented
+            value={settings.theme}
+            options={[{ v: "system", l: "Hệ thống" }, { v: "light", l: "Giấy dó" }, { v: "dark", l: "Đêm sao" }]}
+            onChange={(v) => set("theme", v as typeof settings.theme)}
+          />
+        </Row>
         <Toggle label="Chế độ TV / Remote" desc="Viền focus vàng lớn, điều hướng bằng phím D-Pad."
           checked={settings.tvMode} onChange={(v) => set("tvMode", v)} icon={<Monitor className="h-4 w-4" />} />
         <Toggle label="Giảm hiệu ứng chuyển động" desc="Tắt animation cho máy yếu hoặc khi dễ chóng mặt."

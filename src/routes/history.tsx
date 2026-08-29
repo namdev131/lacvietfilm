@@ -12,9 +12,9 @@ import type { SourceId } from "@/lib/types";
 export const Route = createFileRoute("/history")({
   head: () => ({
     meta: [
-      { title: "Lịch sử xem | Lạc Việt Cinema" },
-      { name: "description", content: "Xem lại các bộ phim và tập phim bạn đã theo dõi gần đây trên Lạc Việt Cinema." },
-      { property: "og:title", content: "Lịch sử xem — Lạc Việt Cinema" },
+      { title: "Lịch sử xem | Lạc Việt Film" },
+      { name: "description", content: "Xem lại các bộ phim và tập phim bạn đã theo dõi gần đây trên Lạc Việt Film." },
+      { property: "og:title", content: "Lịch sử xem — Lạc Việt Film" },
       { property: "og:description", content: "Xem tiếp những tập phim bạn đang theo dõi." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

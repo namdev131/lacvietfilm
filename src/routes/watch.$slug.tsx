@@ -5,8 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { recordHistory } from "@/hooks/useUserData";
 import { recordView, detectKind } from "@/lib/gold";
-import { ArrowLeft, Languages, Mic, Zap, Film } from "lucide-react";
-import { fetchDetail, fetchLatestMerged } from "@/lib/api";
+import { ArrowLeft, Film, Info, Languages, Mic, Play, Zap } from "lucide-react";
+import { fetchDetail, fetchLatestMerged, searchMovies, SOURCES } from "@/lib/api";
 import { type PlayMode } from "@/components/Player";
 import { usePlayerHost, usePlayerDock } from "@/components/PlayerHost";
 import { MovieRow } from "@/components/MovieRow";
@@ -15,6 +15,8 @@ import { WatchPartyButton } from "@/components/WatchPartyButton";
 import type { SourceId } from "@/lib/types";
 import { getLocalProgress, progressPercent, formatTime } from "@/lib/progress";
 import { useSettings } from "@/lib/settings";
+import { CinemaTicket } from "@/components/CinemaTicket";
+import { ticketOwnerLabel } from "@/lib/tickets";
 
 
 const searchSchema = z.object({
@@ -27,10 +29,10 @@ export const Route = createFileRoute("/watch/$slug")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Xem phim — Lạc Việt Cinema" },
-      { name: "description", content: "Xem phim trực tuyến trên Lạc Việt Cinema." },
-      { property: "og:title", content: "Xem phim — Lạc Việt Cinema" },
-      { property: "og:description", content: "Xem phim trực tuyến trên Lạc Việt Cinema." },
+      { title: "Xem phim — Lạc Việt Film" },
+      { name: "description", content: "Xem phim trực tuyến trên Lạc Việt Film." },
+      { property: "og:title", content: "Xem phim — Lạc Việt Film" },
+      { property: "og:description", content: "Xem phim trực tuyến trên Lạc Việt Film." },
       { property: "og:type", content: "video.movie" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -44,6 +46,12 @@ function detectLang(name: string): "vietsub" | "thuyetminh" | "other" {
   if (n.includes("vietsub") || n.includes("vsub") || n.includes("phụ đề") || n.includes("sub")) return "vietsub";
   return "other";
 }
+
+const movieKey = (value: string) => value
+  .toLowerCase()
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/[^a-z0-9]/g, "");
 
 function WatchPage() {
   const { slug } = Route.useParams();
@@ -61,7 +69,6 @@ function WatchPage() {
   useEffect(() => {
     setMode(preferHls ? "hls" : "embed");
   }, [preferHls]);
-  const [groupStart, setGroupStart] = useState(0);
   const qc = useQueryClient();
   const host = usePlayerHost();
   const dockRef = usePlayerDock();
@@ -86,12 +93,36 @@ function WatchPage() {
     retry: 1,
   });
 
+  const { data: sourceMatches = [] } = useQuery({
+    queryKey: ["source-matches", data?.name, data?.year],
+    enabled: !!data?.name,
+    staleTime: 30 * 60_000,
+    queryFn: async () => {
+      const expected = movieKey(data!.origin_name || data!.name);
+      const lists = await Promise.all(
+        SOURCES.map(async ({ id }) => [id, await searchMovies(data!.name, id).catch(() => [])] as const),
+      );
+      return lists.flatMap(([id, movies]) => {
+        const sourceMatch = movies.find((movie) =>
+          movieKey(movie.origin_name || movie.name) === expected &&
+          (!data!.year || !movie.year || String(movie.year) === String(data!.year)),
+        );
+        return sourceMatch ? [{ ...sourceMatch, source: id }] : [];
+      });
+    },
+  });
+  const availableSources = sourceMatches.map((movie) => movie.source);
+
   const servers = useMemo(
     () => (data?.servers || []).filter((server) => server.items.some((item) => item.m3u8 || item.embed)),
     [data],
   );
   const currentServer = servers[srv] || servers[0];
   const currentEp = currentServer?.items[ep];
+  const ticketOwner = ticketOwnerLabel(user ? {
+    displayName: (user.user_metadata?.display_name || user.user_metadata?.full_name) as string | undefined,
+    email: user.email,
+  } : null);
 
   // Group servers by language
   const langGroups = useMemo(() => {
@@ -111,12 +142,6 @@ function WatchPage() {
   }, [servers.length, settings.langPref, langGroups, srv, slug, source]);
 
   const eps = currentServer?.items || [];
-  const groups: { start: number; end: number }[] = [];
-  for (let i = 0; i < eps.length; i += 10) {
-    groups.push({ start: i, end: Math.min(i + 9, eps.length - 1) });
-  }
-  const clampedGroupStart = Math.min(groupStart, Math.max(0, (groups.length - 1) * 10));
-  const visibleEps = eps.slice(clampedGroupStart, clampedGroupStart + 10);
 
   // Ghi nhận lượt xem cho Bảng Vàng (kể cả khách chưa đăng nhập)
   useEffect(() => {
@@ -124,6 +149,7 @@ function WatchPage() {
     recordView({
       slug: data.slug,
       name: data.name,
+      canonicalName: data.origin_name,
       poster: data.poster,
       source,
       kind: detectKind(data),
@@ -172,13 +198,7 @@ function WatchPage() {
           navigate({ to: "/watch/$slug", params: { slug }, search: { src: source, ep: ep + 1, srv } });
         }
       },
-      onEnded: () => {
-        if (!settings.autoNext) return;
-        const total = currentServer?.items.length ?? 0;
-        if (ep + 1 < total) {
-          navigate({ to: "/watch/$slug", params: { slug }, search: { src: source, ep: ep + 1, srv } });
-        }
-      },
+
     });
   }, [data?.slug, slug, source, ep, srv, currentEp?.m3u8, currentEp?.embed, mode, allowHls, settings.autoNext, currentServer?.items.length]);
 
@@ -201,7 +221,10 @@ function WatchPage() {
 
   const goEp = (i: number) => navigate({ to: "/watch/$slug", params: { slug }, search: { src: source, ep: i, srv } });
   const goSrv = (i: number) => navigate({ to: "/watch/$slug", params: { slug }, search: { src: source, ep: 0, srv: i } });
-  const changeSource = (s: SourceId) => navigate({ to: "/watch/$slug", params: { slug }, search: { src: s, ep: 0, srv: 0 } });
+  const changeSource = (s: SourceId) => {
+    const sourceMatch = sourceMatches.find((movie) => movie.source === s);
+    if (sourceMatch) navigate({ to: "/watch/$slug", params: { slug: sourceMatch.slug }, search: { src: s, ep: 0, srv: 0 } });
+  };
 
   if (isLoading) {
     return (
@@ -235,16 +258,16 @@ function WatchPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1600px] px-4 py-6 md:px-10">
-      <div className="mb-4 flex items-center gap-3">
+    <div className="mx-auto max-w-[1600px] bg-[#03070d] px-3 py-4 text-[#f4f5f7] md:px-6">
+      <div className="mb-3 flex items-center gap-3">
         <Link to="/movie/$slug" params={{ slug }} search={{ src: source }} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> Chi tiết phim
         </Link>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
-        <div className="space-y-4">
-          <div ref={dockRef} className="aspect-video w-full overflow-hidden rounded-lg bg-black ring-1 ring-border/60" />
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="space-y-3">
+          <div ref={dockRef} className="aspect-video w-full overflow-hidden rounded-md bg-black ring-1 ring-[#202936]" />
 
           <div className="inline-flex overflow-hidden rounded-full border border-border bg-card">
             {allowHls && (
@@ -292,6 +315,16 @@ function WatchPage() {
           </div>
 
 
+          <CinemaTicket
+            slug={data.slug}
+            name={data.name}
+            poster={data.poster}
+            source={source}
+            userId={user?.id}
+            owner={ticketOwner}
+            episode={currentEp?.name || `Tập ${ep + 1}`}
+          />
+
           {/* Xem chung */}
           {data && (
             <div className="rounded-xl border border-border/60 bg-card/70 p-4">
@@ -305,6 +338,7 @@ function WatchPage() {
             <SourcePing
               value={source}
               allowAll={false}
+              sources={availableSources.length ? availableSources : [source]}
               onChange={(s) => changeSource(s as SourceId)}
             />
             <p className="mt-2 text-[11px] text-muted-foreground">
@@ -380,60 +414,36 @@ function WatchPage() {
         </div>
 
         {/* Episode list */}
-        <aside className="space-y-3">
-          <div className="rounded-xl border border-border/60 bg-card/60 p-4">
+        <aside className="space-y-3 xl:col-start-2 xl:row-start-1">
+          <div className="rounded-md border border-[#202936] bg-[#070c14] p-3">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-sm font-semibold">Danh sách tập</h3>
-              <span className="text-xs text-muted-foreground">{eps.length} tập</span>
+              <span className="text-xs text-[#8e97a4]">{eps.length} tập</span>
             </div>
-
-            {groups.length > 1 && (
-              <div className="mb-3 flex flex-wrap gap-1.5">
-                {groups.map((g) => (
-                  <button
-                    key={g.start}
-                    onClick={() => setGroupStart(g.start)}
-                    className={`rounded-md border px-2.5 py-1 text-[11px] font-medium transition ${
-                      clampedGroupStart === g.start
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border bg-background hover:border-primary/50"
-                    }`}
-                  >
-                    {g.start + 1}-{g.end + 1}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            <div className="grid grid-cols-5 gap-1.5 sm:grid-cols-5">
-              {visibleEps.map((e, i) => {
-                const idx = clampedGroupStart + i;
+            <div className="max-h-[430px] space-y-1 overflow-y-auto pr-1">
+              {eps.map((e, idx) => {
                 const active = idx === ep;
                 return (
                   <button
                     key={idx}
                     onClick={() => goEp(idx)}
                     title={e.name}
-                    className={`rounded border px-2 py-2 text-xs font-medium transition ${
-                      active
-                        ? "border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                        : "border-border bg-background hover:border-primary/60"
-                    }`}
+                    className={`flex w-full items-center justify-between rounded px-3 py-2 text-left text-xs font-medium transition ${active ? "bg-[#18202b] text-amber-300" : "text-[#b7bec8] hover:bg-[#111923] hover:text-white"}`}
                   >
-                    {(e.name || `${idx + 1}`).replace(/^Tập\s*/i, "")}
+                    <span className="flex items-center gap-2"><Play className="h-3 w-3 fill-current" />{e.name || `Tập ${idx + 1}`}{active ? " - Hiện tại" : ""}</span>
+                    {active && <span className="flex items-end gap-0.5"><i className="h-2 w-0.5 animate-pulse bg-amber-300" /><i className="h-3 w-0.5 animate-pulse bg-amber-300" /><i className="h-1.5 w-0.5 animate-pulse bg-amber-300" /></span>}
                   </button>
                 );
               })}
             </div>
           </div>
 
-          <div className="rounded-xl border border-border/60 bg-card/60 p-4 text-xs text-muted-foreground">
-            <p className="font-semibold text-foreground">Mẹo phát phim</p>
-            <ul className="mt-1 list-disc space-y-0.5 pl-4">
-              <li>Nếu HLS lỗi, bấm nút <b>Embed</b> để chuyển ngay.</li>
-              <li>Đổi <b>nguồn API</b> khi ping đỏ hoặc phim không tải.</li>
-              <li>Chọn <b>Vietsub</b> hoặc <b>Thuyết Minh</b> theo sở thích.</li>
-            </ul>
+          <div className="hidden rounded-md border border-[#202936] bg-[#070c14] p-4 text-xs text-[#9ea6b2] xl:block">
+            <p className="font-semibold text-white">Phím tắt</p>
+            <dl className="mt-3 space-y-2">
+              {[["Phát / Tạm dừng", "Space"], ["Tua nhanh 10s", "→"], ["Tua lùi 10s", "←"], ["Tăng âm lượng", "↑"], ["Giảm âm lượng", "↓"], ["Toàn màn hình", "F"], ["Thoát toàn màn hình", "Esc"]].map(([label, key]) => <div key={label} className="flex justify-between"><dt>{label}</dt><dd className="text-white">{key}</dd></div>)}
+            </dl>
+            <p className="mt-4 flex gap-1.5 border-t border-[#202936] pt-3 text-[11px] leading-4 text-amber-300"><Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />Nếu không xem được, hãy thử đổi máy chủ khác nhé!</p>
           </div>
         </aside>
       </div>

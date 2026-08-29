@@ -1,0 +1,13 @@
+import { readFileSync } from "node:fs";
+const css = readFileSync(new URL("../src/styles.css", import.meta.url), "utf8");
+const home = readFileSync(new URL("../src/routes/index.tsx", import.meta.url), "utf8");
+const row = readFileSync(new URL("../src/components/MovieRow.tsx", import.meta.url), "utf8");
+const must = (ok, message) => { if (!ok) throw new Error(message); };
+must(!css.includes(".movie-shelf:nth-of-type(even)"), "Hàng phim còn bị ép lệch xen kẽ");
+must(!css.includes(".movie-shelf:nth-of-type(3n)"), "Track phim còn dùng lề lệch theo thứ tự");
+must(css.includes("--page-gutter"), "Thiếu token lề trang thống nhất");
+must(css.includes(".home-content-rail"), "Thiếu trục nội dung chung trang chủ");
+must(home.includes("home-content-rail"), "Trang chủ chưa dùng trục nội dung chung");
+must(row.includes("movie-row-inner"), "Hàng phim chưa dùng khung căn lề thống nhất");
+must(!css.includes(".cinema-hero::before"), "Hero còn khung trang trí gây rối");
+console.log("home alignment contract: PASS");

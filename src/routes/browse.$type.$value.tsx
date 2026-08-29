@@ -23,10 +23,10 @@ export const Route = createFileRoute("/browse/$type/$value")({
     const label = `${TYPE_LABEL[params.type] ?? "Phim"}: ${params.value.replace(/-/g, " ")}`;
     return {
       meta: [
-        { title: `${label} | Lạc Việt Cinema` },
+        { title: `${label} | Lạc Việt Film` },
         { name: "description", content: `Danh sách phim theo ${label.toLowerCase()} — lọc theo năm và sắp xếp linh hoạt.` },
-        { property: "og:title", content: `${label} — Lạc Việt Cinema` },
-        { property: "og:description", content: `Xem phim theo ${label.toLowerCase()} tại Lạc Việt Cinema.` },
+        { property: "og:title", content: `${label} — Lạc Việt Film` },
+        { property: "og:description", content: `Xem phim theo ${label.toLowerCase()} tại Lạc Việt Film.` },
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary_large_image" },
       ],

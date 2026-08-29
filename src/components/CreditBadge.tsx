@@ -6,7 +6,7 @@ export function CreditBadge() {
       <div className="pointer-events-auto inline-flex items-center gap-2 rounded-xl border border-border/70 bg-card px-3 py-2 text-sm font-medium text-foreground shadow-lg">
         <span>Code by</span>
         <img src={LOGO} alt="" className="h-4 w-4 rounded object-contain" />
-        <span className="font-bold">Lạc Việt Cinema</span>
+        <span className="font-bold">Lạc Việt Film</span>
       </div>
     </div>
   );

@@ -8,11 +8,13 @@ export function SourcePing({
   onChange,
   compact,
   allowAll = true,
+  sources,
 }: {
   value: SourceFilter;
   onChange: (s: SourceFilter) => void;
   compact?: boolean;
   allowAll?: boolean;
+  sources?: SourceId[];
 }) {
   const [pings, setPings] = useState<Record<SourceId, number | null>>({
     kkphim: null,
@@ -65,7 +67,7 @@ export function SourcePing({
         </button>
       )}
 
-      {SOURCES.map((s) => {
+      {SOURCES.filter((s) => !sources || sources.includes(s.id)).map((s) => {
         const active = value === s.id;
         const p = pings[s.id];
         return (

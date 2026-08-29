@@ -306,6 +306,45 @@ export type Database = {
         }
         Relationships: []
       }
+      view_events: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          lang: string
+          movie_key: string
+          name: string
+          poster: string | null
+          slug: string
+          source: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind?: string
+          lang?: string
+          movie_key: string
+          name: string
+          poster?: string | null
+          slug: string
+          source?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          lang?: string
+          movie_key?: string
+          name?: string
+          poster?: string | null
+          slug?: string
+          source?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_settings: {
         Row: {
           data: Json

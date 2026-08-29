@@ -138,9 +138,9 @@ export function DockBar() {
       <motion.nav
         animate={{ y: hidden && !menu ? 120 : 0, opacity: hidden && !menu ? 0 : 1 }}
         transition={{ type: "spring", stiffness: 320, damping: 30 }}
-        className="fixed inset-x-0 bottom-0 z-50 flex justify-center pb-[env(safe-area-inset-bottom)]"
+        className="dock-shell fixed inset-x-0 bottom-0 z-50 flex justify-center pb-[env(safe-area-inset-bottom)]"
       >
-        <div className="pointer-events-auto relative mx-3 mb-3 flex w-full max-w-md items-end justify-around gap-1 rounded-2xl border border-border bg-card px-2 pb-2 pt-2 shadow-[0_-8px_30px_rgba(0,0,0,0.45)]">
+        <div className="dock-bar pointer-events-auto relative mx-3 mb-3 flex w-full max-w-md items-end justify-around gap-1 border border-border bg-card px-2 pb-2 pt-2">
           <span aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
             <motion.span
               className="absolute inset-y-0 -left-1/3 block w-1/3 bg-gradient-to-r from-transparent via-primary/10 to-transparent"
@@ -170,7 +170,7 @@ export function DockBar() {
                     whileTap={{ scale: 0.88 }}
                     whileHover={{ scale: 1.06, rotate: -4 }}
                     animate={active ? { y: [0, -3, 0] } : { y: 0 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 18 }}
+                    transition={{ duration: 0.35, ease: "easeOut" }}
                     className={`flex h-14 w-14 items-center justify-center rounded-full ring-4 ring-background transition ${
                       active
                         ? "bg-primary text-primary-foreground shadow-[0_0_24px_hsl(var(--primary)/0.6)]"

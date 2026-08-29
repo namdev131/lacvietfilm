@@ -13,9 +13,9 @@ import type { SourceFilter } from "@/lib/types";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Lạc Việt Cinema — Xem phim Vietsub & Thuyết minh miễn phí" },
+      { title: "Lạc Việt Film — Xem phim Vietsub & Thuyết minh miễn phí" },
       { name: "description", content: "Xem phim online chất lượng cao: phim mới, bảng vàng realtime, HLS & Embed, nhiều nguồn phát để đổi khi giật lag." },
-      { property: "og:title", content: "Lạc Việt Cinema — Mở phim, chạm hồn Việt" },
+      { property: "og:title", content: "Lạc Việt Film — Mở phim, chạm hồn Việt" },
       { property: "og:description", content: "Phim mới mỗi ngày, bảng vàng realtime, xem Vietsub và Thuyết minh." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -58,9 +58,9 @@ function Home() {
 
 
   return (
-    <div>
+    <div className="heritage-home">
       {/* Hero */}
-      <section className="relative h-[70vh] min-h-[420px] w-full overflow-hidden">
+      <section className="heritage-hero cinema-hero relative min-h-[min(76dvh,720px)] w-full overflow-hidden">
         {hero?.thumb || hero?.poster ? (
           <motion.img
             key={hero.slug}
@@ -69,25 +69,25 @@ function Home() {
             initial={{ scale: 1.05, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 1.2 }}
-            className="absolute inset-0 h-full w-full object-cover"
+            className="cinema-hero-image absolute inset-0 h-full w-full object-cover"
           />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-background" />
         )}
         <div className="absolute inset-0 hero-fade" />
         <div className="absolute inset-0 hero-side-fade" />
-        <div className="relative z-10 flex h-full flex-col justify-end px-4 pb-10 md:px-10 md:pb-16">
+        <div className="cinema-hero-copy relative z-10 mx-auto flex h-full max-w-[1600px] flex-col justify-end px-4 pb-10 md:px-10 md:pb-14">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="max-w-2xl space-y-4"
           >
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-primary">
+            <div className="hero-kicker inline-flex items-center gap-2 border border-primary/40 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-primary">
               Đề cử Lạc Việt
             </div>
             <h1 className="text-balance text-3xl font-black leading-tight tracking-tight md:text-5xl">
-              {hero?.name || "Lạc Việt Cinema"}
+              {hero?.name || "Lạc Việt Film"}
             </h1>
             {hero?.origin_name && (
               <p className="text-sm text-muted-foreground md:text-base">
@@ -122,8 +122,8 @@ function Home() {
       </section>
 
       {/* Source ping bar */}
-      <div className="mx-auto -mt-6 max-w-[1600px] px-4 md:px-10">
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/60 bg-card/70 px-4 py-3 backdrop-blur">
+      <div className="heritage-source-bar mx-auto max-w-[1600px] px-4 pt-5 md:px-10">
+        <div className="heritage-panel flex flex-wrap items-center justify-between gap-3 px-4 py-3">
           <SourcePing value={source} onChange={setSource} />
           <div className="text-[11px] text-muted-foreground">
             Ping cập nhật mỗi 30s · Bấm để đổi nguồn phim mới
@@ -131,7 +131,7 @@ function Home() {
         </div>
       </div>
 
-      <div className="mt-8 space-y-8 md:space-y-10">
+      <div className="home-content-rail mt-8 space-y-8 md:space-y-12">
         <MovieRow
           title="Phim mới"
           movies={featured}

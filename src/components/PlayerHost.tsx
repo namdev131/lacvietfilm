@@ -258,6 +258,8 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
             autoNext={settings.autoNext}
             defaultRate={settings.playbackRate}
             preferredQuality={settings.preferredQuality}
+            title={playback.name}
+            episodeLabel={playback.epLabel}
 
           />
         </div>

@@ -6,12 +6,12 @@ import { fetchCountries, fetchGenres, yearOptions } from "@/lib/browse";
 export const Route = createFileRoute("/browse/")({
   head: () => ({
     meta: [
-      { title: "Khám phá phim theo thể loại, quốc gia, năm | Lạc Việt Cinema" },
+      { title: "Khám phá phim theo thể loại, quốc gia, năm | Lạc Việt Film" },
       {
         name: "description",
         content: "Duyệt kho phim theo thể loại, quốc gia và năm sản xuất, kèm bộ lọc và sắp xếp linh hoạt.",
       },
-      { property: "og:title", content: "Khám phá phim — Lạc Việt Cinema" },
+      { property: "og:title", content: "Khám phá phim — Lạc Việt Film" },
       { property: "og:description", content: "Thể loại, quốc gia, năm sản xuất — lọc và sắp xếp theo ý bạn." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

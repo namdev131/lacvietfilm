@@ -11,7 +11,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
-import { Search, Home as HomeIcon } from "lucide-react";
+import { Search, Sun, Moon, Monitor } from "lucide-react";
 import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
@@ -23,7 +23,7 @@ import { JoinPartyDialog } from "@/components/JoinPartyDialog";
 import { QuickSearch, openQuickSearch } from "@/components/QuickSearch";
 import { PlayerHostProvider } from "@/components/PlayerHost";
 import { TvRemote } from "@/hooks/useTvRemote";
-import { SettingsProvider } from "@/lib/settings";
+import { SettingsProvider, useSettings } from "@/lib/settings";
 import { registerPwa } from "@/components/InstallPrompt";
 import { CreditBadge } from "@/components/CreditBadge";
 import { Onboarding } from "@/components/Onboarding";
@@ -83,10 +83,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lạc Việt Cinema — Mở phim, chạm hồn Việt" },
+      { title: "Lạc Việt Film — Mở phim, chạm hồn Việt" },
       { name: "description", content: "Xem phim trực tuyến tổng hợp từ KKPhim, OPhim, NguonC. HLS & Embed, Vietsub và Thuyết Minh." },
       { name: "theme-color", content: "#0A0A0A" },
-      { property: "og:title", content: "Lạc Việt Cinema" },
+      { property: "og:title", content: "Lạc Việt Film" },
       { property: "og:description", content: "Mở phim, chạm hồn Việt." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -130,25 +130,22 @@ function Header() {
   }, []);
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-40 transition-colors duration-300 ${
+      className={`site-header fixed inset-x-0 top-0 z-40 transition-colors duration-300 ${
         scrolled ? "bg-background/85 backdrop-blur-md border-b border-border/60" : "bg-gradient-to-b from-black/70 to-transparent"
       }`}
     >
-      <div className="mx-auto flex h-14 max-w-[1600px] items-center justify-between gap-4 px-4 md:h-16 md:px-10">
+      <div className="site-header-inner mx-auto flex h-14 max-w-[1600px] items-center justify-between gap-4 px-4 md:h-16 md:px-10">
         <div className="flex items-center gap-4 md:gap-8">
-          <Link to="/" className="flex items-center gap-2">
-            <img src={LOGO} alt="Lạc Việt Cinema" className="h-8 w-8 rounded object-contain" />
-            <span className="hidden text-sm font-bold tracking-wide sm:inline">
-              LẠC VIỆT <span className="text-primary">CINEMA</span>
+          <Link to="/" className="brand-lockup flex items-center gap-2">
+            <span className="brand-seal"><img src={LOGO} alt="Lạc Việt Film" className="h-8 w-8 object-contain" /></span>
+            <span className="brand-wordmark hidden text-sm font-bold tracking-wide sm:inline">
+              LẠC VIỆT <span className="text-primary">FILM</span>
             </span>
           </Link>
-          <nav className="hidden items-center gap-1 md:flex">
-            <NavLink to="/" icon={<HomeIcon className="h-4 w-4" />} label="Trang nhà" />
-            <NavLink to="/search" icon={<Search className="h-4 w-4" />} label="Tìm phim" />
-          </nav>
 
         </div>
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <button
             type="button"
             onClick={openQuickSearch}
@@ -168,25 +165,31 @@ function Header() {
   );
 }
 
-function NavLink({ to, icon, label }: { to: string; icon: ReactNode; label: string }) {
+function ThemeToggle() {
+  const { settings, set } = useSettings();
+  const next = settings.theme === "system" ? "light" : settings.theme === "light" ? "dark" : "system";
+  const label = settings.theme === "system" ? "Theo sắc trời hệ thống" : settings.theme === "light" ? "Giấy dó sáng" : "Đêm sao";
+  const Icon = settings.theme === "system" ? Monitor : settings.theme === "light" ? Sun : Moon;
   return (
-    <Link
-      to={to}
-      className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm text-muted-foreground transition hover:bg-white/5 hover:text-foreground"
-      activeProps={{ className: "text-foreground bg-white/5" }}
+    <button
+      type="button"
+      onClick={() => set("theme", next)}
+      aria-label={`${label}. Bấm để đổi sắc trời`}
+      title={label}
+      className="theme-toggle"
     >
-      {icon} {label}
-    </Link>
+      <Icon className="h-4 w-4" />
+    </button>
   );
 }
 
 function Footer() {
   return (
-    <footer className="mt-16 border-t border-border/60 bg-background/60">
+    <footer className="site-footer mt-16 border-t border-border/60 bg-background/60">
       <div className="mx-auto flex max-w-[1600px] flex-col items-center justify-between gap-3 px-4 py-6 text-xs text-muted-foreground md:flex-row md:px-10">
         <div className="flex items-center gap-2">
           <img src={LOGO} alt="" className="h-6 w-6 opacity-80" />
-          <span>Lạc Việt Cinema — Mở phim, chạm hồn Việt.</span>
+          <span>Lạc Việt Film — Mở phim, chạm hồn Việt.</span>
         </div>
         <div>Code bởi Nam NpT</div>
       </div>
@@ -205,9 +208,10 @@ function RootComponent() {
       <AuthProvider>
         <SettingsProvider>
         <PlayerHostProvider>
-        <div className="min-h-screen bg-background text-foreground">
+        <div className="site-shell min-h-screen bg-background text-foreground">
+          <a href="#main-content" className="skip-link">Bỏ qua điều hướng</a>
           <Header />
-          <main className="pt-14 md:pt-16">
+          <main id="main-content" className="pt-14 md:pt-16">
             <Outlet />
           </main>
           <Footer />
@@ -219,7 +223,11 @@ function RootComponent() {
           <Onboarding />
 
 
-          <Toaster position="top-center" richColors />
+          <Toaster
+            position="top-center"
+            richColors
+            toastOptions={{ className: "dynamic-glass-toast" }}
+          />
         </div>
         </PlayerHostProvider>
         </SettingsProvider>

@@ -7,6 +7,8 @@ export type LangPref = "auto" | "vietsub" | "thuyetminh";
 export type SourcePref = SourceId | "all";
 
 export interface Settings {
+  /** Sắc trời: theo hệ thống, giấy dó sáng hoặc đêm sao */
+  theme: "system" | "light" | "dark";
   /** Nguồn phim mặc định khi mở trang chủ / tìm kiếm */
   defaultSource: SourcePref;
   /** Ngôn ngữ ưu tiên khi chọn server */
@@ -42,6 +44,7 @@ export interface Settings {
 }
 
 export const DEFAULT_SETTINGS: Settings = {
+  theme: "system",
   defaultSource: "all",
   langPref: "auto",
   defaultMode: "hls",
@@ -50,7 +53,7 @@ export const DEFAULT_SETTINGS: Settings = {
   autoPlay: true,
   miniPlayer: true,
   introSkipSeconds: 85,
-  nextEpCountdown: 15,
+  nextEpCountdown: 10,
   playbackRate: 1,
   preferredQuality: "auto",
   reduceMotion: false,
@@ -235,7 +238,17 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     const root = document.documentElement;
     root.classList.toggle("reduce-motion", settings.reduceMotion);
     root.classList.toggle("tv-mode", settings.tvMode);
-  }, [settings.reduceMotion, settings.tvMode]);
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const applyTheme = () => {
+      const resolved = settings.theme === "system" ? (media.matches ? "dark" : "light") : settings.theme;
+      root.dataset.theme = resolved;
+      root.classList.toggle("dark", resolved === "dark");
+      root.style.colorScheme = resolved;
+    };
+    applyTheme();
+    media.addEventListener("change", applyTheme);
+    return () => media.removeEventListener("change", applyTheme);
+  }, [settings.reduceMotion, settings.tvMode, settings.theme]);
 
   const value = useMemo(
     () => ({ settings, set, reset, syncState, pushNow, lastSyncedAt }),

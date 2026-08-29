@@ -1,0 +1,14 @@
+import { readFileSync } from "node:fs";
+const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
+const ticket = read("src/components/CinemaTicket.tsx");
+const profile = read("src/routes/me.tsx");
+const css = read("src/styles.css");
+const must = (ok, message) => { if (!ok) throw new Error(message); };
+must(ticket.includes("Xem chi tiết vé"), "Thiếu nút xem chi tiết vé");
+must(ticket.includes("DialogContent"), "Chi tiết vé chưa dùng dialog truy cập được");
+must(ticket.includes("ticket-detail-full"), "Dialog chưa hiển thị toàn bộ vé");
+must(profile.includes("profile-bento"), "Hồ sơ chưa dùng bento grid");
+must(profile.includes("bento-ticket-vault"), "Kho vé chưa có ô bento chính");
+must(css.includes(".profile-bento"), "Thiếu layout bento responsive");
+must(css.includes("prefers-reduced-motion: reduce"), "Hiệu ứng thiếu reduced motion");
+console.log("ticket bento contract: PASS");

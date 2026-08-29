@@ -8,12 +8,12 @@ import type { SourceId } from "@/lib/types";
 export const Route = createFileRoute("/watchlist")({
   head: () => ({
     meta: [
-      { title: "Xem sau | Lạc Việt Cinema" },
+      { title: "Xem sau | Lạc Việt Film" },
       {
         name: "description",
         content: "Danh sách Xem sau: lưu phim để xem khi rảnh, đồng bộ trên mọi thiết bị của bạn.",
       },
-      { property: "og:title", content: "Xem sau — Lạc Việt Cinema" },
+      { property: "og:title", content: "Xem sau — Lạc Việt Film" },
       { property: "og:description", content: "Lưu phim để xem khi rảnh, đồng bộ trên mọi thiết bị." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

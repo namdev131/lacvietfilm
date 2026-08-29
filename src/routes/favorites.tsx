@@ -10,9 +10,9 @@ import type { SourceId } from "@/lib/types";
 export const Route = createFileRoute("/favorites")({
   head: () => ({
     meta: [
-      { title: "Phim yêu thích | Lạc Việt Cinema" },
-      { name: "description", content: "Danh sách phim bạn đã lưu để xem sau trên Lạc Việt Cinema." },
-      { property: "og:title", content: "Phim yêu thích — Lạc Việt Cinema" },
+      { title: "Phim yêu thích | Lạc Việt Film" },
+      { name: "description", content: "Danh sách phim bạn đã lưu để xem sau trên Lạc Việt Film." },
+      { property: "og:title", content: "Phim yêu thích — Lạc Việt Film" },
       { property: "og:description", content: "Danh sách phim bạn đã lưu để xem sau." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

@@ -1,8 +1,8 @@
-# Lạc Việt Cinema — README.md
+# Lạc Việt Film — README.md
 
 <div align="center">
 
-# 🎬 Lạc Việt Cinema
+# 🎬 Lạc Việt Film
 
 ### **Mở phim, chạm hồn Việt.**
 
@@ -30,12 +30,12 @@ Tập trung vào tốc độ, trải nghiệm xem phim, khả năng chuyển ngu
 
 ## ✦ Tổng quan
 
-**Lạc Việt Cinema** là nền tảng xem phim trên web được xây dựng theo kiến trúc hiện đại, hỗ trợ nhiều nguồn dữ liệu và nhiều phương thức phát video.
+**Lạc Việt Film** là nền tảng xem phim trên web được xây dựng theo kiến trúc hiện đại, hỗ trợ nhiều nguồn dữ liệu và nhiều phương thức phát video.
 
 Thay vì phụ thuộc vào một API duy nhất, hệ thống có thể lấy dữ liệu từ nhiều nhà cung cấp và cho phép người dùng chuyển nguồn khi cần.
 
 ```text
-                         LẠC VIỆT CINEMA
+                         LẠC VIỆT FILM
 
             ┌──────────────────────────────────┐
             │          Giao diện người dùng     │
@@ -167,7 +167,7 @@ Người dùng có thể lưu:
 
 # 🎬 Trình phát phim
 
-Player là một trong những thành phần trọng tâm của Lạc Việt Cinema.
+Player là một trong những thành phần trọng tâm của Lạc Việt Film.
 
 ### Hỗ trợ
 
@@ -272,7 +272,7 @@ Thư viện của tôi
 
 ## Cộng đồng
 
-Lạc Việt Cinema còn tích hợp các tính năng tương tác:
+Lạc Việt Film còn tích hợp các tính năng tương tác:
 
 * 💬 Bình luận
 * ⭐ Đánh giá phim
@@ -631,7 +631,7 @@ Một số hạng mục có thể tiếp tục được mở rộng:
 # ⚠️ Miễn trừ trách nhiệm
 
 > [!NOTE]
-> Lạc Việt Cinema là dự án phần mềm tổng hợp dữ liệu từ các API bên thứ ba.
+> Lạc Việt Film là dự án phần mềm tổng hợp dữ liệu từ các API bên thứ ba.
 
 Dự án không trực tiếp kiểm soát:
 
@@ -659,7 +659,7 @@ Việc sử dụng, sao chép, chỉnh sửa hoặc phân phối lại mã ngu�
 
 <br />
 
-## 🎬 Lạc Việt Cinema
+## 🎬 Lạc Việt Film
 
 ### **Mở phim, chạm hồn Việt.**
 

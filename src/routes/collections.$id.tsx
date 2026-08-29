@@ -5,10 +5,10 @@ import { CollectionView } from "@/components/CollectionView";
 export const Route = createFileRoute("/collections/$id")({
   head: () => ({
     meta: [
-      { title: "Chi tiết bộ sưu tập | Lạc Việt Cinema" },
+      { title: "Chi tiết bộ sưu tập | Lạc Việt Film" },
       { name: "description", content: "Danh sách phim trong bộ sưu tập tự tạo của bạn." },
-      { property: "og:title", content: "Bộ sưu tập phim — Lạc Việt Cinema" },
-      { property: "og:description", content: "Playlist phim tự tạo tại Lạc Việt Cinema." },
+      { property: "og:title", content: "Bộ sưu tập phim — Lạc Việt Film" },
+      { property: "og:description", content: "Playlist phim tự tạo tại Lạc Việt Film." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

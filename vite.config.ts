@@ -14,6 +14,7 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
-    plugins: [mcpPlugin()],
+    // ponytail: mcp-js 0.26.3 mixes Windows/POSIX paths; re-enable after upstream fix.
+    plugins: process.platform === "win32" ? [] : [mcpPlugin()],
   },
 });

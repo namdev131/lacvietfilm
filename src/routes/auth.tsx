@@ -15,9 +15,9 @@ export const Route = createFileRoute("/auth")({
       : {},
   head: () => ({
     meta: [
-      { title: "Đăng nhập | Lạc Việt Cinema" },
-      { name: "description", content: "Đăng nhập hoặc tạo tài khoản Lạc Việt Cinema để lưu phim yêu thích và lịch sử xem." },
-      { property: "og:title", content: "Đăng nhập — Lạc Việt Cinema" },
+      { title: "Đăng nhập | Lạc Việt Film" },
+      { name: "description", content: "Đăng nhập hoặc tạo tài khoản Lạc Việt Film để lưu phim yêu thích và lịch sử xem." },
+      { property: "og:title", content: "Đăng nhập — Lạc Việt Film" },
       { property: "og:description", content: "Tạo tài khoản để lưu phim yêu thích và lịch sử xem." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -253,7 +253,7 @@ function AuthPage() {
               <Button type="button" variant="outline" onClick={handleGoogle} disabled={busy} className="w-full">
                 <GoogleIcon /> Tiếp tục với Google
               </Button>
-              <p className="mt-5 text-center text-[11px] leading-5 text-muted-foreground">Bằng việc tiếp tục, bạn đồng ý với điều khoản sử dụng và chính sách riêng tư của Lạc Việt Cinema.</p>
+              <p className="mt-5 text-center text-[11px] leading-5 text-muted-foreground">Bằng việc tiếp tục, bạn đồng ý với điều khoản sử dụng và chính sách riêng tư của Lạc Việt Film.</p>
             </>
           )}
         </div>

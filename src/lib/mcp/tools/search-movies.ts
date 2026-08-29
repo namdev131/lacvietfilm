@@ -5,7 +5,7 @@ import { searchMovies } from "@/lib/api";
 export default defineTool({
   name: "search_movies",
   title: "Tìm phim",
-  description: "Search the Lạc Việt Cinema catalog by keyword across a movie source.",
+  description: "Search the Lạc Việt Film catalog by keyword across a movie source.",
   inputSchema: {
     query: z.string().trim().min(1).describe("Keyword, e.g. a movie title."),
     source: z
