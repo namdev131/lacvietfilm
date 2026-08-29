@@ -17,15 +17,20 @@ function json(data: unknown, status = 200) {
 async function verifyAdmin(request: Request) {
   const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
   if (!token) return null;
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !key) return null;
-  const response = await fetch(`${url}/auth/v1/user`, {
-    headers: { apikey: key, authorization: `Bearer ${token}` },
-  });
-  if (!response.ok) return null;
-  const user = (await response.json()) as { id?: string; email?: string };
-  return user.email?.toLowerCase() === ADMIN_EMAIL ? user : null;
+  try {
+    const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64url").toString()) as {
+      sub?: string; email?: string; session_id?: string; exp?: number;
+    };
+    if (!payload.sub || !payload.session_id || payload.email?.toLowerCase() !== ADMIN_EMAIL || (payload.exp ?? 0) * 1000 <= Date.now()) return null;
+    const { rows } = await db().query(
+      `select u.id, u.email from auth.sessions s join auth.users u on u.id=s.user_id
+       where s.id=$1 and u.id=$2 and lower(u.email)=$3 limit 1`,
+      [payload.session_id, payload.sub, ADMIN_EMAIL],
+    );
+    return rows[0] as { id: string; email: string } | undefined;
+  } catch {
+    return null;
+  }
 }
 
 async function listUsers() {
