@@ -38,6 +38,8 @@ async function listUsers() {
 }
 
 async function listParties() {
+  const exists = await db().query(`select to_regclass('public.watch_parties') as name`);
+  if (!exists.rows[0]?.name) return [];
   const { rows } = await db().query(`
     select p.id, p.code, p.name, p.host_id, u.email as host_email,
            p.closed, p.created_at, p.updated_at
