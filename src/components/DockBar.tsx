@@ -226,7 +226,7 @@ export function DockBar() {
                     transition={{ duration: 0.35, ease: "easeOut" }}
                     className={`flex h-14 w-14 items-center justify-center rounded-full ring-4 ring-background transition ${
                       active
-                        ? "bg-primary text-primary-foreground shadow-[0_0_24px_hsl(var(--primary)/0.6)]"
+                        ? "bg-primary text-primary-foreground"
                         : "bg-secondary text-muted-foreground group-hover:text-foreground"
                     }`}
                   >
@@ -260,7 +260,7 @@ export function DockBar() {
                   animate={active ? { y: -2, scale: 1.12 } : { y: 0, scale: 1 }}
                   transition={{ type: "spring", stiffness: 500, damping: 22 }}
                 >
-                  <Icon className={`h-5 w-5 transition ${active ? "text-primary drop-shadow-[0_0_8px_hsl(var(--primary)/0.7)]" : "text-muted-foreground"}`} />
+                  <Icon className={`h-5 w-5 transition ${active ? "text-primary" : "text-muted-foreground"}`} />
                 </motion.span>
                 <span className={`relative text-[10px] font-medium ${active ? "text-foreground" : "text-muted-foreground"}`}>
                   {item.label}

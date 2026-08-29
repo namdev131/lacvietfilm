@@ -9,4 +9,6 @@ assert(dock.includes("grid-cols-7"), "Dock phải chia 7 cột đối xứng");
 assert(!dock.includes('animate={{ x: ["0%", "400%"] }}'), "Bỏ đường sáng chạy trên dock");
 assert(!css.includes(".dock-bar::before"), "Bỏ đường vàng phía trên dock");
 assert(!css.includes(".shelf-heading h2::before"), "Bỏ vạch vàng đen bị dock che phía trên");
+assert(!dock.includes("shadow-[0_0_24px_hsl(var(--primary)/0.6)]"), "Bỏ quầng sáng vàng quanh Trang chủ");
+assert(!dock.includes("drop-shadow-[0_0_8px_hsl(var(--primary)/0.7)]"), "Bỏ quầng sáng vàng quanh icon");
 console.log("dock symmetry check passed");
