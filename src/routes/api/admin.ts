@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Pool } from "pg";
-import { ADMIN_EMAIL, type AdminRole } from "@/lib/admin-role";
 
+const ADMIN_EMAIL = "lacviet55@proton.me";
 let pool: Pool | undefined;
 
 function db() {
@@ -24,18 +24,16 @@ async function verifyAdmin(request: Request) {
     headers: { apikey: key, authorization: `Bearer ${token}` },
   });
   if (!response.ok) return null;
-  const user = (await response.json()) as { id?: string; email?: string; app_metadata?: { app_role?: string } };
-  const role: AdminRole = user.email?.toLowerCase() === ADMIN_EMAIL ? "admin" : user.app_metadata?.app_role === "deputy_admin" ? "deputy_admin" : "member";
-  return role === "member" ? null : { ...user, role };
+  const user = (await response.json()) as { id?: string; email?: string };
+  return user.email?.toLowerCase() === ADMIN_EMAIL ? user : null;
 }
 
 async function listUsers() {
   const { rows } = await db().query(`
     select id, email, raw_user_meta_data->>'display_name' as display_name,
-           case when lower(email)=$1 then 'admin' when raw_app_meta_data->>'app_role'='deputy_admin' then 'deputy_admin' else 'member' end as role,
            created_at, last_sign_in_at, banned_until
     from auth.users order by created_at desc limit 500
-  `, [ADMIN_EMAIL]);
+  `);
   return rows;
 }
 
@@ -96,9 +94,6 @@ async function handler(request: Request) {
       const email = String(body.email ?? "").trim().toLowerCase();
       const displayName = String(body.displayName ?? "").trim();
       if (!id || !email) return json({ error: "Thiếu dữ liệu" }, 400);
-      const target = await db().query(`select lower(email)=$2 as is_admin from auth.users where id=$1`, [id, ADMIN_EMAIL]);
-      if (admin.role !== "admin" && target.rows[0]?.is_admin) return json({ error: "Phó Admin không thể thay đổi Lạc Việt Admin" }, 403);
-      if (email === ADMIN_EMAIL && !target.rows[0]?.is_admin) return json({ error: "Email Lạc Việt Admin được bảo vệ" }, 403);
       await db().query(
         `update auth.users set email=$2, raw_user_meta_data=coalesce(raw_user_meta_data,'{}'::jsonb) || jsonb_build_object('display_name',$3), updated_at=now() where id=$1`,
         [id, email, displayName],
@@ -110,23 +105,7 @@ async function handler(request: Request) {
     if (action === "deleteUser") {
       const id = String(body.id ?? "");
       if (!id || id === admin.id) return json({ error: "Không thể xóa tài khoản admin đang dùng" }, 400);
-      const target = await db().query(`select lower(email)=$2 as is_admin from auth.users where id=$1`, [id, ADMIN_EMAIL]);
-      if (target.rows[0]?.is_admin) return json({ error: "Không thể xóa Lạc Việt Admin" }, 403);
       await db().query(`delete from auth.users where id=$1`, [id]);
-      return json({ ok: true });
-    }
-
-    if (action === "setDeputy") {
-      if (admin.role !== "admin") return json({ error: "Chỉ Lạc Việt Admin được phân quyền" }, 403);
-      const id = String(body.id ?? "");
-      const enabled = body.enabled === true;
-      if (!id) return json({ error: "Thiếu tài khoản" }, 400);
-      const target = await db().query(`select lower(email)=$2 as is_admin from auth.users where id=$1`, [id, ADMIN_EMAIL]);
-      if (!target.rowCount || target.rows[0].is_admin) return json({ error: "Không thể đổi quyền Lạc Việt Admin" }, 400);
-      await db().query(
-        `update auth.users set raw_app_meta_data = case when $2 then coalesce(raw_app_meta_data,'{}'::jsonb) || '{"app_role":"deputy_admin"}'::jsonb else coalesce(raw_app_meta_data,'{}'::jsonb) - 'app_role' end, updated_at=now() where id=$1`,
-        [id, enabled],
-      );
       return json({ ok: true });
     }
 

@@ -81,7 +81,7 @@ function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="reference-hero-copy max-w-2xl space-y-4"
+            className="max-w-2xl space-y-4"
           >
             <div className="hero-kicker inline-flex items-center gap-2 border border-primary/40 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-primary">
               Đề cử Lạc Việt
@@ -105,7 +105,7 @@ function Home() {
                   search={{ src: hero.source, ep: 0, srv: 0 }}
                   className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/30 transition hover:bg-primary/90"
                 >
-                  <Play className="h-4 w-4 fill-current" /> Xem ngay
+                  <Play className="h-4 w-4 fill-current" /> Phát phim
                 </Link>
                 <Link
                   to="/movie/$slug"
@@ -123,7 +123,6 @@ function Home() {
 
       {/* Source ping bar */}
       <div className="heritage-source-bar mx-auto max-w-[1600px] px-4 pt-5 md:px-10">
-        <h2 className="reference-source-title">Nguồn phim</h2>
         <div className="heritage-panel flex flex-wrap items-center justify-between gap-3 px-4 py-3">
           <SourcePing value={source} onChange={setSource} />
           <div className="text-[11px] text-muted-foreground">
@@ -133,12 +132,12 @@ function Home() {
       </div>
 
       <div className="home-content-rail mt-8 space-y-8 md:space-y-12">
-        <GoldBoard />
         <MovieRow
           title="Phim mới"
           movies={featured}
           accent="cuộn ngang"
         />
+        <GoldBoard />
         <MovieRow title="Vietsub nổi bật" movies={vietsub.slice(0, 20)} />
         <MovieRow title="Thuyết Minh" movies={thuyetminh.slice(0, 20)} />
         <MovieRow title="Kho phim OPhim" movies={op.data || []} />

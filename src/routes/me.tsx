@@ -11,7 +11,6 @@ import { useWatchlist } from "@/hooks/useWatchlist";
 import { CinemaTicket } from "@/components/CinemaTicket";
 import { ticketOwnerLabel, uniqueTickets } from "@/lib/tickets";
 import type { SourceId } from "@/lib/types";
-import { adminRole, ADMIN_DISPLAY_NAME } from "@/lib/admin-role";
 
 export const Route = createFileRoute("/me")({
   head: () => ({
@@ -56,14 +55,13 @@ function MePage() {
   }
 
   const meta = user.user_metadata ?? {};
-  const role = adminRole(user);
-  const displayName = role === "admin" ? ADMIN_DISPLAY_NAME : (meta.display_name as string) || (meta.full_name as string) || user.email?.split("@")[0] || "Thành viên";
+  const displayName = (meta.display_name as string) || (meta.full_name as string) || user.email?.split("@")[0] || "Thành viên";
   const avatar = meta.avatar_url as string | undefined;
   const tickets = uniqueTickets(history.data ?? []);
   const finished = (history.data ?? []).filter((item) => item.finished).length;
   const owner = ticketOwnerLabel({ displayName, email: user.email });
   const memberCode = `LV-${user.id.replace(/-/g, "").slice(0, 8).toUpperCase()}`;
-  const isAdmin = role !== "member";
+  const isAdmin = user.email?.toLowerCase() === "lacviet55@proton.me";
 
   return (
     <div className="profile-page mx-auto max-w-6xl px-4 pb-32 pt-8 md:px-8">
@@ -109,7 +107,7 @@ function MePage() {
           <QuickLink to="/notifications" icon={<Bell />} title="Thông báo" text="Theo dõi tập mới và hoạt động" />
           <QuickLink to="/upcoming" icon={<CalendarClock />} title="Lịch sắp chiếu" text="Đón phim sắp ra mắt" />
           <QuickLink to="/settings" icon={<SettingsIcon />} title="Cài đặt" text="Hồ sơ, trình phát, quyền riêng tư" />
-          {isAdmin && <QuickLink to="/admin" icon={<Shield />} title={role === "admin" ? "Lạc Việt Admin" : "Phó Admin"} text="Quản lý người dùng và Watch Party" />}
+          {isAdmin && <QuickLink to="/admin" icon={<Shield />} title="Dashboard Admin" text="Quản lý người dùng và Watch Party" />}
           <button onClick={signOut} className="profile-signout"><LogOut className="h-4 w-4" /> Đăng xuất</button>
         </aside>
         <div className="bento-member-card">
