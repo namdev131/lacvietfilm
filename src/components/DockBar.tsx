@@ -42,11 +42,11 @@ type DockItem = { key: string; to?: string; label: string; icon: typeof Home; me
 const items: DockItem[] = [
   { key: "explore", to: "/browse", label: "Khám phá", icon: Compass, menu: "explore" },
   { key: "history", to: "/history", label: "Lịch sử", icon: History },
+  { key: "contact", label: "Liên hệ", icon: Mail, action: "contact" },
   { key: "home", to: "/", label: "Trang chủ", icon: Home, primary: true },
+  { key: "social", label: "Xã hội", icon: Users, action: "social" },
   { key: "library", to: "/favorites", label: "Yêu thích", icon: Heart, menu: "library" },
   { key: "me", to: "/me", label: "Tôi", icon: User, menu: "me" },
-  { key: "contact", label: "Liên hệ", icon: Mail, action: "contact" },
-  { key: "social", label: "Xã hội", icon: Users, action: "social" },
 ];
 
 function tap() {
@@ -200,14 +200,7 @@ export function DockBar() {
         transition={{ type: "spring", stiffness: 320, damping: 30 }}
         className="dock-shell fixed inset-x-0 bottom-0 z-50 flex justify-center pb-[env(safe-area-inset-bottom)]"
       >
-        <div className="dock-bar pointer-events-auto relative mx-3 mb-3 flex w-full max-w-md items-end justify-around gap-1 border border-border bg-card px-2 pb-2 pt-2">
-          <span aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
-            <motion.span
-              className="absolute inset-y-0 -left-1/3 block w-1/3 bg-gradient-to-r from-transparent via-primary/10 to-transparent"
-              animate={{ x: ["0%", "400%"] }}
-              transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-            />
-          </span>
+        <div className="dock-bar pointer-events-auto relative mx-2 mb-3 grid w-full max-w-lg grid-cols-7 items-end gap-0.5 border border-border bg-card px-1.5 pb-2 pt-2">
           {items.map((item) => {
             const group = item.menu ? MENUS[item.menu] : null;
             const active = item.action ? panel === item.action : group
@@ -224,7 +217,7 @@ export function DockBar() {
                   to={item.to}
                   aria-label={item.label}
                   onClick={() => { tap(); setOpen(null); }}
-                  className="group relative -mt-7 flex flex-1 flex-col items-center gap-1"
+                  className="group relative -mt-7 flex min-w-0 flex-col items-center gap-1"
                 >
                   <motion.span
                     whileTap={{ scale: 0.88 }}
@@ -275,7 +268,7 @@ export function DockBar() {
               </>
             );
 
-            const cls = "relative flex flex-1 flex-col items-center gap-1 rounded-xl px-1 py-1.5";
+            const cls = "relative flex min-w-0 flex-col items-center gap-1 rounded-xl px-0.5 py-1.5";
 
             if (group) {
               return (
