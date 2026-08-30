@@ -161,6 +161,8 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
   const miniRaw = !dockEl || !dockEl.isConnected || !rect || rect.width < 80 || rect.height < 80;
   const mini = miniRaw;
   const hidePlayer = mini && !settings.miniPlayer;
+  const visibleWidth = rect ? Math.max(0, Math.min(rect.right, window.innerWidth) - Math.max(rect.left, 0)) : 0;
+  const visibleHeight = rect ? Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0)) : 0;
   const playKey = playback
     ? `${playback.source}-${playback.slug}-${playback.srv}-${playback.ep}-${playback.mode}`
     : "none";
@@ -201,7 +203,12 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
               ? drag
                 ? { top: drag.y, left: drag.x }
                 : { bottom: "6rem", right: "0.75rem" }
-              : { top: rect!.top, left: rect!.left, width: rect!.width, height: rect!.height }
+              : {
+                  top: Math.max(0, rect!.top),
+                  left: Math.max(0, rect!.left),
+                  width: visibleWidth,
+                  height: visibleHeight,
+                }
           }
         >
           {mini && (

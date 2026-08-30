@@ -59,11 +59,10 @@ export async function recordView(entry: {
   userId?: string | null;
 }) {
   const movieKey = canonicalMovieKey(entry.canonicalName || entry.name);
+  const key = `lv-view:${movieKey}`;
   try {
-    const key = `lv-view:${movieKey}`;
     const last = Number(sessionStorage.getItem(key) || 0);
     if (Date.now() - last < 10 * 60 * 1000) return;
-    sessionStorage.setItem(key, String(Date.now()));
   } catch {
     /* ignore */
   }
@@ -77,7 +76,15 @@ export async function recordView(entry: {
     kind: entry.kind ?? "other",
     lang: entry.lang ?? "vietsub",
   });
-  if (error) console.error("recordView failed", error);
+  if (error) {
+    console.error("recordView failed", error);
+    return;
+  }
+  try {
+    sessionStorage.setItem(key, String(Date.now()));
+  } catch {
+    /* ignore */
+  }
 }
 
 export function useGoldBoard(period: GoldPeriod, kind: GoldKind) {

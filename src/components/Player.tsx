@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import Hls from "hls.js";
 import {
-  AlertTriangle, Check, ChevronLeft, Film, Gauge, ListVideo, Maximize,
-  MonitorPlay, Pause, Play, RotateCcw, Settings2, SkipForward, Volume2,
-  VolumeX, Zap,
+  AlertTriangle, Check, ChevronLeft, Film, Gauge, Maximize, Pause, Play,
+  RotateCcw, RotateCw, Settings2, SkipForward, Volume2, VolumeX, Zap,
 } from "lucide-react";
 import { beginNextEpisode, cancelNextEpisode, tickNextEpisode, type NextEpisodeState } from "@/lib/nextEpisode";
 
@@ -87,6 +86,10 @@ export function Player({
   const [playing, setPlaying] = useState(false);
   const [volume, setVolume] = useState(1);
   const [muted, setMuted] = useState(false);
+  const [seekPreview, setSeekPreview] = useState<number | null>(null);
+  const seekFrameRef = useRef<number | null>(null);
+  const seekValueRef = useRef<number | null>(null);
+  const seekingRef = useRef(false);
   const progressRef = useRef(onProgress);
   progressRef.current = onProgress;
   const resumeRef = useRef(resumeAt);
@@ -164,6 +167,7 @@ export function Player({
       setTime({ current: video.currentTime, duration: video.duration || 0 });
     };
     const onTime = () => {
+      if (seekingRef.current) return;
       setTime({ current: video.currentTime, duration: video.duration || 0 });
       const now = Date.now();
       if (now - last < 5000) return;
@@ -184,8 +188,13 @@ export function Player({
       } else if (e.key === "ArrowLeft") {
         e.preventDefault();
         video.currentTime -= 10;
+      } else if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+        e.preventDefault();
+        video.volume = Math.max(0, Math.min(1, video.volume + (e.key === "ArrowUp" ? 0.1 : -0.1)));
+      } else if (e.key.toLowerCase() === "m") {
+        video.muted = !video.muted;
       } else if (e.key.toLowerCase() === "f") {
-        void video.requestFullscreen?.();
+        void frameRef.current?.requestFullscreen?.();
       }
     };
 
@@ -195,8 +204,15 @@ export function Player({
       endedRef.current?.();
       setNextState(beginNextEpisode(hasNext, autoNext && nextEpCountdown > 0));
     };
+    const onSeeked = () => {
+      seekingRef.current = false;
+      seekValueRef.current = null;
+      setSeekPreview(null);
+      setTime({ current: video.currentTime, duration: video.duration || 0 });
+    };
     video.addEventListener("pause", flush);
     video.addEventListener("ended", onEndedEv);
+    video.addEventListener("seeked", onSeeked);
     window.addEventListener("keydown", onKey);
     window.addEventListener("beforeunload", flush);
     return () => {
@@ -205,6 +221,7 @@ export function Player({
       video.removeEventListener("timeupdate", onTime);
       video.removeEventListener("pause", flush);
       video.removeEventListener("ended", onEndedEv);
+      video.removeEventListener("seeked", onSeeked);
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("beforeunload", flush);
     };
@@ -247,6 +264,8 @@ export function Player({
         startLevel: -1,
         capLevelToPlayerSize: true,
         backBufferLength: 30,
+        maxBufferLength: 20,
+        maxMaxBufferLength: 40,
       });
       hlsRef.current = hls;
       hls.loadSource(m3u8);
@@ -296,6 +315,7 @@ export function Player({
 
   const applyQuality = (q: string) => {
     setQuality(q);
+    setMenu(false);
     onQualityChange?.(q);
     const hls = hlsRef.current;
     if (!hls) return;
@@ -312,6 +332,7 @@ export function Player({
 
   const applyRate = (r: number) => {
     setRate(r);
+    setMenu(false);
     onRateChange?.(r);
     if (videoRef.current) videoRef.current.playbackRate = r;
   };
@@ -342,6 +363,32 @@ export function Player({
     const video = videoRef.current;
     if (video) video.currentTime = Math.max(0, Math.min(video.duration || Infinity, video.currentTime + seconds));
   };
+  const previewSeek = (value: number) => {
+    seekValueRef.current = value;
+    if (seekFrameRef.current !== null) cancelAnimationFrame(seekFrameRef.current);
+    seekFrameRef.current = requestAnimationFrame(() => {
+      setSeekPreview(value);
+      seekFrameRef.current = null;
+    });
+  };
+  const beginSeek = () => hlsRef.current?.stopLoad();
+  const commitSeek = () => {
+    const video = videoRef.current;
+    if (seekFrameRef.current !== null) {
+      cancelAnimationFrame(seekFrameRef.current);
+      seekFrameRef.current = null;
+    }
+    const target = seekValueRef.current;
+    if (video && target !== null) {
+      seekingRef.current = true;
+      setSeekPreview(target);
+      setTime({ current: target, duration: video.duration || time.duration });
+      video.currentTime = target;
+      hlsRef.current?.startLoad(target);
+    } else {
+      hlsRef.current?.startLoad();
+    }
+  };
   const toggleMute = () => {
     const video = videoRef.current;
     if (!video) return;
@@ -370,6 +417,8 @@ export function Player({
             playsInline
             poster={poster}
             className="h-full w-full object-contain"
+            onClick={togglePlay}
+            onDoubleClick={requestFull}
             onPlay={() => setPlaying(true)}
             onPause={() => setPlaying(false)}
             onVolumeChange={(e) => {
@@ -399,8 +448,8 @@ export function Player({
         )}
 
         {inHls && (
-          <div className="player-chrome group/player absolute inset-0 z-10 flex flex-col justify-between bg-gradient-to-b from-black/65 via-transparent to-black/90 opacity-100 transition-opacity md:opacity-0 md:hover:opacity-100 md:focus-within:opacity-100">
-            <div className="flex items-start justify-between gap-3 p-3 md:p-4">
+          <div className="player-chrome group/player absolute inset-0 z-10 flex flex-col justify-between opacity-100 md:opacity-0 md:hover:opacity-100 md:focus-within:opacity-100">
+            <div className="player-topbar flex items-start justify-between gap-3 p-3 md:p-4">
               <div className="flex min-w-0 items-center gap-3">
                 <button type="button" onClick={() => history.back()} aria-label="Quay lại" className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/15 bg-black/45 text-white backdrop-blur hover:border-amber-400/60">
                   <ChevronLeft className="h-5 w-5" />
@@ -410,35 +459,43 @@ export function Player({
                   <p className="mt-0.5 hidden truncate text-[11px] text-white/55 sm:block">Phim bộ › {title || "Đang phát"} › {episodeLabel || "Tập hiện tại"}</p>
                 </div>
               </div>
-              <div className="flex shrink-0 gap-2">
-                <button type="button" className="inline-flex h-9 items-center gap-1.5 rounded-md border border-white/15 bg-black/45 px-3 text-xs text-white/80 backdrop-blur hover:border-amber-400/60 hover:text-amber-300">
-                  <AlertTriangle className="h-4 w-4" /><span className="hidden sm:inline">Báo lỗi</span>
-                </button>
-                <button type="button" aria-label="Danh sách tập" className="grid h-9 w-9 place-items-center rounded-md border border-white/15 bg-black/45 text-white backdrop-blur hover:border-amber-400/60">
-                  <ListVideo className="h-4 w-4" />
-                </button>
-              </div>
+              <span className="rounded-full border border-white/15 bg-black/45 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.16em] text-white/65 backdrop-blur">{mode}</span>
             </div>
 
-            <div className="px-3 pb-3 md:px-5 md:pb-4">
-              <div className="mb-2 flex items-center gap-3 text-[11px] tabular-nums text-white/70">
-                <span>{formatClock(time.current)} / {formatClock(time.duration)}</span>
-                <input type="range" min={0} max={time.duration || 0} step={0.1} value={Math.min(time.current, time.duration || 0)} onChange={(e) => { if (videoRef.current) videoRef.current.currentTime = Number(e.target.value); }} aria-label="Tiến trình video" className="h-1 flex-1 cursor-pointer accent-amber-400" />
+            <div className="player-bottombar px-3 pb-3 pt-14 md:px-5 md:pb-4">
+              <div className="mb-2 flex items-center gap-3 text-[11px] tabular-nums text-white/75">
+                <input
+                  type="range"
+                  min={0}
+                  max={time.duration || 0}
+                  step={0.1}
+                  value={Math.min(seekPreview ?? time.current, time.duration || 0)}
+                  onInput={(e) => previewSeek(Number(e.currentTarget.value))}
+                  onChange={(e) => previewSeek(Number(e.currentTarget.value))}
+                  onPointerDown={beginSeek}
+                  onPointerUp={commitSeek}
+                  onPointerCancel={commitSeek}
+                  onKeyUp={commitSeek}
+                  aria-label="Tiến trình video"
+                  className="player-timeline h-2 flex-1 cursor-pointer accent-amber-400"
+                />
+                <span>{formatClock(seekPreview ?? time.current)} / {formatClock(time.duration)}</span>
               </div>
               <div className="flex items-center justify-between gap-2 text-white">
                 <div className="flex items-center gap-1 sm:gap-2">
                   <button type="button" onClick={togglePlay} aria-label="Phát / Tạm dừng" className="grid h-10 w-10 place-items-center rounded-full border border-amber-400 text-white hover:bg-amber-400 hover:text-black">
                     {playing ? <Pause className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}
                   </button>
-                  <button type="button" onClick={() => nextRef.current?.()} disabled={!hasNext} aria-label="Chuyển thủ công sang tập tiếp theo" className="player-next-button grid h-9 w-9 place-items-center rounded-md text-white/75 hover:bg-white/10 hover:text-white disabled:opacity-30"><SkipForward className="h-4 w-4" /></button>
+                  {hasNext && <button type="button" onClick={() => nextRef.current?.()} aria-label="Chuyển thủ công sang tập tiếp theo" className="player-next-button grid h-9 w-9 place-items-center rounded-md text-white/75 hover:bg-white/10 hover:text-white"><SkipForward className="h-4 w-4" /></button>}
                   <button type="button" onClick={() => seekBy(-10)} aria-label="Tua lùi 10 giây" className="grid h-9 w-9 place-items-center rounded-md text-white/75 hover:bg-white/10 hover:text-white"><RotateCcw className="h-4 w-4" /></button>
+                  <button type="button" onClick={() => seekBy(10)} aria-label="Tua tới 10 giây" className="grid h-9 w-9 place-items-center rounded-md text-white/75 hover:bg-white/10 hover:text-white"><RotateCw className="h-4 w-4" /></button>
                   <button type="button" onClick={toggleMute} aria-label="Bật / Tắt âm" className="grid h-9 w-9 place-items-center rounded-md text-white/75 hover:bg-white/10 hover:text-white">{muted || volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}</button>
                   <input type="range" min={0} max={1} step={0.05} value={muted ? 0 : volume} onChange={(e) => { const v = Number(e.target.value); if (videoRef.current) { videoRef.current.volume = v; videoRef.current.muted = false; } setVolume(v); setMuted(false); }} aria-label="Âm lượng" className="hidden h-1 w-20 accent-amber-400 lg:block" />
                 </div>
                 <div className="flex items-center gap-1">
-                  <button type="button" onClick={() => setMenu((v) => !v)} className="hidden min-w-14 rounded-md px-2 py-1.5 text-center text-[10px] text-white/60 hover:bg-white/10 sm:block"><b className="block text-xs font-semibold text-amber-300">{rate.toFixed(1)}x</b>Tốc độ</button>
-                  <button type="button" onClick={() => setMenu((v) => !v)} className="hidden min-w-16 rounded-md px-2 py-1.5 text-center text-[10px] text-white/60 hover:bg-white/10 md:block"><b className="block text-xs font-semibold text-amber-300">{quality === "auto" ? "AUTO" : `${quality}P`}</b>Chất lượng</button>
-                  <button type="button" onClick={requestFull} aria-label="Toàn màn hình" className="h-10 min-w-14 rounded-md px-2 text-[10px] text-white/60 hover:bg-white/10"><Maximize className="mx-auto mb-0.5 h-4 w-4 text-white" />Toàn màn hình</button>
+                  <span className="hidden text-[11px] font-semibold text-white/55 md:inline">{quality === "auto" ? "Auto" : `${quality}p`} · {rate}x</span>
+                  <button type="button" onClick={() => setMenu((v) => !v)} aria-label="Cài đặt phát" aria-expanded={menu} className="grid h-9 w-9 place-items-center rounded-md text-white/75 hover:bg-white/10 hover:text-white"><Settings2 className="h-4 w-4" /></button>
+                  <button type="button" onClick={requestFull} aria-label="Toàn màn hình" className="grid h-9 w-9 place-items-center rounded-md text-white/75 hover:bg-white/10 hover:text-white"><Maximize className="h-4 w-4" /></button>
                 </div>
               </div>
             </div>
@@ -498,7 +555,7 @@ export function Player({
           <div className="absolute bottom-20 right-3 z-30 md:right-5">
               <div className="w-44 overflow-hidden rounded-xl border border-white/15 bg-black/90 p-1.5 text-white backdrop-blur">
                 <p className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-white/50">
-                  <MonitorPlay className="h-3 w-3" /> Chất lượng
+                  <Settings2 className="h-3 w-3" /> Chất lượng
                 </p>
                 {["auto", ...levels.map((l) => String(l.height))].map((q) => (
                   <button
@@ -535,9 +592,6 @@ export function Player({
           </div>
         )}
 
-        <div className="pointer-events-none absolute right-3 top-3 rounded bg-black/60 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-white/80 backdrop-blur">
-          Lạc Việt Film
-        </div>
       </div>
 
       {!hideControls && (

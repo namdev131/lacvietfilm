@@ -10,4 +10,9 @@ must(css.includes(".home-content-rail"), "Thiếu trục nội dung chung trang 
 must(home.includes("home-content-rail"), "Trang chủ chưa dùng trục nội dung chung");
 must(row.includes("movie-row-inner"), "Hàng phim chưa dùng khung căn lề thống nhất");
 must(!css.includes(".cinema-hero::before"), "Hero còn khung trang trí gây rối");
+must(home.includes("setInterval(() =>"), "Hero chưa tự chuyển phim");
+must(home.includes("10000"), "Hero chưa chuyển sau 10 giây");
+must(home.includes("featured[heroIndex % featured.length]"), "Hero chưa luân phiên danh sách phim");
+must(css.includes(".cinema-hero h1 { color: #f4efe4"), "Tiêu đề hero còn thiếu tương phản");
+must(css.includes(".cinema-hero-meta"), "Metadata hero còn thiếu màu rõ");
 console.log("home alignment contract: PASS");

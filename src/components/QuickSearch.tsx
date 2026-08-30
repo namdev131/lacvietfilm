@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { Search as SearchIcon, Loader2, X } from "lucide-react";
@@ -76,7 +77,7 @@ export function QuickSearch() {
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[70] flex justify-end">
       <button
         aria-label="Đóng tìm kiếm"
@@ -164,6 +165,7 @@ export function QuickSearch() {
           </ul>
         </div>
       </aside>
-    </div>
+    </div>,
+    document.body,
   );
 }

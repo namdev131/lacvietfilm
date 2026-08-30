@@ -267,7 +267,7 @@ function WatchPage() {
 
       <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_280px]">
         <div className="space-y-3">
-          <div ref={dockRef} className="aspect-video w-full overflow-hidden rounded-md bg-black ring-1 ring-[#202936]" />
+          <div ref={dockRef} className="aspect-video max-h-[calc(100dvh-8rem)] w-full overflow-hidden rounded-md bg-black ring-1 ring-[#202936]" />
 
           <div className="inline-flex overflow-hidden rounded-full border border-border bg-card">
             {allowHls && (
@@ -441,7 +441,7 @@ function WatchPage() {
           <div className="hidden rounded-md border border-[#202936] bg-[#070c14] p-4 text-xs text-[#9ea6b2] xl:block">
             <p className="font-semibold text-white">Phím tắt</p>
             <dl className="mt-3 space-y-2">
-              {[["Phát / Tạm dừng", "Space"], ["Tua nhanh 10s", "→"], ["Tua lùi 10s", "←"], ["Tăng âm lượng", "↑"], ["Giảm âm lượng", "↓"], ["Toàn màn hình", "F"], ["Thoát toàn màn hình", "Esc"]].map(([label, key]) => <div key={label} className="flex justify-between"><dt>{label}</dt><dd className="text-white">{key}</dd></div>)}
+              {[["Phát / Tạm dừng", "Space"], ["Tua nhanh 10s", "→"], ["Tua lùi 10s", "←"], ["Âm lượng", "↑ / ↓"], ["Tắt tiếng", "M"], ["Toàn màn hình", "F / Nhấp đúp"], ["Thoát toàn màn hình", "Esc"]].map(([label, key]) => <div key={label} className="flex justify-between"><dt>{label}</dt><dd className="text-white">{key}</dd></div>)}
             </dl>
             <p className="mt-4 flex gap-1.5 border-t border-[#202936] pt-3 text-[11px] leading-4 text-amber-300"><Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />Nếu không xem được, hãy thử đổi máy chủ khác nhé!</p>
           </div>

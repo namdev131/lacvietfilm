@@ -27,6 +27,7 @@ export const Route = createFileRoute("/")({
 function Home() {
   const { settings } = useSettings();
   const [source, setSource] = useState<SourceFilter>("all");
+  const [heroIndex, setHeroIndex] = useState(0);
   // Áp dụng nguồn mặc định trong Cài đặt (sau khi hydrate)
   const appliedDefault = useRef(false);
   useEffect(() => {
@@ -51,7 +52,16 @@ function Home() {
           : source === "vsmov"
             ? vs.data
             : ng.data) || [];
-  const hero = featured[0];
+  const hero = featured[heroIndex % featured.length];
+
+  useEffect(() => {
+    setHeroIndex(0);
+    if (featured.length < 2) return;
+    const timer = window.setInterval(() => {
+      setHeroIndex((index) => (index + 1) % Math.min(featured.length, 10));
+    }, 10000);
+    return () => window.clearInterval(timer);
+  }, [source, featured.length]);
 
   const vietsub = (kk.data || []).filter((m) => (m.lang || "").toLowerCase().includes("vietsub"));
   const thuyetminh = (kk.data || []).filter((m) => (m.lang || "").toLowerCase().includes("thuyết"));
@@ -90,7 +100,7 @@ function Home() {
               {hero?.name || "Lạc Việt Film"}
             </h1>
             {hero?.origin_name && (
-              <p className="text-sm text-muted-foreground md:text-base">
+              <p className="cinema-hero-meta text-sm md:text-base">
                 {hero.origin_name} {hero.year ? `· ${hero.year}` : ""} {hero.quality ? `· ${hero.quality}` : ""}
               </p>
             )}

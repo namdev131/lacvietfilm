@@ -1,5 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   History, Home, Heart, User, Compass, Flame, CalendarClock,
   Library, Bookmark, Settings as SettingsIcon, LogIn, Bell, Mail, Users,
@@ -59,7 +60,9 @@ export function DockBar() {
   const [panel, setPanel] = useState<"contact" | "social" | null>(null);
   const [feedback, setFeedback] = useState("");
   const [hidden, setHidden] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
+  useEffect(() => setMounted(true), []);
   useEffect(() => { setOpen(null); }, [pathname]);
 
   // Ẩn dock khi cuộn xuống, hiện lại khi cuộn lên
@@ -78,6 +81,8 @@ export function DockBar() {
 
   const menu = open ? MENUS[open] : null;
 
+  if (!mounted) return null;
+
   const submitFeedback = (event: React.FormEvent) => {
     event.preventDefault();
     const body = feedback.trim();
@@ -85,7 +90,7 @@ export function DockBar() {
     window.location.href = `mailto:lacviet55@proton.me?subject=${encodeURIComponent("Góp ý Lạc Việt Film")}&body=${encodeURIComponent(body)}`;
   };
 
-  return (
+  return createPortal(
     <>
       {!menu && <ContinueWatching />}
       <AnimatePresence>
@@ -309,6 +314,7 @@ export function DockBar() {
           })}
         </div>
       </motion.nav>
-    </>
+    </>,
+    document.body,
   );
 }
