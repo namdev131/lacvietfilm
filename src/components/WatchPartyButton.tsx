@@ -6,6 +6,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCreateParty } from "@/hooks/useWatchParty";
 import type { SourceId } from "@/lib/types";
 
+function partyErrorMessage(error: unknown) {
+  if (!(error instanceof Error)) return "Không mở được phòng, thử lại nhé";
+  if (error.message.includes("watch_parties") || error.message.includes("schema cache"))
+    return "Phòng xem chung chưa được khởi tạo trên máy chủ";
+  if (error.message.includes("row-level security")) return "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại";
+  return error.message || "Không mở được phòng, thử lại nhé";
+}
+
 export function WatchPartyButton({
   slug,
   name,
@@ -30,6 +38,7 @@ export function WatchPartyButton({
   return (
     <div className="flex flex-wrap items-center gap-2">
       <button
+        disabled={create.isPending}
         onClick={() => {
           if (!user) {
             toast.info("Đăng nhập để mở phòng xem chung");
@@ -40,11 +49,11 @@ export function WatchPartyButton({
             { slug, name, poster, source, ep, srv },
             {
               onSuccess: (partyCode) => navigate({ to: "/party/$code", params: { code: partyCode } }),
-              onError: (error) => toast.error(error instanceof Error ? error.message : "Không mở được phòng, thử lại nhé"),
+              onError: (error) => toast.error(partyErrorMessage(error)),
             },
           );
         }}
-        className="inline-flex items-center gap-2 rounded-md border border-border px-4 py-2.5 text-sm font-semibold transition hover:border-primary/60 hover:text-primary"
+        className="inline-flex items-center gap-2 rounded-md border border-border px-4 py-2.5 text-sm font-semibold transition hover:border-primary/60 hover:text-primary disabled:cursor-wait disabled:opacity-60"
       >
         {create.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Users className="h-4 w-4" />}
         Xem chung

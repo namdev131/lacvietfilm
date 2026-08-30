@@ -27,6 +27,7 @@ import { Route as WatchlistRouteImport } from './routes/watchlist'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as ApiAdminRouteImport } from './routes/api/admin'
+import { Route as ApiWatchPartyRouteImport } from './routes/api/watch-party'
 import { Route as BrowseIndexRouteImport } from './routes/browse.index'
 import { Route as CCodeRouteImport } from './routes/c.$code'
 import { Route as CollectionsIndexRouteImport } from './routes/collections.index'
@@ -131,6 +132,11 @@ const ApiAdminRoute = ApiAdminRouteImport.update({
   path: '/api/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiWatchPartyRoute = ApiWatchPartyRouteImport.update({
+  id: '/api/watch-party',
+  path: '/api/watch-party',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BrowseIndexRoute = BrowseIndexRouteImport.update({
   id: '/browse/',
   path: '/browse/',
@@ -207,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/admin': typeof ApiAdminRoute
+  '/api/watch-party': typeof ApiWatchPartyRoute
   '/c/$code': typeof CCodeRoute
   '/collections/$id': typeof CollectionsIdRoute
   '/movie/$slug': typeof MovieSlugRoute
@@ -238,6 +245,7 @@ export interface FileRoutesByTo {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/admin': typeof ApiAdminRoute
+  '/api/watch-party': typeof ApiWatchPartyRoute
   '/c/$code': typeof CCodeRoute
   '/collections/$id': typeof CollectionsIdRoute
   '/movie/$slug': typeof MovieSlugRoute
@@ -270,6 +278,7 @@ export interface FileRoutesById {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/admin': typeof ApiAdminRoute
+  '/api/watch-party': typeof ApiWatchPartyRoute
   '/c/$code': typeof CCodeRoute
   '/collections/$id': typeof CollectionsIdRoute
   '/movie/$slug': typeof MovieSlugRoute
@@ -303,6 +312,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/api/admin'
+    | '/api/watch-party'
     | '/c/$code'
     | '/collections/$id'
     | '/movie/$slug'
@@ -334,6 +344,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/api/admin'
+    | '/api/watch-party'
     | '/c/$code'
     | '/collections/$id'
     | '/movie/$slug'
@@ -365,6 +376,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/api/admin'
+    | '/api/watch-party'
     | '/c/$code'
     | '/collections/$id'
     | '/movie/$slug'
@@ -397,6 +409,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ApiAdminRoute: typeof ApiAdminRoute
+  ApiWatchPartyRoute: typeof ApiWatchPartyRoute
   CCodeRoute: typeof CCodeRoute
   CollectionsIdRoute: typeof CollectionsIdRoute
   MovieSlugRoute: typeof MovieSlugRoute
@@ -538,6 +551,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/watch-party': {
+      id: '/api/watch-party'
+      path: '/api/watch-party'
+      fullPath: '/api/watch-party'
+      preLoaderRoute: typeof ApiWatchPartyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/browse/': {
       id: '/browse/'
       path: '/browse'
@@ -638,6 +658,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ApiAdminRoute: ApiAdminRoute,
+  ApiWatchPartyRoute: ApiWatchPartyRoute,
   CCodeRoute: CCodeRoute,
   CollectionsIdRoute: CollectionsIdRoute,
   MovieSlugRoute: MovieSlugRoute,

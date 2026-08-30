@@ -32,6 +32,19 @@ export interface PartyMessage {
   created_at: string;
 }
 
+async function partyApi(body: Record<string, unknown>) {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error("Bạn cần đăng nhập");
+  const response = await fetch("/api/watch-party", {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: `Bearer ${session.access_token}` },
+    body: JSON.stringify(body),
+  });
+  const result = (await response.json()) as { party?: Party | null; error?: string };
+  if (!response.ok) throw new Error(result.error || "Không mở được phòng");
+  return result.party ?? null;
+}
+
 export function useCreateParty() {
   const { user } = useAuth();
   return useMutation({
@@ -44,17 +57,18 @@ export function useCreateParty() {
       srv: number;
     }) => {
       if (!user) throw new Error("Bạn cần đăng nhập");
-      const { data, error } = await supabase.rpc("create_watch_party", {
-        _slug: movie.slug,
-        _source: movie.source,
-        _name: movie.name,
-        _poster: movie.poster,
-        _ep_index: movie.ep,
-        _srv_index: movie.srv,
-      });
-      if (error) throw error;
-      if (typeof data !== "string") throw new Error("Không tạo được mã phòng");
-      return data;
+      const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      for (let attempt = 0; attempt < 5; attempt += 1) {
+        const bytes = crypto.getRandomValues(new Uint8Array(6));
+        const code = Array.from(bytes, (byte) => alphabet[byte % alphabet.length]).join("");
+        try {
+          await partyApi({ action: "create", code, slug: movie.slug.trim(), source: movie.source, name: movie.name.trim(), poster: movie.poster, ep: movie.ep, srv: movie.srv });
+          return code;
+        } catch (error) {
+          if (!(error instanceof Error) || !error.message.includes("duplicate key")) throw error;
+        }
+      }
+      throw new Error("Không tạo được mã phòng");
     },
   });
 }
@@ -65,12 +79,7 @@ export function useParty(code: string) {
   const query = useQuery({
     queryKey: ["party", code],
     queryFn: async () => {
-      const { data: joined, error: joinError } = await supabase.rpc("join_party", { _code: code });
-      if (joinError) throw joinError;
-      if (!joined) return null;
-      const { data, error } = await supabase.from("watch_parties").select("*").eq("code", code).maybeSingle();
-      if (error) throw error;
-      return (data as unknown as Party) ?? null;
+      return partyApi({ action: "join", code: code.trim().toUpperCase() });
     },
   });
 
@@ -118,10 +127,7 @@ export function usePartySync(party: Party | null | undefined, isHost: boolean) {
     if (!party || !isHost) return;
     // cập nhật lạc quan để chủ phòng thấy ngay
     qc.setQueryData(["party", party.code], { ...party, ...patch, updated_at: new Date().toISOString() });
-    await supabase
-      .from("watch_parties")
-      .update({ ...patch, updated_at: new Date().toISOString() } as never)
-      .eq("id", party.id);
+    await partyApi({ action: "sync", partyId: party.id, patch });
   };
 }
 
@@ -130,8 +136,7 @@ export function useCloseParty() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (party: Party) => {
-      const { error } = await supabase.from("watch_parties").update({ closed: true } as never).eq("id", party.id);
-      if (error) throw error;
+      await partyApi({ action: "close", partyId: party.id });
       return party.code;
     },
     onSuccess: (code) => qc.invalidateQueries({ queryKey: ["party", code] }),
@@ -143,19 +148,18 @@ export function usePartyChat(partyId?: string) {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [typingKey] = useState(() => Math.random().toString(36).slice(2));
+  const [incomingMessage, setIncomingMessage] = useState<PartyMessage | null>(null);
 
   const query = useQuery({
     queryKey: ["party-chat", partyId],
     enabled: !!partyId,
+    refetchInterval: 2000,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("watch_party_messages")
-        .select("*")
-        .eq("party_id", partyId!)
-        .order("created_at", { ascending: true })
-        .limit(200);
-      if (error) throw error;
-      return (data ?? []) as unknown as PartyMessage[];
+      const { data: { session } } = await supabase.auth.getSession();
+      const response = await fetch("/api/watch-party", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session?.access_token ?? ""}` }, body: JSON.stringify({ action: "chat-list", partyId }) });
+      const result = (await response.json()) as { messages?: PartyMessage[]; error?: string };
+      if (!response.ok) throw new Error(result.error || "Không tải được chat");
+      return result.messages ?? [];
     },
   });
 
@@ -166,17 +170,20 @@ export function usePartyChat(partyId?: string) {
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "watch_party_messages", filter: `party_id=eq.${partyId}` },
-        (payload) =>
+        (payload) => {
+          const message = payload.new as PartyMessage;
           qc.setQueryData(["party-chat", partyId], (old: PartyMessage[] | undefined) => [
-            ...(old ?? []).filter((m) => m.id !== (payload.new as PartyMessage).id),
-            payload.new as PartyMessage,
-          ]),
+            ...(old ?? []).filter((m) => m.id !== message.id),
+            message,
+          ]);
+          if (message.user_id !== user?.id) setIncomingMessage(message);
+        },
       )
       .subscribe();
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [partyId, qc, typingKey]);
+  }, [partyId, qc, typingKey, user?.id]);
 
   // Kéo lại tin nhắn đã lỡ khi quay lại tab
   useEffect(() => {
@@ -199,17 +206,12 @@ export function usePartyChat(partyId?: string) {
     mutationFn: async (content: string) => {
       if (!user || !partyId) throw new Error("Bạn cần đăng nhập");
       const meta = (user.user_metadata ?? {}) as Record<string, string>;
-      const { error } = await supabase.from("watch_party_messages").insert({
-        party_id: partyId,
-        user_id: user.id,
-        display_name: meta.display_name || meta.full_name || user.email?.split("@")[0] || "Khán giả",
-        content,
-      } as never);
-      if (error) throw error;
+      await partyApi({ action: "chat-send", partyId, displayName: meta.display_name || meta.full_name || user.email?.split("@")[0] || "Khán giả", content });
     },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["party-chat", partyId] }),
   });
 
-  return { ...query, send };
+  return { ...query, send, incomingMessage, dismissIncoming: () => setIncomingMessage(null) };
 }
 
 /** Số người đang trong phòng (presence) */
@@ -219,6 +221,7 @@ export function usePartyPresence(code: string, name: string) {
   const { user } = useAuth();
   const [count, setCount] = useState(1);
   const [staffNotice, setStaffNotice] = useState<StaffPresence | null>(null);
+  const [joinedNotice, setJoinedNotice] = useState<StaffPresence | null>(null);
   useEffect(() => {
     const role = staffRole(user);
     const id = user?.id ?? `guest-${name}`;
@@ -229,8 +232,11 @@ export function usePartyPresence(code: string, name: string) {
         setCount(Object.keys(channel.presenceState()).length || 1);
       })
       .on("presence", { event: "join" }, ({ newPresences }) => {
-        const joined = (newPresences as unknown as StaffPresence[]).find((presence) => presence.id !== id && isStaff(presence.role));
-        if (joined) setStaffNotice(joined);
+        const joined = (newPresences as unknown as StaffPresence[]).find((presence) => presence.id !== id);
+        if (joined) {
+          setJoinedNotice(joined);
+          if (isStaff(joined.role)) setStaffNotice(joined);
+        }
       })
       .subscribe((status) => {
         if (status === "SUBSCRIBED") void channel.track({ id, name: label, role, at: Date.now() });
@@ -239,5 +245,5 @@ export function usePartyPresence(code: string, name: string) {
       void supabase.removeChannel(channel);
     };
   }, [code, name, user?.id, user?.email, user?.app_metadata?.role]);
-  return { count, staffNotice, setStaffNotice };
+  return { count, joinedNotice, setJoinedNotice, staffNotice, setStaffNotice };
 }

@@ -72,13 +72,14 @@ export function useHistory() {
         .select(
           "slug,name,poster,source,episode_slug,episode_name,watched_at,position_seconds,duration_seconds,ep_index,srv_index,finished",
         )
-
+        .eq("user_id", user!.id)
         .order("watched_at", { ascending: false })
         .limit(60);
       if (error) throw error;
       return (data ?? []) as unknown as LibraryItem[];
-
     },
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 }
 

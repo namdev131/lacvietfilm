@@ -10,6 +10,7 @@ import { useCloseParty, useParty, usePartyChat, usePartyPresence, usePartySync }
 import { SignInPrompt } from "@/components/SignInPrompt";
 import type { SourceId } from "@/lib/types";
 import { staffLabel, staffRole } from "@/lib/staff";
+import { usePlayerHost } from "@/components/PlayerHost";
 
 
 export const Route = createFileRoute("/party/$code")({
@@ -29,6 +30,7 @@ export const Route = createFileRoute("/party/$code")({
 function PartyPage() {
   const { code } = Route.useParams();
   const { user, loading } = useAuth();
+  const host = usePlayerHost();
   const { data: party, isLoading } = useParty(code);
   const isHost = !!user && party?.host_id === user.id;
   const sync = usePartySync(party, isHost);
@@ -36,13 +38,17 @@ function PartyPage() {
   const meta = (user?.user_metadata ?? {}) as Record<string, string>;
   const myRole = staffRole(user);
   const myName = staffLabel(myRole, meta.display_name || meta.full_name || user?.email?.split("@")[0] || "Khán giả");
-  const { count: viewers, staffNotice, setStaffNotice } = usePartyPresence(code, myName);
+  const { count: viewers, joinedNotice, setJoinedNotice, staffNotice, setStaffNotice } = usePartyPresence(code, myName);
   const chat = usePartyChat(party?.id);
   const [text, setText] = useState("");
   const [mode, setMode] = useState<PlayMode>("hls");
   const [followHost, setFollowHost] = useState(true);
   const [resyncNonce, setResyncNonce] = useState(0);
+  const [activityNotice, setActivityNotice] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
+
+  // Phòng có player riêng; tắt mini player toàn cục để tránh PiP chồng hình/âm thanh.
+  useEffect(() => host.stop(), []);
 
   const { data: detail } = useQuery({
     queryKey: ["detail", party?.source, party?.slug],
@@ -75,10 +81,23 @@ function PartyPage() {
   }, [chat.data?.length]);
 
   useEffect(() => {
+    if (!chat.incomingMessage) return;
+    const timer = window.setTimeout(chat.dismissIncoming, 6000);
+    return () => window.clearTimeout(timer);
+  }, [chat.incomingMessage?.id]);
+
+  useEffect(() => {
     if (!staffNotice) return;
     const timer = window.setTimeout(() => setStaffNotice(null), 7000);
     return () => window.clearTimeout(timer);
   }, [staffNotice, setStaffNotice]);
+
+  useEffect(() => {
+    if (!joinedNotice) return;
+    setActivityNotice(joinedNotice.role === "admin" ? `${joinedNotice.name} đang điều hành cộng đồng trong phòng` : joinedNotice.role === "deputy_admin" ? `${joinedNotice.name} đang hỗ trợ phòng` : `${joinedNotice.name} đã vào xem chung`);
+    const timer = window.setTimeout(() => { setJoinedNotice(null); setActivityNotice(null); }, 5000);
+    return () => window.clearTimeout(timer);
+  }, [joinedNotice, setJoinedNotice]);
 
   // Đồng bộ lại khi quay lại phòng (đổi tab, khoá màn hình, mất mạng…)
   useEffect(() => {
@@ -182,13 +201,21 @@ function PartyPage() {
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_340px]">
         <div>
+          {joinedNotice && !staffNotice && (
+            <div role="status" aria-live="polite" className={`watch-party-join staff-${joinedNotice.role} mb-3 flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-sm shadow-lg`}>
+              <Users className="h-5 w-5 shrink-0 text-primary" />
+              <strong className="min-w-0 flex-1">{joinedNotice.name} vừa tham gia phòng</strong>
+              <button type="button" onClick={() => setJoinedNotice(null)} className="rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Đóng thông báo"><X className="h-4 w-4" /></button>
+            </div>
+          )}
           {staffNotice && (
-            <div role="status" aria-live="polite" className="mb-3 flex items-center gap-3 rounded-xl border border-primary/45 bg-primary/10 px-4 py-3 text-sm shadow-sm">
+            <div role="status" aria-live="polite" className={`watch-party-join staff-${staffNotice.role} mb-3 flex items-center gap-3 rounded-xl border border-primary/45 bg-primary/10 px-4 py-3 text-sm shadow-sm`}>
               <BadgeCheck className="h-5 w-5 shrink-0 text-primary" />
               <strong className="min-w-0 flex-1">{staffNotice.name} đã tham gia phòng bạn</strong>
               <button type="button" onClick={() => setStaffNotice(null)} className="rounded-full p-1 text-muted-foreground hover:bg-primary/10 hover:text-foreground" aria-label="Đóng thông báo"><X className="h-4 w-4" /></button>
             </div>
           )}
+          {activityNotice && <p className={`staff-${joinedNotice?.role ?? staffNotice?.role ?? "member"} mb-3 rounded-lg border px-3 py-2 text-xs font-semibold`} role="status">{activityNotice}</p>}
           <div className="overflow-hidden rounded-xl border border-border bg-card">
             <Player
               key={`${party.slug}-${party.srv_index}-${party.ep_index}-${resyncNonce}`}
@@ -316,7 +343,16 @@ function PartyPage() {
         </div>
 
         {/* Chat */}
-        <div className="flex h-[520px] flex-col rounded-xl border border-border bg-card">
+        <div className="relative flex h-[520px] flex-col rounded-xl border border-border bg-card">
+          {chat.incomingMessage && (
+            <div aria-label="Tin nhắn mới trong phòng" role="status" aria-live="polite" className="watch-party-message-notice absolute inset-x-3 top-3 z-10 rounded-xl border border-primary/50 bg-card px-4 py-3 shadow-xl">
+              <div className="flex gap-3">
+                <MessagesSquare className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                <div className="min-w-0 flex-1"><strong className="block truncate text-xs text-primary">{chat.incomingMessage.display_name || "Thành viên"}</strong><p className="line-clamp-2 text-sm">{chat.incomingMessage.content}</p></div>
+                <button type="button" onClick={chat.dismissIncoming} aria-label="Đóng thông báo tin nhắn" className="self-start rounded-full p-1 text-muted-foreground hover:bg-muted"><X className="h-3.5 w-3.5" /></button>
+              </div>
+            </div>
+          )}
           <div className="flex items-center gap-2 border-b border-border/60 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-muted-foreground">
             Chat phòng
             {party.chat_mode === "host" && (
@@ -333,7 +369,7 @@ function PartyPage() {
                 const mine = m.user_id === user?.id;
                 return (
                   <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${mine ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+                    <div className={`staff-${m.display_name === "Lạc Việt Admin" ? "admin" : m.display_name === "Phó Admin Lạc Việt" ? "deputy_admin" : "member"} max-w-[80%] rounded-2xl border px-3 py-2 text-sm ${mine ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
                       {!mine && <div className="text-[11px] font-bold text-primary">{m.display_name}</div>}
                       <div className="whitespace-pre-wrap break-words">{m.content}</div>
                     </div>

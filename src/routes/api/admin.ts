@@ -45,7 +45,9 @@ async function listParties() {
   if (!exists.rows[0]?.name) return [];
   const { rows } = await db().query(`
     select p.id, p.code, p.name, p.host_id, u.email as host_email,
-           p.closed, p.created_at, p.updated_at
+           p.closed, p.created_at, p.updated_at,
+           (select count(*)::int from public.watch_party_members m where m.party_id=p.id) as member_count,
+           (select count(*)::int from public.watch_party_messages x where x.party_id=p.id) as message_count
     from public.watch_parties p
     left join auth.users u on u.id = p.host_id
     order by p.created_at desc limit 300

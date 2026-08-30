@@ -34,9 +34,15 @@ export function JoinPartyDialog() {
       return;
     }
     setBusy(true);
-    const { data, error } = await supabase.rpc("join_party", { _code: normalized });
+    const { data: { session } } = await supabase.auth.getSession();
+    const response = await fetch("/api/watch-party", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: `Bearer ${session?.access_token ?? ""}` },
+      body: JSON.stringify({ action: "join", code: normalized }),
+    });
+    const { party: data } = (await response.json()) as { party?: { id: string } | null };
     setBusy(false);
-    if (error || !data) {
+    if (!response.ok || !data) {
       toast.error("Không tìm thấy phòng hoặc phòng đã đóng");
       return;
     }

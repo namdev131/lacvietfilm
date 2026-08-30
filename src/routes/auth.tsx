@@ -7,6 +7,7 @@ import { signInWithGoogle } from "@/lib/oauth";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { authErrorMessage, passwordStrength } from "@/lib/auth-errors";
+import { staffRole } from "@/lib/staff";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (s: Record<string, unknown>): { next?: string } =>
@@ -62,9 +63,10 @@ function AuthPage() {
     setBusy(true);
     try {
       if (tab === "login") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        toast.success("Chào mừng trở lại!");
+        const role = staffRole(data.user);
+        toast.success(role === "admin" ? "Chào mừng Lạc Việt Admin" : role === "deputy_admin" ? "Chào mừng Phó Admin Lạc Việt" : "Chào mừng trở lại!");
         goAfterAuth();
       } else if (tab === "magic") {
         const { error } = await supabase.auth.signInWithOtp({

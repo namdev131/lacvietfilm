@@ -2,13 +2,15 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
-import { Play, Info } from "lucide-react";
+import { Play, Info, History } from "lucide-react";
 import { fetchLatest, fetchLatestMerged } from "@/lib/api";
 import { MovieRow } from "@/components/MovieRow";
 import { GoldBoard } from "@/components/GoldBoard";
 import { SourcePing } from "@/components/SourcePing";
 import { useSettings } from "@/lib/settings";
-import type { SourceFilter } from "@/lib/types";
+import { useHistory, type LibraryItem } from "@/hooks/useUserData";
+import { formatTime, progressPercent } from "@/lib/progress";
+import type { SourceFilter, SourceId } from "@/lib/types";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -41,6 +43,7 @@ function Home() {
   const vs = useQuery({ queryKey: ["latest", "vsmov", 1], queryFn: () => fetchLatest("vsmov", 1) });
   const kk2 = useQuery({ queryKey: ["latest", "kkphim", 2], queryFn: () => fetchLatest("kkphim", 2) });
   const all = useQuery({ queryKey: ["latest", "all", 1], queryFn: () => fetchLatestMerged("all", 1) });
+  const { data: history } = useHistory();
 
   const featured =
     (source === "all"
@@ -65,6 +68,9 @@ function Home() {
 
   const vietsub = (kk.data || []).filter((m) => (m.lang || "").toLowerCase().includes("vietsub"));
   const thuyetminh = (kk.data || []).filter((m) => (m.lang || "").toLowerCase().includes("thuyết"));
+  const unfinishedHistory = (history ?? [])
+    .filter((item) => !item.finished)
+    .slice(0, 12);
 
 
   return (
@@ -142,6 +148,7 @@ function Home() {
       </div>
 
       <div className="home-content-rail mt-8 space-y-8 md:space-y-12">
+        <HomeHistoryRow title="Đã xem" items={unfinishedHistory} />
         <MovieRow
           title="Phim mới"
           movies={featured}
@@ -157,5 +164,48 @@ function Home() {
 
       </div>
     </div>
+  );
+}
+
+function HomeHistoryRow({ title, items }: { title: string; items: LibraryItem[] }) {
+  if (!items.length) return null;
+  return (
+    <section className="movie-shelf relative" aria-labelledby="home-history-title">
+      <div className="movie-row-inner shelf-heading mb-3 flex items-center justify-between">
+        <h2 id="home-history-title" className="flex items-center gap-2 text-lg font-semibold tracking-tight md:text-xl">
+          <History className="h-5 w-5 text-primary" /> {title}
+        </h2>
+        <Link to="/history" className="text-xs font-semibold text-muted-foreground hover:text-primary">Xem tất cả</Link>
+      </div>
+      <div className="scroll-row movie-row-inner shelf-track flex gap-3 overflow-x-auto pb-6 md:gap-4">
+        {items.map((item) => {
+          const pct = progressPercent(item.position_seconds ?? 0, item.duration_seconds ?? 0);
+          return (
+            <Link
+              key={`${item.source}-${item.slug}`}
+              to="/watch/$slug"
+              params={{ slug: item.slug }}
+              search={{ src: item.source as SourceId, ep: item.ep_index ?? 0, srv: item.srv_index ?? 0 }}
+              className="group w-[220px] shrink-0 sm:w-[260px]"
+            >
+              <div className="relative aspect-video overflow-hidden rounded-xl border border-border bg-card">
+                {item.poster ? <img src={item.poster} alt={item.name} loading="lazy" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" /> : <div className="h-full w-full bg-muted" />}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+                <span className="absolute bottom-3 left-3 grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground">
+                  <Play className="h-4 w-4 fill-current" />
+                </span>
+                <div className="absolute inset-x-0 bottom-0 h-1 bg-black/50">
+                  <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
+                </div>
+              </div>
+              <p className="mt-2 truncate text-sm font-semibold group-hover:text-primary">{item.name}</p>
+              <p className="truncate text-xs text-muted-foreground">
+                {item.episode_name || `Tập ${(item.ep_index ?? 0) + 1}`} · dừng ở {formatTime(item.position_seconds ?? 0)}
+              </p>
+            </Link>
+          );
+        })}
+      </div>
+    </section>
   );
 }

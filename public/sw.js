@@ -3,7 +3,7 @@
    - Ảnh poster: cache-first (dùng lại khi mạng yếu / offline)
    - Tài nguyên tĩnh: stale-while-revalidate
    Không bao giờ cache video (m3u8/ts/mp4) hay lời gọi API. */
-const VERSION = "lv-v1";
+const VERSION = "lv-v2";
 const SHELL = `${VERSION}-shell`;
 const IMAGES = `${VERSION}-img`;
 const MAX_IMAGES = 300;

@@ -1,12 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { BadgeCheck, Film, Loader2, Plus, RefreshCw, Shield, Trash2, Users } from "lucide-react";
+import { BadgeCheck, Film, Loader2, LogIn, MessageSquare, Plus, RefreshCw, Shield, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { staffRole } from "@/lib/staff";
 
 type AdminUser = { id: string; email: string; display_name: string | null; role: "admin" | "deputy_admin" | "member"; created_at: string; last_sign_in_at: string | null };
-type Party = { id: string; code: string; name: string; host_email: string | null; closed: boolean; created_at: string };
+type Party = { id: string; code: string; name: string; host_email: string | null; closed: boolean; created_at: string; member_count: number; message_count: number };
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Dashboard Admin | Lạc Việt Film" }] }),
@@ -71,10 +71,17 @@ function AdminPage() {
 
       <div className="mt-8 grid grid-cols-2 gap-3"><button onClick={() => setTab("users")} className={`p-4 text-left ${tab === "users" ? "bg-primary text-primary-foreground" : "bg-card"}`}><Users className="mb-2" /><strong>Quản lý người dùng</strong><small className="block">{users.length} tài khoản</small></button><button onClick={() => setTab("parties")} className={`p-4 text-left ${tab === "parties" ? "bg-primary text-primary-foreground" : "bg-card"}`}><Film className="mb-2" /><strong>Quản lý Watch Party</strong><small className="block">{parties.length} phòng</small></button></div>
 
+      <section className="mt-4 grid gap-3 sm:grid-cols-3" aria-label="Thống kê cộng đồng">
+        <div className="rounded-xl border border-border bg-card p-4"><Users className="h-5 w-5 text-primary" /><strong className="mt-2 block text-2xl">{users.length}</strong><small>Thành viên cộng đồng</small></div>
+        <div className="rounded-xl border border-border bg-card p-4"><Film className="h-5 w-5 text-primary" /><strong className="mt-2 block text-2xl">{parties.filter((p) => !p.closed).length}</strong><small>Phòng đang mở</small></div>
+        <div className="rounded-xl border border-border bg-card p-4"><MessageSquare className="h-5 w-5 text-primary" /><strong className="mt-2 block text-2xl">{parties.reduce((sum, p) => sum + Number(p.message_count || 0), 0)}</strong><small>Tin nhắn Watch Party</small></div>
+        <span className="sr-only">Thống kê cộng đồng</span>
+      </section>
+
       {tab === "users" ? <section className="mt-6">
         <form onSubmit={(e) => { e.preventDefault(); void act({ action: "createUser", ...form }, "Đã tạo người dùng"); setForm({ email: "", password: "", displayName: "" }); }} className="grid gap-2 bg-card p-4 md:grid-cols-4"><input required type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="border border-input bg-background px-3 py-2" /><input required minLength={6} type="password" placeholder="Mật khẩu" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="border border-input bg-background px-3 py-2" /><input placeholder="Tên hiển thị" value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} className="border border-input bg-background px-3 py-2" /><button disabled={busy} className="flex items-center justify-center gap-2 bg-primary px-4 py-2 font-bold text-primary-foreground"><Plus className="h-4 w-4" /> Thêm</button></form>
         <div className="mt-3 overflow-x-auto"><table className="w-full min-w-[860px] bg-card text-sm"><thead><tr className="border-b border-border text-left"><th className="p-3">Email</th><th>Tên</th><th>Vai trò</th><th>Ngày tạo</th><th>Đăng nhập cuối</th><th className="p-3 text-right">Thao tác</th></tr></thead><tbody>{users.map((item) => <UserRow key={item.id} item={item} adminId={user!.id} busy={busy} act={act} />)}</tbody></table></div>
-      </section> : <section className="mt-6 overflow-x-auto"><table className="w-full min-w-[760px] bg-card text-sm"><thead><tr className="border-b border-border text-left"><th className="p-3">Mã</th><th>Phim</th><th>Chủ phòng</th><th>Trạng thái</th><th className="p-3 text-right">Thao tác</th></tr></thead><tbody>{parties.map((party) => <tr key={party.id} className="border-b border-border/60"><td className="p-3 font-bold">{party.code}</td><td>{party.name}</td><td>{party.host_email || "—"}</td><td>{party.closed ? "Đã đóng" : "Đang mở"}</td><td className="p-3 text-right"><button disabled={busy || party.closed} onClick={() => void act({ action: "closeParty", id: party.id }, "Đã đóng phòng")} className="mr-2 border border-border px-3 py-1.5 disabled:opacity-40">Đóng phòng</button><button disabled={busy} onClick={() => confirm("Xóa Watch Party này?") && void act({ action: "deleteParty", id: party.id }, "Đã xóa phòng")} className="bg-destructive px-3 py-1.5 text-destructive-foreground">Xóa</button></td></tr>)}</tbody></table></section>}
+      </section> : <section className="mt-6 overflow-x-auto"><table className="w-full min-w-[900px] bg-card text-sm"><thead><tr className="border-b border-border text-left"><th className="p-3">Mã</th><th>Phim</th><th>Chủ phòng</th><th>Thành viên</th><th>Chat</th><th>Trạng thái</th><th className="p-3 text-right">Thao tác</th></tr></thead><tbody>{parties.map((party) => <tr key={party.id} className="border-b border-border/60"><td className="p-3 font-bold">{party.code}</td><td>{party.name}</td><td>{party.host_email || "—"}</td><td>{party.member_count}</td><td>{party.message_count}</td><td>{party.closed ? "Đã đóng" : "Đang mở"}</td><td className="p-3 text-right"><Link to="/party/$code" params={{ code: party.code }} className="mr-2 inline-flex items-center gap-1 border border-primary/50 px-3 py-1.5 text-primary"><LogIn className="h-3.5 w-3.5" /> Vào phòng</Link><button disabled={busy || party.closed} onClick={() => void act({ action: "closeParty", id: party.id }, "Đã đóng phòng")} className="mr-2 border border-border px-3 py-1.5 disabled:opacity-40">Đóng phòng</button><button disabled={busy} onClick={() => confirm("Xóa Watch Party này?") && void act({ action: "deleteParty", id: party.id }, "Đã xóa phòng")} className="bg-destructive px-3 py-1.5 text-destructive-foreground">Xóa</button></td></tr>)}</tbody></table></section>}
     </main>
   );
 }

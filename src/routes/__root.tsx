@@ -54,21 +54,40 @@ function NotFoundComponent() {
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
+  const [recovering, setRecovering] = useState(false);
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
+  async function recoverClient() {
+    setRecovering(true);
+    try {
+      if ("serviceWorker" in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map((registration) => registration.unregister()));
+      }
+      if ("caches" in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((key) => caches.delete(key)));
+      }
+    } finally {
+      window.location.replace(`${window.location.pathname}${window.location.search}${window.location.search ? "&" : "?"}recover=${Date.now()}`);
+    }
+  }
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold">Không tải được trang</h1>
         <p className="mt-2 text-sm text-muted-foreground">Đã có lỗi xảy ra, vui lòng thử lại.</p>
+        <p className="mt-2 break-words text-xs text-destructive" role="alert">{error.message || "Lỗi ứng dụng không xác định"}</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
-            onClick={() => { router.invalidate(); reset(); }}
+            onClick={() => void recoverClient()}
+            disabled={recovering}
             className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
           >
-            Thử lại
+            {recovering ? "Đang sửa…" : "Thử lại"}
           </button>
+          <button onClick={() => { router.invalidate(); reset(); }} className="rounded-md border border-input px-4 py-2 text-sm font-medium hover:bg-accent">Thử không xoá cache</button>
           <a href="/" className="rounded-md border border-input px-4 py-2 text-sm font-medium hover:bg-accent">
             Về trang nhà
           </a>
