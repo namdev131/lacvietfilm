@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import type { SourceId } from "@/lib/types";
+import { watchHistoryApi } from "@/lib/watchHistoryApi";
 
 export interface LibraryItem {
   slug: string;
@@ -60,18 +61,16 @@ export function useToggleFavorite() {
           .eq("slug", movie.slug);
         if (error) throw error;
       } else {
-        const { error } = await supabase
-          .from("favorites")
-          .upsert(
-            {
-              user_id: user.id,
-              slug: movie.slug,
-              name: movie.name,
-              poster: movie.poster ?? null,
-              source: movie.source,
-            },
-            { onConflict: "user_id,slug" },
-          );
+        const { error } = await supabase.from("favorites").upsert(
+          {
+            user_id: user.id,
+            slug: movie.slug,
+            name: movie.name,
+            poster: movie.poster ?? null,
+            source: movie.source,
+          },
+          { onConflict: "user_id,slug" },
+        );
         if (error) throw error;
       }
     },
@@ -92,16 +91,8 @@ export function useHistory() {
     queryKey: ["history", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("watch_history")
-        .select(
-          "slug,name,poster,source,episode_slug,episode_name,watched_at,position_seconds,duration_seconds,ep_index,srv_index,finished",
-        )
-        .eq("user_id", user!.id)
-        .order("watched_at", { ascending: false })
-        .limit(60);
-      if (error) throw error;
-      return (data ?? []) as unknown as LibraryItem[];
+      const data = await watchHistoryApi("list");
+      return (data.history ?? []) as LibraryItem[];
     },
     refetchOnMount: "always",
     refetchOnWindowFocus: true,
@@ -121,20 +112,6 @@ export async function recordHistory(
     srv_index?: number;
   },
 ) {
-  const { error } = await supabase.from("watch_history").upsert(
-    {
-      user_id: userId,
-      slug: entry.slug,
-      name: entry.name,
-      poster: entry.poster ?? null,
-      source: entry.source,
-      episode_slug: entry.episode_slug ?? null,
-      episode_name: entry.episode_name ?? null,
-      ep_index: entry.ep_index ?? 0,
-      srv_index: entry.srv_index ?? 0,
-      watched_at: new Date().toISOString(),
-    } as never,
-    { onConflict: "user_id,slug" },
-  );
-  if (error) throw error;
+  void userId;
+  await watchHistoryApi("record", entry);
 }

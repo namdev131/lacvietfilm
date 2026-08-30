@@ -27,6 +27,7 @@ import { Route as WatchlistRouteImport } from './routes/watchlist'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as ApiAdminRouteImport } from './routes/api/admin'
+import { Route as ApiWatchHistoryRouteImport } from './routes/api/watch-history'
 import { Route as ApiWatchPartyRouteImport } from './routes/api/watch-party'
 import { Route as BrowseIndexRouteImport } from './routes/browse.index'
 import { Route as CCodeRouteImport } from './routes/c.$code'
@@ -132,6 +133,11 @@ const ApiAdminRoute = ApiAdminRouteImport.update({
   path: '/api/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiWatchHistoryRoute = ApiWatchHistoryRouteImport.update({
+  id: '/api/watch-history',
+  path: '/api/watch-history',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiWatchPartyRoute = ApiWatchPartyRouteImport.update({
   id: '/api/watch-party',
   path: '/api/watch-party',
@@ -213,6 +219,7 @@ export interface FileRoutesByFullPath {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/admin': typeof ApiAdminRoute
+  '/api/watch-history': typeof ApiWatchHistoryRoute
   '/api/watch-party': typeof ApiWatchPartyRoute
   '/c/$code': typeof CCodeRoute
   '/collections/$id': typeof CollectionsIdRoute
@@ -245,6 +252,7 @@ export interface FileRoutesByTo {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/admin': typeof ApiAdminRoute
+  '/api/watch-history': typeof ApiWatchHistoryRoute
   '/api/watch-party': typeof ApiWatchPartyRoute
   '/c/$code': typeof CCodeRoute
   '/collections/$id': typeof CollectionsIdRoute
@@ -278,6 +286,7 @@ export interface FileRoutesById {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/admin': typeof ApiAdminRoute
+  '/api/watch-history': typeof ApiWatchHistoryRoute
   '/api/watch-party': typeof ApiWatchPartyRoute
   '/c/$code': typeof CCodeRoute
   '/collections/$id': typeof CollectionsIdRoute
@@ -312,6 +321,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/api/admin'
+    | '/api/watch-history'
     | '/api/watch-party'
     | '/c/$code'
     | '/collections/$id'
@@ -344,6 +354,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/api/admin'
+    | '/api/watch-history'
     | '/api/watch-party'
     | '/c/$code'
     | '/collections/$id'
@@ -376,6 +387,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/api/admin'
+    | '/api/watch-history'
     | '/api/watch-party'
     | '/c/$code'
     | '/collections/$id'
@@ -409,6 +421,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ApiAdminRoute: typeof ApiAdminRoute
+  ApiWatchHistoryRoute: typeof ApiWatchHistoryRoute
   ApiWatchPartyRoute: typeof ApiWatchPartyRoute
   CCodeRoute: typeof CCodeRoute
   CollectionsIdRoute: typeof CollectionsIdRoute
@@ -551,6 +564,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/watch-history': {
+      id: '/api/watch-history'
+      path: '/api/watch-history'
+      fullPath: '/api/watch-history'
+      preLoaderRoute: typeof ApiWatchHistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/watch-party': {
       id: '/api/watch-party'
       path: '/api/watch-party'
@@ -658,6 +678,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ApiAdminRoute: ApiAdminRoute,
+  ApiWatchHistoryRoute: ApiWatchHistoryRoute,
   ApiWatchPartyRoute: ApiWatchPartyRoute,
   CCodeRoute: CCodeRoute,
   CollectionsIdRoute: CollectionsIdRoute,

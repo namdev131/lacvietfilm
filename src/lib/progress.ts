@@ -1,5 +1,5 @@
-import { supabase } from "@/integrations/supabase/client";
 import type { SourceId } from "@/lib/types";
+import { watchHistoryApi } from "@/lib/watchHistoryApi";
 
 export interface ProgressEntry {
   slug: string;
@@ -104,29 +104,13 @@ export async function syncProgress(
     duration: number;
   },
 ) {
-  const { error } = await supabase.from("watch_history").upsert(
-    {
-      user_id: userId,
-      slug: entry.slug,
-      name: entry.name,
-      poster: entry.poster ?? null,
-      source: entry.source,
-      episode_slug: entry.episode_slug ?? null,
-      episode_name: entry.episode_name ?? null,
-      ep_index: entry.ep,
-      srv_index: entry.srv,
-      position_seconds: Math.floor(entry.position),
-      duration_seconds: Math.floor(entry.duration),
-      finished: isFinished(entry.position, entry.duration),
-      watched_at: new Date().toISOString(),
-    } as never,
-    { onConflict: "user_id,slug" },
-  );
-  if (error) {
+  try {
+    void userId;
+    await watchHistoryApi("progress", entry);
+    window.dispatchEvent(new CustomEvent("lv-history-sync"));
+  } catch (error) {
     console.error("syncProgress failed", error);
-    return;
   }
-  window.dispatchEvent(new CustomEvent("lv-history-sync"));
 }
 
 /** Mục đang xem dở gần nhất (local, dùng khi chưa đăng nhập) */
