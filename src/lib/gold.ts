@@ -93,11 +93,14 @@ export function useGoldBoard(period: GoldPeriod, kind: GoldKind) {
   const query = useQuery({
     queryKey: ["gold-board", period, kind],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("gold_board" as never, {
-        _period: period,
-        _kind: kind,
-        _limit: 10,
-      } as never);
+      const { data, error } = await supabase.rpc(
+        "gold_board" as never,
+        {
+          _period: period,
+          _kind: kind,
+          _limit: 5,
+        } as never,
+      );
       if (error) throw error;
       return (data ?? []) as unknown as GoldRow[];
     },

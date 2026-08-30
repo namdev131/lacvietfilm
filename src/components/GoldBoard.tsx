@@ -1,7 +1,19 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "@tanstack/react-router";
-import { Crown, Radio, ChevronUp, ChevronDown, Minus, Flame, Eye, Heart, Users, CheckCircle2, Play } from "lucide-react";
+import {
+  Crown,
+  Radio,
+  ChevronUp,
+  ChevronDown,
+  Minus,
+  Flame,
+  Eye,
+  Heart,
+  Users,
+  CheckCircle2,
+  Play,
+} from "lucide-react";
 import {
   useGoldBoard,
   useLiveViewers,
@@ -18,7 +30,6 @@ import type { SourceId } from "@/lib/types";
 const PERIODS: GoldPeriod[] = ["day", "week", "month", "all"];
 const KINDS: GoldKind[] = ["all", "series", "single", "anime"];
 const SOURCES: ("all" | SourceId)[] = ["all", "kkphim", "ophim", "nguonc", "vsmov"];
-
 
 function Delta({ row }: { row: GoldRow }) {
   if (row.prev_rank == null)
@@ -93,7 +104,7 @@ export function GoldBoard() {
   const topViews = rows[0]?.views ?? 0;
   const totalViews = all.reduce((s, r) => s + (r.views || 0), 0);
   const podium = rows.slice(0, 3);
-  const rest = rows.slice(3, 10);
+  const rest = rows.slice(3, 5);
 
   return (
     <section className="gold-board px-4 md:px-10">
@@ -131,7 +142,9 @@ export function GoldBoard() {
               key={p}
               onClick={() => setPeriod(p)}
               className={`rounded-full px-3 py-1 text-xs font-medium transition ${
-                period === p ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                period === p
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {PERIOD_LABEL[p]}
@@ -169,7 +182,6 @@ export function GoldBoard() {
           ))}
         </div>
       </div>
-
 
       {isLoading && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -284,70 +296,86 @@ export function GoldBoard() {
         </div>
       )}
 
-
-      {/* 4 - 10 */}
+      {/* Vị trí 4–5 */}
       {rest.length > 0 && (
-        <div className="mt-3 grid grid-cols-1 gap-2 lg:grid-cols-2">
-          <AnimatePresence mode="popLayout">
-            {rest.map((m, i) => (
-              <motion.div
-                layout
-                key={`${m.source}-${m.slug}`}
-                initial={{ opacity: 0, x: -12 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 12 }}
-                transition={{ duration: 0.3, delay: i * 0.03 }}
-              >
-                <div className="group flex items-center gap-3 rounded-lg border border-border/60 bg-card/70 p-2 pr-2 transition hover:border-[color:var(--color-gold)]/60 hover:bg-card">
-                  <Link
-                    to="/movie/$slug"
-                    params={{ slug: m.slug }}
-                    search={{ src: m.source }}
-                    className="flex min-w-0 flex-1 items-center gap-3"
-                  >
-                    <span className="w-8 shrink-0 text-center text-xl font-black tabular-nums text-muted-foreground">
-                      {m.rank}
-                    </span>
-                    <div className="h-16 w-12 shrink-0 overflow-hidden rounded bg-muted">
-                      {m.poster && <img src={m.poster} alt="" loading="lazy" className="h-full w-full object-cover" />}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="line-clamp-1 text-sm font-medium group-hover:text-primary">{m.name}</div>
-                      <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
-                        <span className="inline-flex items-center gap-1">
-                          <Eye className="h-3 w-3" /> {m.views} lượt
-                        </span>
-                        <Delta row={m} />
-                        {seenSet.has(m.slug) && (
-                          <span className="inline-flex items-center gap-1 text-emerald-400">
-                            <CheckCircle2 className="h-3 w-3" /> Đã xem
-                          </span>
+        <div className="mt-5">
+          <h3 className="mb-2 text-xs font-bold uppercase tracking-[.16em] text-muted-foreground">
+            Vị trí 4–5
+          </h3>
+          <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
+            <AnimatePresence mode="popLayout">
+              {rest.map((m, i) => (
+                <motion.div
+                  layout
+                  key={`${m.source}-${m.slug}`}
+                  initial={{ opacity: 0, x: -12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 12 }}
+                  transition={{ duration: 0.3, delay: i * 0.03 }}
+                >
+                  <div className="group flex items-center gap-3 rounded-lg border border-border/60 bg-card/70 p-2 pr-2 transition hover:border-[color:var(--color-gold)]/60 hover:bg-card">
+                    <Link
+                      to="/movie/$slug"
+                      params={{ slug: m.slug }}
+                      search={{ src: m.source }}
+                      className="flex min-w-0 flex-1 items-center gap-3"
+                    >
+                      <span className="w-8 shrink-0 text-center text-xl font-black tabular-nums text-muted-foreground">
+                        {m.rank}
+                      </span>
+                      <div className="h-16 w-12 shrink-0 overflow-hidden rounded bg-muted">
+                        {m.poster && (
+                          <img
+                            src={m.poster}
+                            alt=""
+                            loading="lazy"
+                            className="h-full w-full object-cover"
+                          />
                         )}
-                        <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] uppercase">{m.source}</span>
                       </div>
-                      <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-muted">
-                        <div
-                          className="h-full rounded-full bg-[color:var(--color-gold)]"
-                          style={{ width: `${topViews ? Math.max(6, (m.views / topViews) * 100) : 0}%` }}
-                        />
+                      <div className="min-w-0 flex-1">
+                        <div className="line-clamp-1 text-sm font-medium group-hover:text-primary">
+                          {m.name}
+                        </div>
+                        <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
+                          <span className="inline-flex items-center gap-1">
+                            <Eye className="h-3 w-3" /> {m.views} lượt
+                          </span>
+                          <Delta row={m} />
+                          {seenSet.has(m.slug) && (
+                            <span className="inline-flex items-center gap-1 text-emerald-400">
+                              <CheckCircle2 className="h-3 w-3" /> Đã xem
+                            </span>
+                          )}
+                          <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] uppercase">
+                            {m.source}
+                          </span>
+                        </div>
+                        <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="h-full rounded-full bg-[color:var(--color-gold)]"
+                            style={{
+                              width: `${topViews ? Math.max(6, (m.views / topViews) * 100) : 0}%`,
+                            }}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  </Link>
-                  <Link
-                    to="/watch/$slug"
-                    params={{ slug: m.slug }}
-                    search={{ src: m.source, ep: 0, srv: 0 }}
-                    aria-label={`Xem ${m.name}`}
-                    className="shrink-0 rounded-full bg-primary p-2 text-primary-foreground opacity-90 transition hover:opacity-100"
-                  >
-                    <Play className="h-3.5 w-3.5 fill-current" />
-                  </Link>
-                  <HeartBtn row={m} isFav={favSet.has(m.slug)} />
-
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
+                    </Link>
+                    <Link
+                      to="/watch/$slug"
+                      params={{ slug: m.slug }}
+                      search={{ src: m.source, ep: 0, srv: 0 }}
+                      aria-label={`Xem ${m.name}`}
+                      className="shrink-0 rounded-full bg-primary p-2 text-primary-foreground opacity-90 transition hover:opacity-100"
+                    >
+                      <Play className="h-3.5 w-3.5 fill-current" />
+                    </Link>
+                    <HeartBtn row={m} isFav={favSet.has(m.slug)} />
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
         </div>
       )}
     </section>
