@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import type { SourceId } from "@/lib/types";
+import { isStaff, staffLabel, staffRole, type StaffRole } from "@/lib/staff";
 
 export interface Party {
   id: string;
@@ -212,20 +213,31 @@ export function usePartyChat(partyId?: string) {
 }
 
 /** Số người đang trong phòng (presence) */
+type StaffPresence = { id: string; name: string; role: StaffRole; at: number };
+
 export function usePartyPresence(code: string, name: string) {
+  const { user } = useAuth();
   const [count, setCount] = useState(1);
+  const [staffNotice, setStaffNotice] = useState<StaffPresence | null>(null);
   useEffect(() => {
-    const channel = supabase.channel(`party-presence-${code}`, { config: { presence: { key: name } } });
+    const role = staffRole(user);
+    const id = user?.id ?? `guest-${name}`;
+    const label = staffLabel(role, name);
+    const channel = supabase.channel(`party-presence-${code}`, { config: { presence: { key: id } } });
     channel
       .on("presence", { event: "sync" }, () => {
         setCount(Object.keys(channel.presenceState()).length || 1);
       })
+      .on("presence", { event: "join" }, ({ newPresences }) => {
+        const joined = (newPresences as unknown as StaffPresence[]).find((presence) => presence.id !== id && isStaff(presence.role));
+        if (joined) setStaffNotice(joined);
+      })
       .subscribe((status) => {
-        if (status === "SUBSCRIBED") void channel.track({ at: Date.now() });
+        if (status === "SUBSCRIBED") void channel.track({ id, name: label, role, at: Date.now() });
       });
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [code, name]);
-  return count;
+  }, [code, name, user?.id, user?.email, user?.app_metadata?.role]);
+  return { count, staffNotice, setStaffNotice };
 }

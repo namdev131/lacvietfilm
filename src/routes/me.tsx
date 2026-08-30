@@ -11,6 +11,7 @@ import { useWatchlist } from "@/hooks/useWatchlist";
 import { CinemaTicket } from "@/components/CinemaTicket";
 import { ticketOwnerLabel, uniqueTickets } from "@/lib/tickets";
 import type { SourceId } from "@/lib/types";
+import { staffLabel, staffRole } from "@/lib/staff";
 
 export const Route = createFileRoute("/me")({
   head: () => ({
@@ -55,13 +56,14 @@ function MePage() {
   }
 
   const meta = user.user_metadata ?? {};
-  const displayName = (meta.display_name as string) || (meta.full_name as string) || user.email?.split("@")[0] || "Thành viên";
+  const role = staffRole(user);
+  const displayName = staffLabel(role, (meta.display_name as string) || (meta.full_name as string) || user.email?.split("@")[0] || "Thành viên");
   const avatar = meta.avatar_url as string | undefined;
   const tickets = uniqueTickets(history.data ?? []);
   const finished = (history.data ?? []).filter((item) => item.finished).length;
   const owner = ticketOwnerLabel({ displayName, email: user.email });
   const memberCode = `LV-${user.id.replace(/-/g, "").slice(0, 8).toUpperCase()}`;
-  const isAdmin = user.email?.toLowerCase() === "lacviet55@proton.me";
+  const isAdmin = role === "admin";
 
   return (
     <div className="profile-page mx-auto max-w-6xl px-4 pb-32 pt-8 md:px-8">
@@ -70,7 +72,7 @@ function MePage() {
           {avatar ? <img src={avatar} alt={displayName} /> : <div className="passport-avatar">{displayName[0]?.toUpperCase()}</div>}
           <div className="min-w-0">
             <p className="passport-label">Hộ chiếu điện ảnh</p>
-            <h1>{displayName}</h1>
+            <h1 className="flex items-center gap-2">{displayName}{role !== "member" && <Shield className="h-5 w-5 text-primary" aria-label={role === "admin" ? "Admin" : "Phó Admin"} />}</h1>
             <p className="truncate text-sm text-muted-foreground">{user.email}</p>
           </div>
         </div>

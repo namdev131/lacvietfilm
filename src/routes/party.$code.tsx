@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Copy, Crown, DoorClosed, Lock, MessagesSquare, Pause, Play, RefreshCw, Send, Users } from "lucide-react";
+import { ArrowLeft, BadgeCheck, Copy, Crown, DoorClosed, Lock, MessagesSquare, Pause, Play, RefreshCw, Send, Users, X } from "lucide-react";
 import { toast } from "sonner";
 import { Player, type PlayMode } from "@/components/Player";
 import { fetchDetail } from "@/lib/api";
@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCloseParty, useParty, usePartyChat, usePartyPresence, usePartySync } from "@/hooks/useWatchParty";
 import { SignInPrompt } from "@/components/SignInPrompt";
 import type { SourceId } from "@/lib/types";
+import { staffLabel, staffRole } from "@/lib/staff";
 
 
 export const Route = createFileRoute("/party/$code")({
@@ -33,8 +34,9 @@ function PartyPage() {
   const sync = usePartySync(party, isHost);
   const closeParty = useCloseParty();
   const meta = (user?.user_metadata ?? {}) as Record<string, string>;
-  const myName = meta.display_name || meta.full_name || user?.email?.split("@")[0] || "Khán giả";
-  const viewers = usePartyPresence(code, `${myName}-${user?.id ?? "guest"}`);
+  const myRole = staffRole(user);
+  const myName = staffLabel(myRole, meta.display_name || meta.full_name || user?.email?.split("@")[0] || "Khán giả");
+  const { count: viewers, staffNotice, setStaffNotice } = usePartyPresence(code, myName);
   const chat = usePartyChat(party?.id);
   const [text, setText] = useState("");
   const [mode, setMode] = useState<PlayMode>("hls");
@@ -71,6 +73,12 @@ function PartyPage() {
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [chat.data?.length]);
+
+  useEffect(() => {
+    if (!staffNotice) return;
+    const timer = window.setTimeout(() => setStaffNotice(null), 7000);
+    return () => window.clearTimeout(timer);
+  }, [staffNotice, setStaffNotice]);
 
   // Đồng bộ lại khi quay lại phòng (đổi tab, khoá màn hình, mất mạng…)
   useEffect(() => {
@@ -174,6 +182,13 @@ function PartyPage() {
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_340px]">
         <div>
+          {staffNotice && (
+            <div role="status" aria-live="polite" className="mb-3 flex items-center gap-3 rounded-xl border border-primary/45 bg-primary/10 px-4 py-3 text-sm shadow-sm">
+              <BadgeCheck className="h-5 w-5 shrink-0 text-primary" />
+              <strong className="min-w-0 flex-1">{staffNotice.name} đã tham gia phòng bạn</strong>
+              <button type="button" onClick={() => setStaffNotice(null)} className="rounded-full p-1 text-muted-foreground hover:bg-primary/10 hover:text-foreground" aria-label="Đóng thông báo"><X className="h-4 w-4" /></button>
+            </div>
+          )}
           <div className="overflow-hidden rounded-xl border border-border bg-card">
             <Player
               key={`${party.slug}-${party.srv_index}-${party.ep_index}-${resyncNonce}`}

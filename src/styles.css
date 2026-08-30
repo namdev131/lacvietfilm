@@ -402,17 +402,48 @@
   animation: shimmer 1.8s linear infinite;
 }
 
-/* Dynamic Island glass: một kiểu thông báo thống nhất toàn site. */
+/* Toast glass: nền riêng cho light/dark, không dùng opacity toàn phần. */
 .dynamic-glass-toast[data-sonner-toast] {
-  border: 1px solid oklch(0.78 0.16 82 / 32%) !important;
+  isolation: isolate;
+  overflow: hidden;
+  gap: .7rem !important;
   border-radius: 999px !important;
-  color: var(--foreground) !important;
-  background: oklch(0.12 0.015 82 / 76%) !important;
-  box-shadow: 0 18px 55px oklch(0 0 0 / 48%), inset 0 1px oklch(1 0 0 / 10%) !important;
-  backdrop-filter: blur(24px) saturate(150%);
-  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  padding: .8rem 1rem !important;
+  backdrop-filter: blur(20px) saturate(135%) contrast(1.04) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(135%) contrast(1.04) !important;
 }
-.dynamic-glass-toast [data-icon] { color: var(--gold); }
+[data-theme="light"] .dynamic-glass-toast[data-sonner-toast] {
+  border: 1px solid rgb(255 255 255 / .88) !important;
+  color: rgb(30 35 42) !important;
+  background: rgb(255 255 255 / .86) !important;
+  box-shadow: 0 12px 34px rgb(43 36 27 / .18), inset 0 1px rgb(255 255 255 / .96) !important;
+}
+[data-theme="dark"] .dynamic-glass-toast[data-sonner-toast] {
+  border: 1px solid rgb(255 255 255 / .16) !important;
+  color: rgb(246 243 236) !important;
+  background: rgb(13 20 28 / .86) !important;
+  box-shadow: 0 14px 38px rgb(0 0 0 / .46), inset 0 1px rgb(255 255 255 / .1) !important;
+}
+.dynamic-glass-toast [data-title],
+.dynamic-glass-toast [data-description] { color: inherit !important; }
+.dynamic-glass-toast [data-description] { opacity: .72; }
+.dynamic-glass-toast [data-icon] {
+  display: grid !important;
+  place-items: center;
+  width: 1.65rem !important;
+  height: 1.65rem !important;
+  border-radius: 999px;
+  color: inherit !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.dynamic-toast-icon { display: block; width: 1.65rem; height: 1.65rem; object-fit: contain; }
+.dynamic-glass-toast [data-icon] svg { width: 1rem; height: 1rem; }
+@media (prefers-reduced-transparency: reduce) {
+  [data-theme="light"] .dynamic-glass-toast[data-sonner-toast] { background: rgb(255 255 255) !important; }
+  [data-theme="dark"] .dynamic-glass-toast[data-sonner-toast] { background: rgb(13 20 28) !important; }
+  .dynamic-glass-toast[data-sonner-toast] { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+}
 
 /* Phòng chiếu: player tối giản, ưu tiên nội dung. */
 .player-frame {

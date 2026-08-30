@@ -226,6 +226,10 @@ function RootComponent() {
           <Toaster
             position="top-center"
             richColors
+            icons={{
+              success: <img src="https://files.catbox.moe/g9s33j.svg" alt="" aria-hidden="true" className="dynamic-toast-icon" />,
+              error: <img src="https://files.catbox.moe/5vs8z4.svg" alt="" aria-hidden="true" className="dynamic-toast-icon" />,
+            }}
             toastOptions={{ className: "dynamic-glass-toast" }}
           />
         </div>

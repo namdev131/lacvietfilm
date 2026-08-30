@@ -24,16 +24,19 @@ async function verifyAdmin(request: Request) {
     headers: { apikey: key, authorization: `Bearer ${token}` },
   });
   if (!response.ok) return null;
-  const user = (await response.json()) as { id?: string; email?: string };
+  const user = (await response.json()) as { id?: string; email?: string; app_metadata?: { role?: string } };
   return user.email?.toLowerCase() === ADMIN_EMAIL ? user : null;
 }
 
 async function listUsers() {
   const { rows } = await db().query(`
     select id, email, raw_user_meta_data->>'display_name' as display_name,
+           case when lower(email)=$1 then 'admin'
+                when raw_app_meta_data->>'role'='deputy_admin' then 'deputy_admin'
+                else 'member' end as role,
            created_at, last_sign_in_at, banned_until
     from auth.users order by created_at desc limit 500
-  `);
+  `, [ADMIN_EMAIL]);
   return rows;
 }
 
@@ -94,6 +97,9 @@ async function handler(request: Request) {
       const email = String(body.email ?? "").trim().toLowerCase();
       const displayName = String(body.displayName ?? "").trim();
       if (!id || !email) return json({ error: "Thiếu dữ liệu" }, 400);
+      const target = await db().query(`select lower(email) as email from auth.users where id=$1`, [id]);
+      if (target.rows[0]?.email === ADMIN_EMAIL) return json({ error: "Không thể thao tác với Admin chính" }, 403);
+      if (email === ADMIN_EMAIL) return json({ error: "Email này dành riêng cho Admin chính" }, 400);
       await db().query(
         `update auth.users set email=$2, raw_user_meta_data=coalesce(raw_user_meta_data,'{}'::jsonb) || jsonb_build_object('display_name',$3), updated_at=now() where id=$1`,
         [id, email, displayName],
@@ -104,8 +110,25 @@ async function handler(request: Request) {
 
     if (action === "deleteUser") {
       const id = String(body.id ?? "");
-      if (!id || id === admin.id) return json({ error: "Không thể xóa tài khoản admin đang dùng" }, 400);
+      const target = await db().query(`select lower(email) as email from auth.users where id=$1`, [id]);
+      if (!id || id === admin.id || target.rows[0]?.email === ADMIN_EMAIL) return json({ error: "Không thể thao tác với Admin chính" }, 403);
       await db().query(`delete from auth.users where id=$1`, [id]);
+      return json({ ok: true });
+    }
+
+    if (action === "setDeputy") {
+      if (admin.email?.toLowerCase() !== ADMIN_EMAIL) return json({ error: "Chỉ Admin chính được gắn Phó Admin" }, 403);
+      const id = String(body.id ?? "");
+      const enabled = body.enabled === true;
+      const target = await db().query(`select lower(email) as email from auth.users where id=$1`, [id]);
+      if (!target.rowCount) return json({ error: "Không tìm thấy tài khoản" }, 404);
+      if (target.rows[0].email === ADMIN_EMAIL) return json({ error: "Không thể thao tác với Admin chính" }, 403);
+      await db().query(
+        enabled
+          ? `update auth.users set raw_app_meta_data=coalesce(raw_app_meta_data,'{}'::jsonb) || '{"role":"deputy_admin"}'::jsonb, updated_at=now() where id=$1`
+          : `update auth.users set raw_app_meta_data=coalesce(raw_app_meta_data,'{}'::jsonb) - 'role', updated_at=now() where id=$1`,
+        [id],
+      );
       return json({ ok: true });
     }
 

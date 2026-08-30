@@ -1,12 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Film, Loader2, Plus, RefreshCw, Shield, Trash2, Users } from "lucide-react";
+import { BadgeCheck, Film, Loader2, Plus, RefreshCw, Shield, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { staffRole } from "@/lib/staff";
 
-const ADMIN_EMAIL = "lacviet55@proton.me";
-
-type AdminUser = { id: string; email: string; display_name: string | null; created_at: string; last_sign_in_at: string | null };
+type AdminUser = { id: string; email: string; display_name: string | null; role: "admin" | "deputy_admin" | "member"; created_at: string; last_sign_in_at: string | null };
 type Party = { id: string; code: string; name: string; host_email: string | null; closed: boolean; created_at: string };
 
 export const Route = createFileRoute("/admin")({
@@ -22,7 +21,7 @@ function AdminPage() {
   const [busy, setBusy] = useState(false);
   const [tab, setTab] = useState<"users" | "parties">("users");
   const [form, setForm] = useState({ email: "", password: "", displayName: "" });
-  const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL;
+  const isAdmin = staffRole(user) === "admin";
 
   async function request(body?: Record<string, unknown>) {
     const response = await fetch("/api/admin", {
@@ -66,7 +65,7 @@ function AdminPage() {
   return (
     <main className="mx-auto max-w-7xl px-4 pb-32 pt-8">
       <header className="flex flex-wrap items-center justify-between gap-4">
-        <div><p className="text-xs font-bold uppercase tracking-widest text-primary">Quản trị hệ thống</p><h1 className="text-3xl font-black">Dashboard Admin</h1></div>
+        <div><p className="text-xs font-bold uppercase tracking-widest text-primary">Quản trị hệ thống</p><h1 className="flex items-center gap-2 text-3xl font-black"><BadgeCheck className="h-7 w-7 text-primary" /> Lạc Việt Admin</h1></div>
         <div className="flex gap-2"><Link to="/" className="flex items-center gap-2 border border-border px-4 py-2 text-sm font-bold"><Film className="h-4 w-4" /> Xem phim</Link><button onClick={load} disabled={busy} className="flex items-center gap-2 bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"><RefreshCw className={`h-4 w-4 ${busy ? "animate-spin" : ""}`} /> Làm mới</button></div>
       </header>
 
@@ -74,7 +73,7 @@ function AdminPage() {
 
       {tab === "users" ? <section className="mt-6">
         <form onSubmit={(e) => { e.preventDefault(); void act({ action: "createUser", ...form }, "Đã tạo người dùng"); setForm({ email: "", password: "", displayName: "" }); }} className="grid gap-2 bg-card p-4 md:grid-cols-4"><input required type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="border border-input bg-background px-3 py-2" /><input required minLength={6} type="password" placeholder="Mật khẩu" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="border border-input bg-background px-3 py-2" /><input placeholder="Tên hiển thị" value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} className="border border-input bg-background px-3 py-2" /><button disabled={busy} className="flex items-center justify-center gap-2 bg-primary px-4 py-2 font-bold text-primary-foreground"><Plus className="h-4 w-4" /> Thêm</button></form>
-        <div className="mt-3 overflow-x-auto"><table className="w-full min-w-[760px] bg-card text-sm"><thead><tr className="border-b border-border text-left"><th className="p-3">Email</th><th>Tên</th><th>Ngày tạo</th><th>Đăng nhập cuối</th><th className="p-3 text-right">Thao tác</th></tr></thead><tbody>{users.map((item) => <UserRow key={item.id} item={item} adminId={user!.id} busy={busy} act={act} />)}</tbody></table></div>
+        <div className="mt-3 overflow-x-auto"><table className="w-full min-w-[860px] bg-card text-sm"><thead><tr className="border-b border-border text-left"><th className="p-3">Email</th><th>Tên</th><th>Vai trò</th><th>Ngày tạo</th><th>Đăng nhập cuối</th><th className="p-3 text-right">Thao tác</th></tr></thead><tbody>{users.map((item) => <UserRow key={item.id} item={item} adminId={user!.id} busy={busy} act={act} />)}</tbody></table></div>
       </section> : <section className="mt-6 overflow-x-auto"><table className="w-full min-w-[760px] bg-card text-sm"><thead><tr className="border-b border-border text-left"><th className="p-3">Mã</th><th>Phim</th><th>Chủ phòng</th><th>Trạng thái</th><th className="p-3 text-right">Thao tác</th></tr></thead><tbody>{parties.map((party) => <tr key={party.id} className="border-b border-border/60"><td className="p-3 font-bold">{party.code}</td><td>{party.name}</td><td>{party.host_email || "—"}</td><td>{party.closed ? "Đã đóng" : "Đang mở"}</td><td className="p-3 text-right"><button disabled={busy || party.closed} onClick={() => void act({ action: "closeParty", id: party.id }, "Đã đóng phòng")} className="mr-2 border border-border px-3 py-1.5 disabled:opacity-40">Đóng phòng</button><button disabled={busy} onClick={() => confirm("Xóa Watch Party này?") && void act({ action: "deleteParty", id: party.id }, "Đã xóa phòng")} className="bg-destructive px-3 py-1.5 text-destructive-foreground">Xóa</button></td></tr>)}</tbody></table></section>}
     </main>
   );
@@ -83,5 +82,6 @@ function AdminPage() {
 function UserRow({ item, adminId, busy, act }: { item: AdminUser; adminId: string; busy: boolean; act: (body: Record<string, unknown>, message: string) => Promise<void> }) {
   const [email, setEmail] = useState(item.email);
   const [displayName, setDisplayName] = useState(item.display_name || "");
-  return <tr className="border-b border-border/60"><td className="p-3"><input value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-transparent" /></td><td><input value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="w-full bg-transparent" /></td><td>{new Date(item.created_at).toLocaleDateString("vi-VN")}</td><td>{item.last_sign_in_at ? new Date(item.last_sign_in_at).toLocaleString("vi-VN") : "—"}</td><td className="p-3 text-right"><button disabled={busy} onClick={() => void act({ action: "updateUser", id: item.id, email, displayName }, "Đã cập nhật")} className="mr-2 border border-border px-3 py-1.5">Lưu</button><button disabled={busy || item.id === adminId} onClick={() => confirm("Xóa người dùng này? Dữ liệu liên quan cũng sẽ bị xóa.") && void act({ action: "deleteUser", id: item.id }, "Đã xóa người dùng")} className="bg-destructive px-3 py-1.5 text-destructive-foreground disabled:opacity-40"><Trash2 className="h-4 w-4" /></button></td></tr>;
+  const protectedAdmin = item.role === "admin" || item.id === adminId;
+  return <tr className="border-b border-border/60"><td className="p-3"><input disabled={protectedAdmin} value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-transparent disabled:opacity-70" /></td><td><input disabled={protectedAdmin} value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="w-full bg-transparent disabled:opacity-70" /></td><td>{item.role === "admin" ? <span className="inline-flex items-center gap-1 font-bold text-primary"><BadgeCheck className="h-4 w-4" /> Lạc Việt Admin</span> : item.role === "deputy_admin" ? <span className="font-bold text-primary">Phó Admin</span> : "Thành viên"}</td><td>{new Date(item.created_at).toLocaleDateString("vi-VN")}</td><td>{item.last_sign_in_at ? new Date(item.last_sign_in_at).toLocaleString("vi-VN") : "Chưa có"}</td><td className="p-3 text-right"><button disabled={busy || protectedAdmin} onClick={() => void act({ action: "setDeputy", id: item.id, enabled: item.role !== "deputy_admin" }, item.role === "deputy_admin" ? "Đã gỡ Phó Admin" : "Đã gắn Phó Admin")} className="mr-2 border border-primary/50 px-3 py-1.5 text-primary disabled:opacity-40">{item.role === "deputy_admin" ? "Gỡ Phó Admin" : "Gắn Phó Admin"}</button><button disabled={busy || protectedAdmin} onClick={() => void act({ action: "updateUser", id: item.id, email, displayName }, "Đã cập nhật")} className="mr-2 border border-border px-3 py-1.5 disabled:opacity-40">Lưu</button><button disabled={busy || protectedAdmin} onClick={() => confirm("Xóa người dùng này? Dữ liệu liên quan cũng sẽ bị xóa.") && void act({ action: "deleteUser", id: item.id }, "Đã xóa người dùng")} className="bg-destructive px-3 py-1.5 text-destructive-foreground disabled:opacity-40"><Trash2 className="h-4 w-4" /></button></td></tr>;
 }
