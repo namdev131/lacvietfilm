@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Hls from "hls.js";
 import {
   AlertTriangle, Check, ChevronLeft, Film, Gauge, Maximize, Pause, Play,
@@ -38,6 +38,7 @@ export function Player({
   onRateChange,
   title,
   episodeLabel,
+  overlay,
 }: {
   m3u8?: string;
   embed?: string;
@@ -71,6 +72,8 @@ export function Player({
   onRateChange?: (r: number) => void;
   title?: string;
   episodeLabel?: string;
+  /** Nội dung phải nằm trong fullscreen element, ví dụ thông báo chat Watch Party. */
+  overlay?: ReactNode;
 }) {
   const frameRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -408,6 +411,7 @@ export function Player({
           fill ? "h-full w-full rounded-lg ring-1 ring-border/60" : "aspect-video rounded-lg ring-1 ring-border/60"
         }`}
       >
+        {overlay}
         {mode === "hls" && canHls && (
           <video
             ref={videoRef}

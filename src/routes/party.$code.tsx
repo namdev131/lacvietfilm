@@ -37,6 +37,7 @@ function PartyPage() {
   const closeParty = useCloseParty();
   const meta = (user?.user_metadata ?? {}) as Record<string, string>;
   const myRole = staffRole(user);
+  const canCloseParty = isHost || myRole === "admin";
   const myName = staffLabel(myRole, meta.display_name || meta.full_name || user?.email?.split("@")[0] || "Khán giả");
   const { count: viewers, joinedNotice, setJoinedNotice, staffNotice, setStaffNotice } = usePartyPresence(code, myName);
   const chat = usePartyChat(party?.id);
@@ -129,6 +130,12 @@ function PartyPage() {
     ? party.position_seconds +
       (party.is_playing ? Math.max(0, (Date.now() - new Date(party.updated_at).getTime()) / 1000) : 0)
     : 0;
+
+  const chatNotice = chat.incomingMessage ? (
+    <div aria-label="Tin nhắn mới trong phòng" role="status" aria-live="polite" className="watch-party-message-notice absolute left-3 right-3 top-3 z-30 rounded-xl border border-primary/50 bg-card px-4 py-3 text-foreground shadow-xl md:left-auto md:w-80">
+      <div className="flex gap-3"><MessagesSquare className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><div className="min-w-0 flex-1"><strong className="block truncate text-xs text-primary">{chat.incomingMessage.display_name || "Thành viên"}</strong><p className="line-clamp-2 text-sm">{chat.incomingMessage.content}</p></div><button type="button" onClick={chat.dismissIncoming} aria-label="Đóng thông báo tin nhắn" className="self-start rounded-full p-1 text-muted-foreground hover:bg-muted"><X className="h-3.5 w-3.5" /></button></div>
+    </div>
+  ) : null;
 
 
 
@@ -235,6 +242,7 @@ function PartyPage() {
                 if (isHost && Math.abs(pos - party.position_seconds) > 4)
                   void sync({ position_seconds: Math.floor(pos), is_playing: true });
               }}
+              overlay={chatNotice}
             />
           </div>
 
@@ -337,6 +345,14 @@ function PartyPage() {
                   Bắt kịp ngay
                 </button>
               )}
+              {canCloseParty && (
+                <button
+                  onClick={() => closeParty.mutate(party, { onSuccess: () => toast.success("Admin đã đóng phòng"), onError: (error) => toast.error(error instanceof Error ? error.message : "Không đóng được phòng") })}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/50 px-3 py-1.5 font-semibold text-destructive hover:bg-destructive/10"
+                >
+                  <DoorClosed className="h-3.5 w-3.5" /> Đóng phòng
+                </button>
+              )}
             </div>
           )}
 
@@ -344,15 +360,7 @@ function PartyPage() {
 
         {/* Chat */}
         <div className="relative flex h-[520px] flex-col rounded-xl border border-border bg-card">
-          {chat.incomingMessage && (
-            <div aria-label="Tin nhắn mới trong phòng" role="status" aria-live="polite" className="watch-party-message-notice absolute inset-x-3 top-3 z-10 rounded-xl border border-primary/50 bg-card px-4 py-3 shadow-xl">
-              <div className="flex gap-3">
-                <MessagesSquare className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                <div className="min-w-0 flex-1"><strong className="block truncate text-xs text-primary">{chat.incomingMessage.display_name || "Thành viên"}</strong><p className="line-clamp-2 text-sm">{chat.incomingMessage.content}</p></div>
-                <button type="button" onClick={chat.dismissIncoming} aria-label="Đóng thông báo tin nhắn" className="self-start rounded-full p-1 text-muted-foreground hover:bg-muted"><X className="h-3.5 w-3.5" /></button>
-              </div>
-            </div>
-          )}
+
           <div className="flex items-center gap-2 border-b border-border/60 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-muted-foreground">
             Chat phòng
             {party.chat_mode === "host" && (

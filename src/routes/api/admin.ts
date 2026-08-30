@@ -134,6 +134,18 @@ async function handler(request: Request) {
       return json({ ok: true });
     }
 
+    if (action === "assignParty") {
+      const userId = String(body.userId ?? "");
+      const partyId = String(body.partyId ?? "");
+      if (!userId || !partyId) return json({ error: "Thiếu người dùng hoặc phòng" }, 400);
+      const party = await db().query(`select id from public.watch_parties where id=$1 and closed=false`, [partyId]);
+      const target = await db().query(`select id from auth.users where id=$1`, [userId]);
+      if (!party.rowCount) return json({ error: "Phòng không tồn tại hoặc đã đóng" }, 404);
+      if (!target.rowCount) return json({ error: "Người dùng không tồn tại" }, 404);
+      await db().query(`insert into public.watch_party_members(party_id,user_id) values($1,$2) on conflict(party_id,user_id) do nothing`, [partyId, userId]);
+      return json({ ok: true });
+    }
+
     if (action === "closeParty") {
       await db().query(`update public.watch_parties set closed=true, updated_at=now() where id=$1`, [String(body.id ?? "")]);
       return json({ ok: true });

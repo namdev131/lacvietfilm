@@ -38,6 +38,7 @@ create policy "Users can send messages when chat allowed" on public.watch_party_
 
 let pool: Pool | undefined;
 let schemaReady = false;
+const ADMIN_EMAIL = "lacviet55@proton.me";
 
 function db() {
   const connectionString = process.env.DATABASE_URL;
@@ -45,20 +46,22 @@ function db() {
   return (pool ??= new Pool({ connectionString, ssl: { rejectUnauthorized: false }, max: 2 }));
 }
 
-async function userId(request: Request) {
+async function currentUser(request: Request) {
   const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
   if (!token) return null;
   const response = await fetch(`${process.env.SUPABASE_URL}/auth/v1/user`, {
     headers: { apikey: process.env.SUPABASE_PUBLISHABLE_KEY!, authorization: `Bearer ${token}` },
   });
   if (!response.ok) return null;
-  return ((await response.json()) as { id?: string }).id ?? null;
+  const user = (await response.json()) as { id?: string; email?: string };
+  return user.id ? user : null;
 }
 
 async function handler(request: Request) {
   try {
-    const uid = await userId(request);
-    if (!uid) return Response.json({ error: "Unauthorized" }, { status: 401 });
+    const user = await currentUser(request);
+    if (!user?.id) return Response.json({ error: "Unauthorized" }, { status: 401 });
+    const uid = user.id;
     if (!schemaReady) {
       await db().query(schema);
       schemaReady = true;
@@ -114,10 +117,10 @@ async function handler(request: Request) {
     }
     if (body.action === "close") {
       const { rows } = await db().query(
-        `update public.watch_parties set closed=true,updated_at=now() where id=$1 and host_id=$2 returning code`,
-        [String(body.partyId ?? ""), uid],
+        `update public.watch_parties set closed=true,updated_at=now() where id=$1 and (host_id=$2 or $3) returning code`,
+        [String(body.partyId ?? ""), uid, user.email?.toLowerCase() === ADMIN_EMAIL],
       );
-      if (!rows[0]) return Response.json({ error: "Chỉ chủ phòng được đóng phòng" }, { status: 403 });
+      if (!rows[0]) return Response.json({ error: "Chỉ chủ phòng hoặc Admin được đóng phòng" }, { status: 403 });
       return Response.json({ code: rows[0].code });
     }
     if (body.action === "sync") {
