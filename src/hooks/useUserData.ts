@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,7 +18,6 @@ export interface LibraryItem {
   srv_index?: number;
   finished?: boolean;
 }
-
 
 export function useFavorites() {
   const { user } = useAuth();
@@ -44,16 +44,34 @@ export function useToggleFavorite() {
   const { user } = useAuth();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (movie: { slug: string; name: string; poster?: string; source: SourceId; isFav: boolean }) => {
+    mutationFn: async (movie: {
+      slug: string;
+      name: string;
+      poster?: string;
+      source: SourceId;
+      isFav: boolean;
+    }) => {
       if (!user) throw new Error("Bạn cần đăng nhập");
       if (movie.isFav) {
-        const { error } = await supabase.from("favorites").delete().eq("user_id", user.id).eq("slug", movie.slug);
+        const { error } = await supabase
+          .from("favorites")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("slug", movie.slug);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("favorites").upsert(
-          { user_id: user.id, slug: movie.slug, name: movie.name, poster: movie.poster ?? null, source: movie.source },
-          { onConflict: "user_id,slug" },
-        );
+        const { error } = await supabase
+          .from("favorites")
+          .upsert(
+            {
+              user_id: user.id,
+              slug: movie.slug,
+              name: movie.name,
+              poster: movie.poster ?? null,
+              source: movie.source,
+            },
+            { onConflict: "user_id,slug" },
+          );
         if (error) throw error;
       }
     },
@@ -63,6 +81,13 @@ export function useToggleFavorite() {
 
 export function useHistory() {
   const { user } = useAuth();
+  const qc = useQueryClient();
+  useEffect(() => {
+    if (!user) return;
+    const refresh = () => qc.invalidateQueries({ queryKey: ["history", user.id] });
+    window.addEventListener("lv-history-sync", refresh);
+    return () => window.removeEventListener("lv-history-sync", refresh);
+  }, [qc, user?.id]);
   return useQuery({
     queryKey: ["history", user?.id],
     enabled: !!user,
@@ -111,6 +136,5 @@ export async function recordHistory(
     } as never,
     { onConflict: "user_id,slug" },
   );
-  if (error) console.error("recordHistory failed", error);
+  if (error) throw error;
 }
-

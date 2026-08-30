@@ -16,9 +16,16 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Lạc Việt Film — Xem phim Vietsub & Thuyết minh miễn phí" },
-      { name: "description", content: "Xem phim online chất lượng cao: phim mới, bảng vàng realtime, HLS & Embed, nhiều nguồn phát để đổi khi giật lag." },
+      {
+        name: "description",
+        content:
+          "Xem phim online chất lượng cao: phim mới, bảng vàng realtime, HLS & Embed, nhiều nguồn phát để đổi khi giật lag.",
+      },
       { property: "og:title", content: "Lạc Việt Film — Mở phim, chạm hồn Việt" },
-      { property: "og:description", content: "Phim mới mỗi ngày, bảng vàng realtime, xem Vietsub và Thuyết minh." },
+      {
+        property: "og:description",
+        content: "Phim mới mỗi ngày, bảng vàng realtime, xem Vietsub và Thuyết minh.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -37,12 +44,24 @@ function Home() {
     appliedDefault.current = true;
     setSource(settings.defaultSource as SourceFilter);
   }, [settings.defaultSource]);
-  const kk = useQuery({ queryKey: ["latest", "kkphim", 1], queryFn: () => fetchLatest("kkphim", 1) });
+  const kk = useQuery({
+    queryKey: ["latest", "kkphim", 1],
+    queryFn: () => fetchLatest("kkphim", 1),
+  });
   const op = useQuery({ queryKey: ["latest", "ophim", 1], queryFn: () => fetchLatest("ophim", 1) });
-  const ng = useQuery({ queryKey: ["latest", "nguonc", 1], queryFn: () => fetchLatest("nguonc", 1) });
+  const ng = useQuery({
+    queryKey: ["latest", "nguonc", 1],
+    queryFn: () => fetchLatest("nguonc", 1),
+  });
   const vs = useQuery({ queryKey: ["latest", "vsmov", 1], queryFn: () => fetchLatest("vsmov", 1) });
-  const kk2 = useQuery({ queryKey: ["latest", "kkphim", 2], queryFn: () => fetchLatest("kkphim", 2) });
-  const all = useQuery({ queryKey: ["latest", "all", 1], queryFn: () => fetchLatestMerged("all", 1) });
+  const kk2 = useQuery({
+    queryKey: ["latest", "kkphim", 2],
+    queryFn: () => fetchLatest("kkphim", 2),
+  });
+  const all = useQuery({
+    queryKey: ["latest", "all", 1],
+    queryFn: () => fetchLatestMerged("all", 1),
+  });
   const { data: history } = useHistory();
 
   const featured =
@@ -68,10 +87,7 @@ function Home() {
 
   const vietsub = (kk.data || []).filter((m) => (m.lang || "").toLowerCase().includes("vietsub"));
   const thuyetminh = (kk.data || []).filter((m) => (m.lang || "").toLowerCase().includes("thuyết"));
-  const unfinishedHistory = (history ?? [])
-    .filter((item) => !item.finished)
-    .slice(0, 12);
-
+  const watchedHistory = (history ?? []).slice(0, 12);
 
   return (
     <div className="heritage-home">
@@ -107,12 +123,11 @@ function Home() {
             </h1>
             {hero?.origin_name && (
               <p className="cinema-hero-meta text-sm md:text-base">
-                {hero.origin_name} {hero.year ? `· ${hero.year}` : ""} {hero.quality ? `· ${hero.quality}` : ""}
+                {hero.origin_name} {hero.year ? `· ${hero.year}` : ""}{" "}
+                {hero.quality ? `· ${hero.quality}` : ""}
               </p>
             )}
-            <p className="max-w-xl text-sm text-white/80 md:text-base">
-              Mở phim, chạm hồn Việt.
-            </p>
+            <p className="max-w-xl text-sm text-white/80 md:text-base">Mở phim, chạm hồn Việt.</p>
             {hero && (
               <div className="flex flex-wrap gap-2 pt-2">
                 <Link
@@ -148,12 +163,8 @@ function Home() {
       </div>
 
       <div className="home-content-rail mt-8 space-y-8 md:space-y-12">
-        <HomeHistoryRow title="Đã xem" items={unfinishedHistory} />
-        <MovieRow
-          title="Phim mới"
-          movies={featured}
-          accent="cuộn ngang"
-        />
+        <HomeHistoryRow title="Đã xem" items={watchedHistory} />
+        <MovieRow title="Phim mới" movies={featured} accent="cuộn ngang" />
         <GoldBoard />
         <MovieRow title="Vietsub nổi bật" movies={vietsub.slice(0, 20)} />
         <MovieRow title="Thuyết Minh" movies={thuyetminh.slice(0, 20)} />
@@ -161,7 +172,6 @@ function Home() {
         <MovieRow title="Kho phim NguonC" movies={ng.data || []} />
         <MovieRow title="Kho phim VSMov" movies={vs.data || []} />
         <MovieRow title="Đề xuất thêm" movies={kk2.data || []} />
-
       </div>
     </div>
   );
@@ -172,10 +182,18 @@ function HomeHistoryRow({ title, items }: { title: string; items: LibraryItem[] 
   return (
     <section className="movie-shelf relative" aria-labelledby="home-history-title">
       <div className="movie-row-inner shelf-heading mb-3 flex items-center justify-between">
-        <h2 id="home-history-title" className="flex items-center gap-2 text-lg font-semibold tracking-tight md:text-xl">
+        <h2
+          id="home-history-title"
+          className="flex items-center gap-2 text-lg font-semibold tracking-tight md:text-xl"
+        >
           <History className="h-5 w-5 text-primary" /> {title}
         </h2>
-        <Link to="/history" className="text-xs font-semibold text-muted-foreground hover:text-primary">Xem tất cả</Link>
+        <Link
+          to="/history"
+          className="text-xs font-semibold text-muted-foreground hover:text-primary"
+        >
+          Xem tất cả
+        </Link>
       </div>
       <div className="scroll-row movie-row-inner shelf-track flex gap-3 overflow-x-auto pb-6 md:gap-4">
         {items.map((item) => {
@@ -185,11 +203,24 @@ function HomeHistoryRow({ title, items }: { title: string; items: LibraryItem[] 
               key={`${item.source}-${item.slug}`}
               to="/watch/$slug"
               params={{ slug: item.slug }}
-              search={{ src: item.source as SourceId, ep: item.ep_index ?? 0, srv: item.srv_index ?? 0 }}
+              search={{
+                src: item.source as SourceId,
+                ep: item.ep_index ?? 0,
+                srv: item.srv_index ?? 0,
+              }}
               className="group w-[220px] shrink-0 sm:w-[260px]"
             >
               <div className="relative aspect-video overflow-hidden rounded-xl border border-border bg-card">
-                {item.poster ? <img src={item.poster} alt={item.name} loading="lazy" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" /> : <div className="h-full w-full bg-muted" />}
+                {item.poster ? (
+                  <img
+                    src={item.poster}
+                    alt={item.name}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="h-full w-full bg-muted" />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
                 <span className="absolute bottom-3 left-3 grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground">
                   <Play className="h-4 w-4 fill-current" />
@@ -198,9 +229,12 @@ function HomeHistoryRow({ title, items }: { title: string; items: LibraryItem[] 
                   <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
                 </div>
               </div>
-              <p className="mt-2 truncate text-sm font-semibold group-hover:text-primary">{item.name}</p>
+              <p className="mt-2 truncate text-sm font-semibold group-hover:text-primary">
+                {item.name}
+              </p>
               <p className="truncate text-xs text-muted-foreground">
-                {item.episode_name || `Tập ${(item.ep_index ?? 0) + 1}`} · dừng ở {formatTime(item.position_seconds ?? 0)}
+                {item.episode_name || `Tập ${(item.ep_index ?? 0) + 1}`} · dừng ở{" "}
+                {formatTime(item.position_seconds ?? 0)}
               </p>
             </Link>
           );

@@ -18,7 +18,6 @@ import { useSettings } from "@/lib/settings";
 import { CinemaTicket } from "@/components/CinemaTicket";
 import { ticketOwnerLabel } from "@/lib/tickets";
 
-
 const searchSchema = z.object({
   src: z.enum(["kkphim", "ophim", "nguonc", "vsmov"]).default("kkphim"),
   ep: z.number().int().min(0).default(0),
@@ -42,16 +41,24 @@ export const Route = createFileRoute("/watch/$slug")({
 
 function detectLang(name: string): "vietsub" | "thuyetminh" | "other" {
   const n = name.toLowerCase();
-  if (n.includes("thuyết") || n.includes("thuyet") || n.includes("lồng") || n.includes("long tieng")) return "thuyetminh";
-  if (n.includes("vietsub") || n.includes("vsub") || n.includes("phụ đề") || n.includes("sub")) return "vietsub";
+  if (
+    n.includes("thuyết") ||
+    n.includes("thuyet") ||
+    n.includes("lồng") ||
+    n.includes("long tieng")
+  )
+    return "thuyetminh";
+  if (n.includes("vietsub") || n.includes("vsub") || n.includes("phụ đề") || n.includes("sub"))
+    return "vietsub";
   return "other";
 }
 
-const movieKey = (value: string) => value
-  .toLowerCase()
-  .normalize("NFD")
-  .replace(/[\u0300-\u036f]/g, "")
-  .replace(/[^a-z0-9]/g, "");
+const movieKey = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, "");
 
 function WatchPage() {
   const { slug } = Route.useParams();
@@ -86,7 +93,6 @@ function WatchPage() {
   }, [source, slug, srv, ep]);
   const savedPct = saved ? progressPercent(saved.position, saved.duration) : 0;
 
-
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["detail", source, slug],
     queryFn: () => fetchDetail(slug, source),
@@ -100,12 +106,15 @@ function WatchPage() {
     queryFn: async () => {
       const expected = movieKey(data!.origin_name || data!.name);
       const lists = await Promise.all(
-        SOURCES.map(async ({ id }) => [id, await searchMovies(data!.name, id).catch(() => [])] as const),
+        SOURCES.map(
+          async ({ id }) => [id, await searchMovies(data!.name, id).catch(() => [])] as const,
+        ),
       );
       return lists.flatMap(([id, movies]) => {
-        const sourceMatch = movies.find((movie) =>
-          movieKey(movie.origin_name || movie.name) === expected &&
-          (!data!.year || !movie.year || String(movie.year) === String(data!.year)),
+        const sourceMatch = movies.find(
+          (movie) =>
+            movieKey(movie.origin_name || movie.name) === expected &&
+            (!data!.year || !movie.year || String(movie.year) === String(data!.year)),
         );
         return sourceMatch ? [{ ...sourceMatch, source: id }] : [];
       });
@@ -114,19 +123,28 @@ function WatchPage() {
   const availableSources = sourceMatches.map((movie) => movie.source);
 
   const servers = useMemo(
-    () => (data?.servers || []).filter((server) => server.items.some((item) => item.m3u8 || item.embed)),
+    () =>
+      (data?.servers || []).filter((server) =>
+        server.items.some((item) => item.m3u8 || item.embed),
+      ),
     [data],
   );
   const currentServer = servers[srv] || servers[0];
   const currentEp = currentServer?.items[ep];
-  const ticketOwner = ticketOwnerLabel(user ? {
-    displayName: (user.user_metadata?.display_name || user.user_metadata?.full_name) as string | undefined,
-    email: user.email,
-  } : null);
+  const ticketOwner = ticketOwnerLabel(
+    user
+      ? {
+          displayName: (user.user_metadata?.display_name || user.user_metadata?.full_name) as
+            string | undefined,
+          email: user.email,
+        }
+      : null,
+  );
 
   // Group servers by language
   const langGroups = useMemo(() => {
-    if (!data) return { vietsub: [] as number[], thuyetminh: [] as number[], other: [] as number[] };
+    if (!data)
+      return { vietsub: [] as number[], thuyetminh: [] as number[], other: [] as number[] };
     const g: any = { vietsub: [], thuyetminh: [], other: [] };
     servers.forEach((s, i) => g[detectLang(s.server_name)].push(i));
     return g;
@@ -137,7 +155,12 @@ function WatchPage() {
     if (!servers.length || settings.langPref === "auto") return;
     const wanted: number[] = (langGroups as any)[settings.langPref] || [];
     if (wanted.length && !wanted.includes(srv)) {
-      navigate({ to: "/watch/$slug", params: { slug }, search: { src: source, ep: 0, srv: wanted[0] }, replace: true });
+      navigate({
+        to: "/watch/$slug",
+        params: { slug },
+        search: { src: source, ep: 0, srv: wanted[0] },
+        replace: true,
+      });
     }
   }, [servers.length, settings.langPref, langGroups, srv, slug, source]);
 
@@ -169,11 +192,10 @@ function WatchPage() {
       episode_name: currentEp?.name,
       ep_index: ep,
       srv_index: srv,
-    }).then(() => {
-      qc.invalidateQueries({ queryKey: ["history"] });
-    });
+    })
+      .then(() => qc.invalidateQueries({ queryKey: ["history"] }))
+      .catch((error) => console.error("recordHistory failed", error));
   }, [user, data, source, ep, srv, currentEp?.slug, currentEp?.name, settings.saveHistory]);
-
 
   // Đẩy phim hiện tại vào trình phát toàn cục (tiếp tục phát khi rời trang)
   useEffect(() => {
@@ -195,12 +217,27 @@ function WatchPage() {
       onNext: () => {
         const total = currentServer?.items.length ?? 0;
         if (ep + 1 < total) {
-          navigate({ to: "/watch/$slug", params: { slug }, search: { src: source, ep: ep + 1, srv } });
+          navigate({
+            to: "/watch/$slug",
+            params: { slug },
+            search: { src: source, ep: ep + 1, srv },
+          });
         }
       },
-
     });
-  }, [data?.slug, slug, source, ep, srv, currentEp?.m3u8, currentEp?.embed, mode, allowHls, settings.autoNext, currentServer?.items.length]);
+  }, [
+    data?.slug,
+    slug,
+    source,
+    ep,
+    srv,
+    currentEp?.m3u8,
+    currentEp?.embed,
+    mode,
+    allowHls,
+    settings.autoNext,
+    currentServer?.items.length,
+  ]);
 
   // Phim đề xuất
   const { data: suggested } = useQuery({
@@ -210,26 +247,41 @@ function WatchPage() {
     enabled: !!data,
   });
   const recommend = useMemo(() => {
-    const cats = new Set((data?.category || []).map((c: any) => (typeof c === "string" ? c : c?.name)));
+    const cats = new Set(
+      (data?.category || []).map((c: any) => (typeof c === "string" ? c : c?.name)),
+    );
     const list = (suggested || []).filter((m) => m.slug !== slug);
     const scored = list.map((m) => ({
       m,
       s: (m.year && data?.year && m.year === data.year ? 1 : 0) + (cats.size ? 0 : 0),
     }));
-    return scored.sort((a, b) => b.s - a.s).map((x) => x.m).slice(0, 24);
+    return scored
+      .sort((a, b) => b.s - a.s)
+      .map((x) => x.m)
+      .slice(0, 24);
   }, [suggested, data?.slug, data?.year, slug]);
 
-  const goEp = (i: number) => navigate({ to: "/watch/$slug", params: { slug }, search: { src: source, ep: i, srv } });
-  const goSrv = (i: number) => navigate({ to: "/watch/$slug", params: { slug }, search: { src: source, ep: 0, srv: i } });
+  const goEp = (i: number) =>
+    navigate({ to: "/watch/$slug", params: { slug }, search: { src: source, ep: i, srv } });
+  const goSrv = (i: number) =>
+    navigate({ to: "/watch/$slug", params: { slug }, search: { src: source, ep: 0, srv: i } });
   const changeSource = (s: SourceId) => {
     const sourceMatch = sourceMatches.find((movie) => movie.source === s);
-    if (sourceMatch) navigate({ to: "/watch/$slug", params: { slug: sourceMatch.slug }, search: { src: s, ep: 0, srv: 0 } });
+    if (sourceMatch)
+      navigate({
+        to: "/watch/$slug",
+        params: { slug: sourceMatch.slug },
+        search: { src: s, ep: 0, srv: 0 },
+      });
   };
 
   if (isLoading) {
     return (
       <div className="mx-auto max-w-6xl px-4 py-16 md:px-10">
-        <div ref={dockRef} className="aspect-video w-full overflow-hidden rounded-lg bg-card shimmer" />
+        <div
+          ref={dockRef}
+          className="aspect-video w-full overflow-hidden rounded-lg bg-card shimmer"
+        />
       </div>
     );
   }
@@ -260,14 +312,22 @@ function WatchPage() {
   return (
     <div className="mx-auto max-w-[1600px] bg-[#03070d] px-3 py-4 text-[#f4f5f7] md:px-6">
       <div className="mb-3 flex items-center gap-3">
-        <Link to="/movie/$slug" params={{ slug }} search={{ src: source }} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+        <Link
+          to="/movie/$slug"
+          params={{ slug }}
+          search={{ src: source }}
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
           <ArrowLeft className="h-4 w-4" /> Chi tiết phim
         </Link>
       </div>
 
       <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_280px]">
         <div className="space-y-3">
-          <div ref={dockRef} className="aspect-video max-h-[calc(100vh-8rem)] w-full overflow-hidden rounded-md bg-black ring-1 ring-[#202936]" />
+          <div
+            ref={dockRef}
+            className="aspect-video max-h-[calc(100vh-8rem)] w-full overflow-hidden rounded-md bg-black ring-1 ring-[#202936]"
+          />
 
           <div className="inline-flex overflow-hidden rounded-full border border-border bg-card">
             {allowHls && (
@@ -275,7 +335,9 @@ function WatchPage() {
                 disabled={!currentEp?.m3u8}
                 onClick={() => setMode("hls")}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition disabled:opacity-40 ${
-                  mode === "hls" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"
+                  mode === "hls"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground hover:bg-muted"
                 }`}
               >
                 <Zap className="h-3.5 w-3.5" /> HLS (m3u8)
@@ -285,7 +347,9 @@ function WatchPage() {
               disabled={!currentEp?.embed}
               onClick={() => setMode("embed")}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition disabled:opacity-40 ${
-                mode === "embed" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"
+                mode === "embed"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-foreground hover:bg-muted"
               }`}
             >
               <Film className="h-3.5 w-3.5" /> Embed
@@ -314,7 +378,6 @@ function WatchPage() {
             )}
           </div>
 
-
           <CinemaTicket
             slug={data.slug}
             name={data.name}
@@ -328,8 +391,17 @@ function WatchPage() {
           {/* Xem chung */}
           {data && (
             <div className="rounded-xl border border-border/60 bg-card/70 p-4">
-              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">Xem chung với bạn bè</p>
-              <WatchPartyButton slug={slug} name={data.name} poster={data.poster} source={source} ep={ep} srv={srv} />
+              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                Xem chung với bạn bè
+              </p>
+              <WatchPartyButton
+                slug={slug}
+                name={data.name}
+                poster={data.poster}
+                source={source}
+                ep={ep}
+                srv={srv}
+              />
             </div>
           )}
 
@@ -347,7 +419,8 @@ function WatchPage() {
                 : currentEp?.m3u8
                   ? "Nguồn này phát bằng HLS."
                   : "Nguồn này chỉ phát bằng Embed."}{" "}
-              Đổi nguồn API nếu tập hiện tại lỗi. Ping đo tự động, chọn nguồn xanh cho tốc độ tốt nhất.
+              Đổi nguồn API nếu tập hiện tại lỗi. Ping đo tự động, chọn nguồn xanh cho tốc độ tốt
+              nhất.
             </p>
           </div>
 
@@ -382,7 +455,9 @@ function WatchPage() {
               <button
                 onClick={() => goSrv(langGroups.other[0])}
                 className={`rounded-full border border-border bg-card px-3 py-1 text-xs font-medium hover:border-primary/50 ${
-                  detectLang(currentServer?.server_name || "") === "other" ? "border-primary bg-primary/15 text-primary" : ""
+                  detectLang(currentServer?.server_name || "") === "other"
+                    ? "border-primary bg-primary/15 text-primary"
+                    : ""
                 }`}
               >
                 Khác ({langGroups.other.length})
@@ -430,8 +505,18 @@ function WatchPage() {
                     title={e.name}
                     className={`flex w-full items-center justify-between rounded px-3 py-2 text-left text-xs font-medium transition ${active ? "bg-[#18202b] text-amber-300" : "text-[#b7bec8] hover:bg-[#111923] hover:text-white"}`}
                   >
-                    <span className="flex items-center gap-2"><Play className="h-3 w-3 fill-current" />{e.name || `Tập ${idx + 1}`}{active ? " - Hiện tại" : ""}</span>
-                    {active && <span className="flex items-end gap-0.5"><i className="h-2 w-0.5 animate-pulse bg-amber-300" /><i className="h-3 w-0.5 animate-pulse bg-amber-300" /><i className="h-1.5 w-0.5 animate-pulse bg-amber-300" /></span>}
+                    <span className="flex items-center gap-2">
+                      <Play className="h-3 w-3 fill-current" />
+                      {e.name || `Tập ${idx + 1}`}
+                      {active ? " - Hiện tại" : ""}
+                    </span>
+                    {active && (
+                      <span className="flex items-end gap-0.5">
+                        <i className="h-2 w-0.5 animate-pulse bg-amber-300" />
+                        <i className="h-3 w-0.5 animate-pulse bg-amber-300" />
+                        <i className="h-1.5 w-0.5 animate-pulse bg-amber-300" />
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -441,9 +526,25 @@ function WatchPage() {
           <div className="hidden rounded-md border border-[#202936] bg-[#070c14] p-4 text-xs text-[#9ea6b2] xl:block">
             <p className="font-semibold text-white">Phím tắt</p>
             <dl className="mt-3 space-y-2">
-              {[["Phát / Tạm dừng", "Space"], ["Tua nhanh 10s", "→"], ["Tua lùi 10s", "←"], ["Âm lượng", "↑ / ↓"], ["Tắt tiếng", "M"], ["Toàn màn hình", "F / Nhấp đúp"], ["Thoát toàn màn hình", "Esc"]].map(([label, key]) => <div key={label} className="flex justify-between"><dt>{label}</dt><dd className="text-white">{key}</dd></div>)}
+              {[
+                ["Phát / Tạm dừng", "Space"],
+                ["Tua nhanh 10s", "→"],
+                ["Tua lùi 10s", "←"],
+                ["Âm lượng", "↑ / ↓"],
+                ["Tắt tiếng", "M"],
+                ["Toàn màn hình", "F / Nhấp đúp"],
+                ["Thoát toàn màn hình", "Esc"],
+              ].map(([label, key]) => (
+                <div key={label} className="flex justify-between">
+                  <dt>{label}</dt>
+                  <dd className="text-white">{key}</dd>
+                </div>
+              ))}
             </dl>
-            <p className="mt-4 flex gap-1.5 border-t border-[#202936] pt-3 text-[11px] leading-4 text-amber-300"><Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />Nếu không xem được, hãy thử đổi máy chủ khác nhé!</p>
+            <p className="mt-4 flex gap-1.5 border-t border-[#202936] pt-3 text-[11px] leading-4 text-amber-300">
+              <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              Nếu không xem được, hãy thử đổi máy chủ khác nhé!
+            </p>
           </div>
         </aside>
       </div>

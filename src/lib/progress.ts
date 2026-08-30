@@ -33,7 +33,12 @@ export function progressKey(source: string, slug: string, srv: number, ep: numbe
   return `${source}:${slug}:${srv}:${ep}`;
 }
 
-export function getLocalProgress(source: string, slug: string, srv: number, ep: number): ProgressEntry | null {
+export function getLocalProgress(
+  source: string,
+  slug: string,
+  srv: number,
+  ep: number,
+): ProgressEntry | null {
   if (typeof window === "undefined") return null;
   return readAll()[progressKey(source, slug, srv, ep)] ?? null;
 }
@@ -49,7 +54,10 @@ export function getLatestProgressForSlug(slug: string): ProgressEntry | null {
 export function setLocalProgress(entry: Omit<ProgressEntry, "updatedAt">) {
   if (typeof window === "undefined") return;
   const map = readAll();
-  map[progressKey(entry.source, entry.slug, entry.srv, entry.ep)] = { ...entry, updatedAt: Date.now() };
+  map[progressKey(entry.source, entry.slug, entry.srv, entry.ep)] = {
+    ...entry,
+    updatedAt: Date.now(),
+  };
   // giữ tối đa 300 mục gần nhất
   const keys = Object.keys(map);
   if (keys.length > 300) {
@@ -114,7 +122,11 @@ export async function syncProgress(
     } as never,
     { onConflict: "user_id,slug" },
   );
-  if (error) console.error("syncProgress failed", error);
+  if (error) {
+    console.error("syncProgress failed", error);
+    return;
+  }
+  window.dispatchEvent(new CustomEvent("lv-history-sync"));
 }
 
 /** Mục đang xem dở gần nhất (local, dùng khi chưa đăng nhập) */
