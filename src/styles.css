@@ -101,7 +101,7 @@
 @layer base {
   * { border-color: var(--color-border); }
   html, body { background: var(--color-background); color: var(--color-foreground); font-family: var(--font-display); }
-  body { -webkit-font-smoothing: antialiased; min-height: 100dvh; }
+  body { -webkit-font-smoothing: antialiased; min-height: 100vh; }
   button, a, input, select, textarea { outline-color: var(--ring); }
 }
 
@@ -158,7 +158,7 @@
 }
 .theme-toggle:hover { transform: rotate(8deg); border-color: var(--primary); background: var(--secondary); }
 .theme-toggle:active { transform: scale(.96); }
-.heritage-hero { min-height: min(76dvh, 720px); }
+.heritage-hero { min-height: 68vh; }
 .heritage-hero::after {
   content: "";
   position: absolute;
@@ -229,9 +229,9 @@
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--primary), transparent);
 }
-.cinema-hero { min-height: min(68dvh, 650px); background: var(--background); }
+.cinema-hero { min-height: 68vh; background: var(--background); }
 .cinema-hero-image { filter: saturate(.82) contrast(1.03); object-position: 70% center; }
-.cinema-hero-copy { min-height: min(68dvh, 650px); }
+.cinema-hero-copy { min-height: 68vh; }
 .cinema-hero-copy > div { position: relative; padding-left: 0; }
 .cinema-hero h1 { color: #f4efe4; max-width: 14ch; font-size: clamp(2.35rem, 4.2vw, 4.5rem); line-height: 1; letter-spacing: -.05em; text-shadow: 0 2px 12px rgb(0 0 0 / .45); }
 .cinema-hero-meta { color: rgb(255 255 255 / .78); }
@@ -286,8 +286,8 @@
   .cinema-hero-copy > div { width: 54%; }
 }
 @media (max-width: 767px) {
-  .cinema-hero { min-height: 66dvh; }
-  .cinema-hero-copy { min-height: 66dvh; }
+  .cinema-hero { min-height: 66vh; }
+  .cinema-hero-copy { min-height: 66vh; }
   .cinema-hero h1 { font-size: clamp(2.1rem, 10vw, 3.2rem); }
 }
 @media (prefers-reduced-transparency: reduce) {

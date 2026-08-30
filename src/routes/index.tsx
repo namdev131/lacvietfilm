@@ -76,7 +76,7 @@ function Home() {
   return (
     <div className="heritage-home">
       {/* Hero */}
-      <section className="heritage-hero cinema-hero relative min-h-[min(76dvh,720px)] w-full overflow-hidden">
+      <section className="heritage-hero cinema-hero relative w-full overflow-hidden">
         {hero?.thumb || hero?.poster ? (
           <motion.img
             key={hero.slug}

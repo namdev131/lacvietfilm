@@ -14,6 +14,8 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
+    // Samsung RU7100 (Tizen 5 / Chromium 63) cannot parse Vite's modern default output.
+    build: { target: "chrome63", cssTarget: "chrome63" },
     // ponytail: mcp-js 0.26.3 mixes Windows/POSIX paths; re-enable after upstream fix.
     plugins: process.platform === "win32" ? [] : [mcpPlugin()],
   },

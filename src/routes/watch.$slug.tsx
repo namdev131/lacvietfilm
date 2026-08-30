@@ -267,7 +267,7 @@ function WatchPage() {
 
       <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_280px]">
         <div className="space-y-3">
-          <div ref={dockRef} className="aspect-video max-h-[calc(100dvh-8rem)] w-full overflow-hidden rounded-md bg-black ring-1 ring-[#202936]" />
+          <div ref={dockRef} className="aspect-video max-h-[calc(100vh-8rem)] w-full overflow-hidden rounded-md bg-black ring-1 ring-[#202936]" />
 
           <div className="inline-flex overflow-hidden rounded-full border border-border bg-card">
             {allowHls && (
