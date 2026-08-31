@@ -1,7 +1,19 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Check, Eye, EyeOff, Loader2, Mail, MailCheck, Lock, Play, Sparkles, UserRound } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  Eye,
+  EyeOff,
+  Loader2,
+  Mail,
+  MailCheck,
+  Lock,
+  Play,
+  Sparkles,
+  UserRound,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { signInWithGoogle } from "@/lib/oauth";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,9 +29,15 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Đăng nhập | Lạc Việt Film" },
-      { name: "description", content: "Đăng nhập hoặc tạo tài khoản Lạc Việt Film để lưu phim yêu thích và lịch sử xem." },
+      {
+        name: "description",
+        content: "Đăng nhập hoặc tạo tài khoản Lạc Việt Film để lưu phim yêu thích và lịch sử xem.",
+      },
       { property: "og:title", content: "Đăng nhập — Lạc Việt Film" },
-      { property: "og:description", content: "Tạo tài khoản để lưu phim yêu thích và lịch sử xem." },
+      {
+        property: "og:description",
+        content: "Tạo tài khoản để lưu phim yêu thích và lịch sử xem.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -28,6 +46,9 @@ export const Route = createFileRoute("/auth")({
 });
 
 type Tab = "login" | "signup" | "magic";
+const AUTH_COOLDOWN_SECONDS = 3;
+const EMAIL_COOLDOWN_SECONDS = 60;
+const AUTH_COOLDOWN_KEY = "lv-auth-cooldown-until";
 
 function AuthPage() {
   const [tab, setTab] = useState<Tab>("login");
@@ -37,6 +58,8 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [sentTo, setSentTo] = useState<string | null>(null);
+  const [cooldown, setCooldown] = useState(0);
+  const actionLocked = useRef(false);
   const navigate = useNavigate();
   const { next } = Route.useSearch();
   const { user, loading } = useAuth();
@@ -56,17 +79,41 @@ function AuthPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, loading, next]);
 
+  useEffect(() => {
+    const update = () => {
+      const until = Number(localStorage.getItem(AUTH_COOLDOWN_KEY) || 0);
+      setCooldown(Math.max(0, Math.ceil((until - Date.now()) / 1000)));
+    };
+    update();
+    const timer = window.setInterval(update, 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const startCooldown = (seconds: number) => {
+    localStorage.setItem(AUTH_COOLDOWN_KEY, String(Date.now() + seconds * 1000));
+    setCooldown(seconds);
+  };
+
   const strength = passwordStrength(password);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (actionLocked.current || cooldown > 0) return;
+    actionLocked.current = true;
+    startCooldown(tab === "login" ? AUTH_COOLDOWN_SECONDS : EMAIL_COOLDOWN_SECONDS);
     setBusy(true);
     try {
       if (tab === "login") {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         const role = staffRole(data.user);
-        toast.success(role === "admin" ? "Chào mừng Lạc Việt Admin" : role === "deputy_admin" ? "Chào mừng Phó Admin Lạc Việt" : "Chào mừng trở lại!");
+        toast.success(
+          role === "admin"
+            ? "Chào mừng Lạc Việt Admin"
+            : role === "deputy_admin"
+              ? "Chào mừng Phó Admin Lạc Việt"
+              : "Chào mừng trở lại!",
+        );
         goAfterAuth();
       } else if (tab === "magic") {
         const { error } = await supabase.auth.signInWithOtp({
@@ -95,59 +142,100 @@ function AuthPage() {
     } catch (err) {
       toast.error(authErrorMessage(err));
     } finally {
+      actionLocked.current = false;
       setBusy(false);
     }
   }
 
   async function resend() {
-    if (!sentTo) return;
+    if (!sentTo || actionLocked.current || cooldown > 0) return;
+    actionLocked.current = true;
+    startCooldown(EMAIL_COOLDOWN_SECONDS);
     setBusy(true);
-    const { error } = await supabase.auth.resend({
-      type: "signup",
-      email: sentTo,
-      options: { emailRedirectTo: redirectTo() },
-    });
-    setBusy(false);
-    if (error) toast.error(authErrorMessage(error));
-    else toast.success("Đã gửi lại email xác minh");
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: sentTo,
+        options: { emailRedirectTo: redirectTo() },
+      });
+      if (error) toast.error(authErrorMessage(error));
+      else toast.success("Đã gửi lại email xác minh");
+    } finally {
+      actionLocked.current = false;
+      setBusy(false);
+    }
   }
 
   async function handleGoogle() {
+    if (actionLocked.current || cooldown > 0) return;
+    actionLocked.current = true;
+    startCooldown(AUTH_COOLDOWN_SECONDS);
     setBusy(true);
     const result = await signInWithGoogle(redirectTo());
     if (result.error) {
+      actionLocked.current = false;
       setBusy(false);
       toast.error("Không đăng nhập được bằng Google");
       return;
     }
     if (result.redirected) return;
+    actionLocked.current = false;
     goAfterAuth();
   }
 
   async function resetPassword() {
     if (!email) return toast.info("Nhập email để đặt lại mật khẩu");
+    if (actionLocked.current || cooldown > 0) return;
+    actionLocked.current = true;
+    startCooldown(EMAIL_COOLDOWN_SECONDS);
     setBusy(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    setBusy(false);
-    if (error) toast.error(authErrorMessage(error));
-    else toast.success("Đã gửi liên kết đặt lại mật khẩu");
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) toast.error(authErrorMessage(error));
+      else toast.success("Đã gửi liên kết đặt lại mật khẩu");
+    } finally {
+      actionLocked.current = false;
+      setBusy(false);
+    }
   }
 
   return (
     <div className="relative mx-auto grid min-h-[calc(100vh-3.5rem)] max-w-6xl items-center gap-10 overflow-hidden px-4 pb-32 pt-8 md:grid-cols-[1fr_440px] md:px-10">
       <section className="hidden md:block">
-        <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30"><Play className="h-6 w-6 fill-current" /></div>
-        <h1 className="max-w-xl text-5xl font-black leading-tight text-balance">Mọi bộ phim bạn yêu, ở cùng một nơi.</h1>
-        <p className="mt-4 max-w-lg text-base leading-7 text-muted-foreground">Đăng nhập để tiếp tục xem trên mọi thiết bị, lưu phim yêu thích và tham gia phòng xem chung cùng bạn bè.</p>
+        <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30">
+          <Play className="h-6 w-6 fill-current" />
+        </div>
+        <h1 className="max-w-xl text-5xl font-black leading-tight text-balance">
+          Mọi bộ phim bạn yêu, ở cùng một nơi.
+        </h1>
+        <p className="mt-4 max-w-lg text-base leading-7 text-muted-foreground">
+          Đăng nhập để tiếp tục xem trên mọi thiết bị, lưu phim yêu thích và tham gia phòng xem
+          chung cùng bạn bè.
+        </p>
         <div className="mt-8 grid max-w-lg grid-cols-2 gap-3 text-sm">
-          {["Đồng bộ tiến độ xem", "Phòng xem chung", "Bộ sưu tập cá nhân", "Thông báo tập mới"].map((item) => <div key={item} className="flex items-center gap-2"><Check className="h-4 w-4 text-gold" />{item}</div>)}
+          {[
+            "Đồng bộ tiến độ xem",
+            "Phòng xem chung",
+            "Bộ sưu tập cá nhân",
+            "Thông báo tập mới",
+          ].map((item) => (
+            <div key={item} className="flex items-center gap-2">
+              <Check className="h-4 w-4 text-gold" />
+              {item}
+            </div>
+          ))}
         </div>
       </section>
 
       <section>
-        <Link to="/" className="mb-5 inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Trang chủ</Link>
+        <Link
+          to="/"
+          className="mb-5 inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" /> Trang chủ
+        </Link>
         <div className="rounded-lg border border-border bg-card p-5 shadow-2xl md:p-7">
           {sentTo ? (
             <div className="text-center">
@@ -156,22 +244,41 @@ function AuthPage() {
               </div>
               <h1 className="mt-4 text-2xl font-black">Kiểm tra hộp thư của bạn</h1>
               <p className="mt-2 text-sm text-muted-foreground">
-                Chúng tôi đã gửi liên kết tới <span className="font-semibold text-foreground">{sentTo}</span>. Mở email và bấm vào liên kết để hoàn tất.
+                Chúng tôi đã gửi liên kết tới{" "}
+                <span className="font-semibold text-foreground">{sentTo}</span>. Mở email và bấm vào
+                liên kết để hoàn tất.
               </p>
               <div className="mt-6 space-y-2">
-                <Button type="button" onClick={resend} disabled={busy} className="w-full">
-                  {busy && <Loader2 className="h-4 w-4 animate-spin" />} Gửi lại email
+                <Button
+                  type="button"
+                  onClick={resend}
+                  disabled={busy || cooldown > 0}
+                  className="w-full"
+                >
+                  {busy && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {cooldown > 0 ? `Thử lại sau ${cooldown}s` : "Gửi lại email"}
                 </Button>
-                <Button type="button" variant="outline" onClick={() => setSentTo(null)} className="w-full">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setSentTo(null)}
+                  className="w-full"
+                >
                   Dùng email khác
                 </Button>
               </div>
-              <p className="mt-4 text-[11px] text-muted-foreground">Không thấy email? Hãy kiểm tra mục Spam / Quảng cáo.</p>
+              <p className="mt-4 text-[11px] text-muted-foreground">
+                Không thấy email? Hãy kiểm tra mục Spam / Quảng cáo.
+              </p>
             </div>
           ) : (
             <>
               <h1 className="text-2xl font-black">
-                {tab === "login" ? "Chào mừng trở lại" : tab === "signup" ? "Tạo tài khoản" : "Đăng nhập không mật khẩu"}
+                {tab === "login"
+                  ? "Chào mừng trở lại"
+                  : tab === "signup"
+                    ? "Tạo tài khoản"
+                    : "Đăng nhập không mật khẩu"}
               </h1>
               <p className="mt-1 text-sm text-muted-foreground">
                 {tab === "login"
@@ -188,7 +295,9 @@ function AuthPage() {
                     variant="ghost"
                     onClick={() => setTab(t)}
                     className={`rounded-md py-2 text-xs font-semibold transition sm:text-sm ${
-                      tab === t ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                      tab === t
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     {t === "login" ? "Đăng nhập" : t === "signup" ? "Đăng ký" : "Magic link"}
@@ -219,7 +328,23 @@ function AuthPage() {
                   />
                 </Field>
                 {tab !== "magic" && (
-                  <Field icon={<Lock className="h-4 w-4" />} action={<button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"} className="text-muted-foreground hover:text-foreground">{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button>}>
+                  <Field
+                    icon={<Lock className="h-4 w-4" />}
+                    action={
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((v) => !v)}
+                        aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    }
+                  >
                     <input
                       type={showPassword ? "text" : "password"}
                       required
@@ -244,21 +369,49 @@ function AuthPage() {
                     <span className="text-[11px] text-muted-foreground">{strength.label}</span>
                   </div>
                 )}
-                {tab === "login" && <button type="button" onClick={resetPassword} className="block w-full text-right text-xs text-primary hover:underline">Quên mật khẩu?</button>}
-                <Button type="submit" disabled={busy} className="w-full">
+                {tab === "login" && (
+                  <button
+                    type="button"
+                    onClick={resetPassword}
+                    className="block w-full text-right text-xs text-primary hover:underline"
+                  >
+                    Quên mật khẩu?
+                  </button>
+                )}
+                <Button type="submit" disabled={busy || cooldown > 0} className="w-full">
                   {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {tab === "login" ? "Đăng nhập" : tab === "signup" ? "Tạo tài khoản" : (<><Sparkles className="h-4 w-4" /> Gửi liên kết đăng nhập</>)}
+                  {cooldown > 0 ? (
+                    `Thử lại sau ${cooldown}s`
+                  ) : tab === "login" ? (
+                    "Đăng nhập"
+                  ) : tab === "signup" ? (
+                    "Tạo tài khoản"
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4" /> Gửi liên kết đăng nhập
+                    </>
+                  )}
                 </Button>
               </form>
 
               <div className="my-4 flex items-center gap-3 text-[11px] uppercase tracking-wider text-muted-foreground">
-                <span className="h-px flex-1 bg-border" /> hoặc <span className="h-px flex-1 bg-border" />
+                <span className="h-px flex-1 bg-border" /> hoặc{" "}
+                <span className="h-px flex-1 bg-border" />
               </div>
 
-              <Button type="button" variant="outline" onClick={handleGoogle} disabled={busy} className="w-full">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleGoogle}
+                disabled={busy || cooldown > 0}
+                className="w-full"
+              >
                 <GoogleIcon /> Tiếp tục với Google
               </Button>
-              <p className="mt-5 text-center text-[11px] leading-5 text-muted-foreground">Bằng việc tiếp tục, bạn đồng ý với điều khoản sử dụng và chính sách riêng tư của Lạc Việt Film.</p>
+              <p className="mt-5 text-center text-[11px] leading-5 text-muted-foreground">
+                Bằng việc tiếp tục, bạn đồng ý với điều khoản sử dụng và chính sách riêng tư của Lạc
+                Việt Film.
+              </p>
             </>
           )}
         </div>
@@ -267,7 +420,15 @@ function AuthPage() {
   );
 }
 
-function Field({ icon, children, action }: { icon: React.ReactNode; children: React.ReactNode; action?: React.ReactNode }) {
+function Field({
+  icon,
+  children,
+  action,
+}: {
+  icon: React.ReactNode;
+  children: React.ReactNode;
+  action?: React.ReactNode;
+}) {
   return (
     <div className="flex items-center gap-2 rounded-xl border border-border bg-background/60 px-3 py-2.5 focus-within:border-primary/60">
       <span className="text-muted-foreground">{icon}</span>
@@ -280,7 +441,10 @@ function Field({ icon, children, action }: { icon: React.ReactNode; children: Re
 function GoogleIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
-      <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.24 1.4-1.7 4.1-5.5 4.1a6.2 6.2 0 1 1 0-12.4c1.9 0 3.2.8 4 1.5l2.7-2.6C17 3 14.7 2 12 2a10 10 0 1 0 0 20c5.8 0 9.6-4 9.6-9.7 0-.7-.1-1.2-.2-1.7H12z" />
+      <path
+        fill="#EA4335"
+        d="M12 10.2v3.9h5.5c-.24 1.4-1.7 4.1-5.5 4.1a6.2 6.2 0 1 1 0-12.4c1.9 0 3.2.8 4 1.5l2.7-2.6C17 3 14.7 2 12 2a10 10 0 1 0 0 20c5.8 0 9.6-4 9.6-9.7 0-.7-.1-1.2-.2-1.7H12z"
+      />
     </svg>
   );
 }

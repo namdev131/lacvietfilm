@@ -2,7 +2,19 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
-import { Play, Info, History } from "lucide-react";
+import {
+  Play,
+  Info,
+  History,
+  Star,
+  ChevronRight,
+  Swords,
+  Heart,
+  Ghost,
+  Smile,
+  Brain,
+  Landmark,
+} from "lucide-react";
 import { fetchLatest, fetchLatestMerged } from "@/lib/api";
 import { MovieRow } from "@/components/MovieRow";
 import { GoldBoard } from "@/components/GoldBoard";
@@ -88,9 +100,12 @@ function Home() {
   const vietsub = (kk.data || []).filter((m) => (m.lang || "").toLowerCase().includes("vietsub"));
   const thuyetminh = (kk.data || []).filter((m) => (m.lang || "").toLowerCase().includes("thuyết"));
   const watchedHistory = (history ?? []).slice(0, 12);
+  const today = featured.slice(0, 5);
 
   return (
-    <div className="heritage-home">
+    <div className="heritage-home cinema-dashboard">
+      <div className="cinema-dashboard-grid">
+        <section className="cinema-dashboard-main">
       {/* Hero */}
       <section className="heritage-hero cinema-hero relative w-full overflow-hidden">
         {hero?.thumb || hero?.poster ? (
@@ -116,15 +131,15 @@ function Home() {
             className="max-w-2xl space-y-4"
           >
             <div className="hero-kicker inline-flex items-center gap-2 border border-primary/40 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-primary">
-              Đề cử Lạc Việt
+              Phim nổi bật
             </div>
             <h1 className="text-balance text-3xl font-black leading-tight tracking-tight md:text-5xl">
               {hero?.name || "Lạc Việt Film"}
             </h1>
             {hero?.origin_name && (
               <p className="cinema-hero-meta text-sm md:text-base">
-                {hero.origin_name} {hero.year ? `· ${hero.year}` : ""}{" "}
-                {hero.quality ? `· ${hero.quality}` : ""}
+                {hero.origin_name} {hero.year ? `• ${hero.year}` : ""}{" "}
+                {hero.quality ? `• ${hero.quality}` : ""}
               </p>
             )}
             <p className="max-w-xl text-sm text-white/80 md:text-base">Mở phim, chạm hồn Việt.</p>
@@ -136,7 +151,7 @@ function Home() {
                   search={{ src: hero.source, ep: 0, srv: 0 }}
                   className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/30 transition hover:bg-primary/90"
                 >
-                  <Play className="h-4 w-4 fill-current" /> Phát phim
+                  <Play className="h-4 w-4 fill-current" /> Xem ngay
                 </Link>
                 <Link
                   to="/movie/$slug"
@@ -152,28 +167,82 @@ function Home() {
         </div>
       </section>
 
-      {/* Source ping bar */}
-      <div className="heritage-source-bar mx-auto max-w-[1600px] px-4 pt-5 md:px-10">
+      <div className="heritage-source-bar pt-4">
         <div className="heritage-panel flex flex-wrap items-center justify-between gap-3 px-4 py-3">
           <SourcePing value={source} onChange={setSource} />
           <div className="text-[11px] text-muted-foreground">
-            Ping cập nhật mỗi 30s · Bấm để đổi nguồn phim mới
+            Cập nhật mỗi 30 giây
           </div>
         </div>
       </div>
+        </section>
 
-      <div className="home-content-rail mt-8 space-y-8 md:space-y-12">
-        <HomeHistoryRow title="Đã xem" items={watchedHistory} />
-        <MovieRow title="Phim mới" movies={featured} accent="cuộn ngang" />
+        <aside className="cinema-today" aria-labelledby="today-title">
+          <div className="cinema-today-heading">
+            <div><p>Được xem nhiều</p><h2 id="today-title">Top hôm nay</h2></div>
+            <Star className="h-5 w-5" aria-hidden="true" />
+          </div>
+          <div className="cinema-today-list">
+            {today.map((movie, index) => (
+              <Link key={`${movie.source}-${movie.slug}`} to="/movie/$slug" params={{ slug: movie.slug }} search={{ src: movie.source }} className="cinema-rank-row">
+                <strong>{String(index + 1).padStart(2, "0")}</strong>
+                <img src={movie.poster || movie.thumb} alt="" loading="lazy" />
+                <span><b>{movie.name}</b><small><Star className="h-3 w-3 fill-current" /> {movie.year || "Mới"}</small></span>
+                <ChevronRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            ))}
+          </div>
+          {!today.length && <div className="cinema-today-empty">Đang tải bảng xếp hạng…</div>}
+        </aside>
+      </div>
+
+      <div className="home-content-rail mt-7 space-y-8 md:space-y-10">
         <GoldBoard />
+        <HomeHistoryRow title="Tiếp tục xem" items={watchedHistory} />
+        <GenreShortcuts />
+        <MovieRow title="Mới cập nhật" movies={kk2.data || []} />
         <MovieRow title="Vietsub nổi bật" movies={vietsub.slice(0, 20)} />
         <MovieRow title="Thuyết Minh" movies={thuyetminh.slice(0, 20)} />
         <MovieRow title="Kho phim OPhim" movies={op.data || []} />
         <MovieRow title="Kho phim NguonC" movies={ng.data || []} />
         <MovieRow title="Kho phim VSMov" movies={vs.data || []} />
-        <MovieRow title="Đề xuất thêm" movies={kk2.data || []} />
+        <MovieRow title="Đề xuất thêm" movies={featured.slice().reverse()} />
       </div>
     </div>
+  );
+}
+
+const HOME_GENRES = [
+  { slug: "hanh-dong", label: "Hành động", icon: Swords },
+  { slug: "tinh-cam", label: "Tình cảm", icon: Heart },
+  { slug: "kinh-di", label: "Kinh dị", icon: Ghost },
+  { slug: "hai-huoc", label: "Hài hước", icon: Smile },
+  { slug: "tam-ly", label: "Tâm lý", icon: Brain },
+  { slug: "lich-su", label: "Lịch sử", icon: Landmark },
+] as const;
+
+function GenreShortcuts() {
+  return (
+    <section className="home-genres" aria-labelledby="home-genres-title">
+      <div className="shelf-heading mb-3 flex items-center justify-between">
+        <h2 id="home-genres-title">Danh mục</h2>
+        <Link to="/browse" className="text-xs text-muted-foreground hover:text-primary">Xem tất cả</Link>
+      </div>
+      <div className="scroll-row flex gap-3 overflow-x-auto pb-2">
+        {HOME_GENRES.map(({ slug, label, icon: Icon }) => (
+          <Link
+            key={slug}
+            to="/browse/$type/$value"
+            params={{ type: "the-loai", value: slug }}
+            search={{ page: 1, sort: "modified.time" as const, year: undefined }}
+            className="genre-shortcut"
+          >
+            <span><Icon className="h-5 w-5" /></span>
+            <b>{label}</b>
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }
 
