@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type ReactNode, type TouchEvent as ReactTouchEvent } from "react";
 import Hls from "hls.js";
 import {
   AlertTriangle, ChevronLeft, Film, Gauge, Maximize, Pause, PictureInPicture2, Play,
@@ -94,6 +94,8 @@ export function Player({
   const [quality, setQuality] = useState(preferredQuality);
   const [playing, setPlaying] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
+  const [brightness, setBrightness] = useState(1);
+  const [gestureHint, setGestureHint] = useState<string | null>(null);
   const [volume, setVolume] = useState(1);
   const [muted, setMuted] = useState(false);
   const [seekPreview, setSeekPreview] = useState<number | null>(null);
@@ -101,6 +103,8 @@ export function Player({
   const seekValueRef = useRef<number | null>(null);
   const seekingRef = useRef(false);
   const controlsTimerRef = useRef<number | null>(null);
+  const touchGestureRef = useRef<{ x: number; y: number; startValue: number; side: "left" | "right" } | null>(null);
+  const suppressClickRef = useRef(false);
   const progressRef = useRef(onProgress);
   progressRef.current = onProgress;
   const resumeRef = useRef(resumeAt);
@@ -410,12 +414,67 @@ export function Player({
     if (document.fullscreenElement) void document.exitFullscreen();
     else void frameRef.current?.requestFullscreen();
   };
-  const showPlayerControls = () => {
-    setControlsVisible(true);
-    if (controlsTimerRef.current !== null) window.clearTimeout(controlsTimerRef.current);
-    if (document.fullscreenElement) {
-      controlsTimerRef.current = window.setTimeout(() => setControlsVisible(false), 3000);
+  const togglePlayerControls = (event: ReactMouseEvent<HTMLDivElement>) => {
+    if ((event.target as HTMLElement).closest("button, input, [role='dialog']")) return;
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
+      return;
     }
+    if (controlsTimerRef.current !== null) window.clearTimeout(controlsTimerRef.current);
+    setControlsVisible((visible) => {
+      if (!visible && document.fullscreenElement) {
+        controlsTimerRef.current = window.setTimeout(() => setControlsVisible(false), 3000);
+      }
+      return !visible;
+    });
+  };
+  const beginTouchGesture = (event: ReactTouchEvent<HTMLDivElement>) => {
+    if (event.touches.length !== 1 || (event.target as HTMLElement).closest("button, input, [role='dialog']")) return;
+    const touch = event.touches[0];
+    const rect = event.currentTarget.getBoundingClientRect();
+    const side = touch.clientX < rect.left + rect.width / 2 ? "left" : "right";
+    touchGestureRef.current = {
+      x: touch.clientX,
+      y: touch.clientY,
+      side,
+      startValue: side === "right" ? videoRef.current?.volume ?? volume : brightness,
+    };
+    suppressClickRef.current = false;
+  };
+  const updateTouchGesture = (event: ReactTouchEvent<HTMLDivElement>) => {
+    const gesture = touchGestureRef.current;
+    if (!gesture || event.touches.length !== 1) return;
+    const touch = event.touches[0];
+    const deltaY = gesture.y - touch.clientY;
+    if (Math.abs(deltaY) < 8 || Math.abs(deltaY) < Math.abs(touch.clientX - gesture.x)) return;
+    event.preventDefault();
+    suppressClickRef.current = true;
+    const height = Math.max(1, event.currentTarget.getBoundingClientRect().height);
+    const value = Math.max(0, Math.min(gesture.side === "right" ? 1 : 1.5, gesture.startValue + deltaY / height));
+    if (gesture.side === "right") {
+      if (videoRef.current) {
+        videoRef.current.volume = value;
+        videoRef.current.muted = false;
+      }
+      setVolume(value);
+      setMuted(false);
+      setGestureHint(`Âm lượng ${Math.round(value * 100)}%`);
+    } else {
+      const nextBrightness = Math.max(0.3, value);
+      setBrightness(nextBrightness);
+      setGestureHint(`Độ sáng ${Math.round(nextBrightness * 100)}%`);
+    }
+  };
+  const endTouchGesture = () => {
+    touchGestureRef.current = null;
+    window.setTimeout(() => setGestureHint(null), 500);
+  };
+  const handleDoubleTap = (event: ReactMouseEvent<HTMLDivElement>) => {
+    if ((event.target as HTMLElement).closest("button, input, [role='dialog']")) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    seekBy(event.clientX < rect.left + rect.width / 2 ? -10 : 10);
+    setGestureHint(event.clientX < rect.left + rect.width / 2 ? "Tua lại 10 giây" : "Tua tới 10 giây");
+    window.setTimeout(() => setGestureHint(null), 500);
   };
   useEffect(() => {
     const onFullscreenChange = () => {
@@ -453,7 +512,12 @@ export function Player({
     <div className={fill ? "flex h-full flex-col" : "space-y-3"}>
       <div
         ref={frameRef}
-        onClick={showPlayerControls}
+        onClick={togglePlayerControls}
+        onDoubleClick={handleDoubleTap}
+        onTouchStart={beginTouchGesture}
+        onTouchMove={updateTouchGesture}
+        onTouchEnd={endTouchGesture}
+        onTouchCancel={endTouchGesture}
         className={`player-frame relative overflow-hidden bg-black ${
           fill ? "h-full w-full rounded-lg ring-1 ring-border/60" : "aspect-video rounded-lg ring-1 ring-border/60"
         }`}
@@ -468,7 +532,7 @@ export function Player({
             playsInline
             poster={poster}
             className="h-full w-full object-contain"
-            onDoubleClick={requestFull}
+            style={{ filter: `brightness(${brightness})` }}
             onPlay={() => setPlaying(true)}
             onPause={() => setPlaying(false)}
             onVolumeChange={(e) => {
@@ -549,6 +613,12 @@ export function Player({
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {gestureHint && (
+          <div className="pointer-events-none absolute inset-0 z-40 grid place-items-center" aria-live="polite">
+            <span className="rounded-lg bg-black/75 px-4 py-2 text-sm font-semibold text-white backdrop-blur">{gestureHint}</span>
           </div>
         )}
 
