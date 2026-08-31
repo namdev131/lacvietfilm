@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Hls from "hls.js";
 import {
-  AlertTriangle, Check, ChevronLeft, Film, Gauge, Maximize, Pause, Play,
-  RotateCcw, RotateCw, Settings2, SkipForward, Volume2, VolumeX, Zap,
+  AlertTriangle, ChevronLeft, Film, Gauge, Maximize, Pause, PictureInPicture2, Play,
+  RadioTower, RotateCcw, RotateCw, Settings2, SkipForward, Volume2, VolumeX, Zap,
 } from "lucide-react";
 import { beginNextEpisode, cancelNextEpisode, tickNextEpisode, type NextEpisodeState } from "@/lib/nextEpisode";
 
@@ -39,6 +39,9 @@ export function Player({
   title,
   episodeLabel,
   overlay,
+  sources = [],
+  currentSource,
+  onSourceChange,
 }: {
   m3u8?: string;
   embed?: string;
@@ -74,6 +77,9 @@ export function Player({
   episodeLabel?: string;
   /** Nội dung phải nằm trong fullscreen element, ví dụ thông báo chat Watch Party. */
   overlay?: ReactNode;
+  sources?: { id: string; label: string }[];
+  currentSource?: string;
+  onSourceChange?: (source: string) => void;
 }) {
   const frameRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -87,12 +93,14 @@ export function Player({
   const [rate, setRate] = useState(defaultRate);
   const [quality, setQuality] = useState(preferredQuality);
   const [playing, setPlaying] = useState(false);
+  const [controlsVisible, setControlsVisible] = useState(true);
   const [volume, setVolume] = useState(1);
   const [muted, setMuted] = useState(false);
   const [seekPreview, setSeekPreview] = useState<number | null>(null);
   const seekFrameRef = useRef<number | null>(null);
   const seekValueRef = useRef<number | null>(null);
   const seekingRef = useRef(false);
+  const controlsTimerRef = useRef<number | null>(null);
   const progressRef = useRef(onProgress);
   progressRef.current = onProgress;
   const resumeRef = useRef(resumeAt);
@@ -402,11 +410,50 @@ export function Player({
     if (document.fullscreenElement) void document.exitFullscreen();
     else void frameRef.current?.requestFullscreen();
   };
+  const showPlayerControls = () => {
+    setControlsVisible(true);
+    if (controlsTimerRef.current !== null) window.clearTimeout(controlsTimerRef.current);
+    if (document.fullscreenElement) {
+      controlsTimerRef.current = window.setTimeout(() => setControlsVisible(false), 3000);
+    }
+  };
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      const isPlayerFullscreen = document.fullscreenElement === frameRef.current;
+      setControlsVisible(true);
+      if (controlsTimerRef.current !== null) window.clearTimeout(controlsTimerRef.current);
+
+      if (isPlayerFullscreen && window.matchMedia("(max-width: 767px)").matches) {
+        void (screen.orientation as ScreenOrientation & { lock?: (orientation: string) => Promise<void> })
+          .lock?.("landscape")
+          .catch(() => {});
+      } else {
+        (screen.orientation as ScreenOrientation & { unlock?: () => void }).unlock?.();
+      }
+    };
+
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
+      if (controlsTimerRef.current !== null) window.clearTimeout(controlsTimerRef.current);
+    };
+  }, []);
+  const requestPip = async () => {
+    const video = videoRef.current;
+    if (!video || !("requestPictureInPicture" in video)) return;
+    if (document.pictureInPictureElement) await document.exitPictureInPicture();
+    else await video.requestPictureInPicture();
+  };
+  const requestCast = async () => {
+    const video = videoRef.current as HTMLVideoElement & { remote?: { prompt: () => Promise<void> } };
+    await video?.remote?.prompt?.();
+  };
 
   return (
     <div className={fill ? "flex h-full flex-col" : "space-y-3"}>
       <div
         ref={frameRef}
+        onClick={showPlayerControls}
         className={`player-frame relative overflow-hidden bg-black ${
           fill ? "h-full w-full rounded-lg ring-1 ring-border/60" : "aspect-video rounded-lg ring-1 ring-border/60"
         }`}
@@ -421,7 +468,6 @@ export function Player({
             playsInline
             poster={poster}
             className="h-full w-full object-contain"
-            onClick={togglePlay}
             onDoubleClick={requestFull}
             onPlay={() => setPlaying(true)}
             onPause={() => setPlaying(false)}
@@ -452,7 +498,7 @@ export function Player({
         )}
 
         {inHls && (
-          <div className="player-chrome group/player absolute inset-0 z-10 flex flex-col justify-between opacity-100 md:opacity-0 md:hover:opacity-100 md:focus-within:opacity-100">
+          <div className={`player-chrome group/player absolute inset-0 z-10 flex flex-col justify-between transition-opacity md:hover:opacity-100 md:focus-within:opacity-100 ${controlsVisible ? "opacity-100" : "pointer-events-none opacity-0"}`}>
             <div className="player-topbar flex items-start justify-between gap-3 p-3 md:p-4">
               <div className="flex min-w-0 items-center gap-3">
                 <button type="button" onClick={() => history.back()} aria-label="Quay lại" className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/15 bg-black/45 text-white backdrop-blur hover:border-amber-400/60">
@@ -554,45 +600,35 @@ export function Player({
           </div>
         )}
 
-        {/* Chất lượng & tốc độ */}
+        {/* Trung tâm điều khiển Player */}
         {inHls && menu && (
           <div className="absolute bottom-20 right-3 z-30 md:right-5">
-              <div className="w-44 overflow-hidden rounded-xl border border-white/15 bg-black/90 p-1.5 text-white backdrop-blur">
-                <p className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-white/50">
-                  <Settings2 className="h-3 w-3" /> Chất lượng
-                </p>
-                {["auto", ...levels.map((l) => String(l.height))].map((q) => (
-                  <button
-                    key={q}
-                    type="button"
-                    onClick={() => applyQuality(q)}
-                    className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-xs hover:bg-white/10"
-                  >
-                    <span>{q === "auto" ? "Tự động" : `${q}p`}</span>
-                    {quality === q && <Check className="h-3.5 w-3.5 text-primary" />}
-                  </button>
+            <div role="dialog" aria-label="Trung tâm điều khiển Player" className="max-h-[min(32rem,70vh)] w-[min(22rem,calc(100vw-1.5rem))] overflow-y-auto rounded-xl border border-white/15 bg-black/90 p-3 text-white shadow-2xl backdrop-blur">
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[.18em] text-amber-300">Trải nghiệm xem</p>
+              <p className="flex items-center gap-1.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white/50"><Settings2 className="h-3 w-3" /> Chất lượng</p>
+              <div className="grid grid-cols-4 gap-1">
+                {["auto", ...levels.map((level) => String(level.height))].map((value) => (
+                  <button key={value} type="button" onClick={() => applyQuality(value)} className={`rounded-md px-2 py-1.5 text-xs ${quality === value ? "bg-primary text-primary-foreground" : "bg-white/10 hover:bg-white/20"}`}>{value === "auto" ? "Tự động" : `${value}p`}</button>
                 ))}
-                {levels.length === 0 && (
-                  <p className="px-2 py-1 text-[11px] text-white/40">Nguồn chỉ có 1 mức chất lượng</p>
-                )}
-                <p className="mt-1 flex items-center gap-1.5 border-t border-white/10 px-2 pb-1 pt-2 text-[10px] font-bold uppercase tracking-widest text-white/50">
-                  <Gauge className="h-3 w-3" /> Tốc độ
-                </p>
-                <div className="flex flex-wrap gap-1 px-1 pb-1">
-                  {RATES.map((r) => (
-                    <button
-                      key={r}
-                      type="button"
-                      onClick={() => applyRate(r)}
-                      className={`rounded-md px-2 py-1 text-[11px] font-semibold transition ${
-                        rate === r ? "bg-primary text-primary-foreground" : "bg-white/10 hover:bg-white/20"
-                      }`}
-                    >
-                      {r}x
-                    </button>
-                  ))}
-                </div>
               </div>
+              {levels.length === 0 && <p className="py-1 text-[11px] text-white/40">Nguồn chỉ có 1 mức chất lượng</p>}
+              {sources.length > 0 && <>
+                <p className="mt-2 border-t border-white/10 pb-1 pt-2 text-[10px] font-bold uppercase tracking-widest text-white/50">Nguồn</p>
+                <div className="flex flex-wrap gap-1">{sources.map((source) => <button key={source.id} type="button" onClick={() => onSourceChange?.(source.id)} className={`rounded-md px-2 py-1 text-[11px] font-semibold ${currentSource === source.id ? "bg-primary text-primary-foreground" : "bg-white/10 hover:bg-white/20"}`}>{source.label}</button>)}</div>
+              </>}
+              <p className="mt-2 flex items-center gap-1.5 border-t border-white/10 pb-1 pt-2 text-[10px] font-bold uppercase tracking-widest text-white/50"><Gauge className="h-3 w-3" /> Tốc độ</p>
+              <div className="flex flex-wrap gap-1">{RATES.map((value) => <button key={value} type="button" onClick={() => applyRate(value)} className={`rounded-md px-2 py-1 text-[11px] font-semibold ${rate === value ? "bg-primary text-primary-foreground" : "bg-white/10 hover:bg-white/20"}`}>{value}x</button>)}</div>
+              <p className="mt-2 border-t border-white/10 pb-1 pt-2 text-[10px] font-bold uppercase tracking-widest text-white/50">Âm thanh</p>
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={toggleMute} className="grid h-8 w-8 place-items-center rounded-md bg-white/10" aria-label="Bật / Tắt âm">{muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}</button>
+                <input type="range" min={0} max={1} step={0.05} value={muted ? 0 : volume} onChange={(event) => { const value = Number(event.target.value); if (videoRef.current) { videoRef.current.volume = value; videoRef.current.muted = false; } setVolume(value); setMuted(false); }} aria-label="Âm lượng trong trung tâm điều khiển" className="h-1 flex-1 accent-amber-400" />
+              </div>
+              <div className="mt-3 grid grid-cols-3 gap-1 border-t border-white/10 pt-3">
+                <button type="button" onClick={() => void requestPip()} disabled={!videoRef.current || !("requestPictureInPicture" in videoRef.current)} className="inline-flex items-center justify-center gap-1 rounded-md bg-white/10 px-2 py-2 text-[11px] disabled:opacity-35"><PictureInPicture2 className="h-3.5 w-3.5" /> PiP</button>
+                <button type="button" onClick={() => void requestCast()} disabled={!((videoRef.current as HTMLVideoElement & { remote?: unknown } | null)?.remote)} className="inline-flex items-center justify-center gap-1 rounded-md bg-white/10 px-2 py-2 text-[11px] disabled:opacity-35"><RadioTower className="h-3.5 w-3.5" /> Cast</button>
+                <button type="button" onClick={requestFull} className="inline-flex items-center justify-center gap-1 rounded-md bg-white/10 px-2 py-2 text-[11px]"><Maximize className="h-3.5 w-3.5" /> Toàn màn hình</button>
+              </div>
+            </div>
           </div>
         )}
 
