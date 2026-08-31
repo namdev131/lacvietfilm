@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import {
   History, Home, Heart, User, Compass, Flame, CalendarClock,
   Library, Bookmark, Settings as SettingsIcon, LogIn, Bell, Mail, Users,
+  PanelLeftClose, PanelLeftOpen, Pin,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -49,6 +50,9 @@ const items: DockItem[] = [
   { key: "me", to: "/me", label: "Tôi", icon: User, menu: "me" },
 ];
 
+type DesktopDockMode = "shown" | "auto" | "hidden";
+const DESKTOP_DOCK_MODE_KEY = "lv-desktop-dock-mode";
+
 function tap() {
   try { navigator.vibrate?.(8); } catch { /* ignore */ }
 }
@@ -59,14 +63,30 @@ export function DockBar() {
   const [panel, setPanel] = useState<"social" | null>(null);
   const [hidden, setHidden] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [desktopMode, setDesktopMode] = useState<DesktopDockMode>("shown");
+  const [desktopHovered, setDesktopHovered] = useState(false);
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    const saved = localStorage.getItem(DESKTOP_DOCK_MODE_KEY);
+    if (saved === "shown" || saved === "auto" || saved === "hidden") setDesktopMode(saved);
+    setMounted(true);
+  }, []);
+  useEffect(() => {
+    if (!mounted) return;
+    localStorage.setItem(DESKTOP_DOCK_MODE_KEY, desktopMode);
+    document.documentElement.dataset.desktopDock = desktopMode;
+    return () => { delete document.documentElement.dataset.desktopDock; };
+  }, [desktopMode, mounted]);
   useEffect(() => { setOpen(null); }, [pathname]);
 
-  // Ẩn dock khi cuộn xuống, hiện lại khi cuộn lên
+  // Chỉ tự ẩn bottom bar trên mobile.
   useEffect(() => {
     let last = window.scrollY;
     const onScroll = () => {
+      if (window.innerWidth >= 1024) {
+        setHidden(false);
+        return;
+      }
       const y = window.scrollY;
       if (Math.abs(y - last) > 12) {
         setHidden(y > last && y > 120);
@@ -100,7 +120,7 @@ export function DockBar() {
               exit={{ y: 30, opacity: 0 }}
               transition={{ type: "spring", stiffness: 380, damping: 32 }}
               onClick={(e) => e.stopPropagation()}
-              className="absolute inset-x-0 bottom-[104px] mx-auto w-full max-w-md px-4"
+              className="dock-menu-position absolute inset-x-0 bottom-[104px] mx-auto w-full max-w-md px-4"
             >
               <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
                 <div className="border-b border-border/60 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-muted-foreground">
@@ -174,6 +194,12 @@ export function DockBar() {
       </AnimatePresence>
 
       <motion.nav
+        data-dockbar
+        data-desktop-mode={desktopMode}
+        data-desktop-open={desktopHovered || Boolean(menu) ? "true" : "false"}
+        aria-label="Điều hướng chính"
+        onMouseEnter={() => setDesktopHovered(true)}
+        onMouseLeave={() => { if (!menu) setDesktopHovered(false); }}
         animate={{ y: hidden && !menu ? 120 : 0, opacity: hidden && !menu ? 0 : 1 }}
         transition={{ type: "spring", stiffness: 320, damping: 30 }}
         className="dock-shell fixed inset-x-0 bottom-0 z-50 flex justify-center pb-[env(safe-area-inset-bottom)]"
@@ -195,14 +221,14 @@ export function DockBar() {
                   to={item.to}
                   aria-label={item.label}
                   onClick={() => { tap(); setOpen(null); }}
-                  className="group relative -mt-7 flex min-w-0 flex-col items-center gap-1"
+                  className="dock-item dock-home group relative -mt-7 flex min-w-0 flex-col items-center gap-1"
                 >
                   <motion.span
                     whileTap={{ scale: 0.88 }}
                     whileHover={{ scale: 1.06, rotate: -4 }}
                     animate={active ? { y: [0, -3, 0] } : { y: 0 }}
                     transition={{ duration: 0.35, ease: "easeOut" }}
-                    className={`flex h-14 w-14 items-center justify-center rounded-full ring-4 ring-background transition ${
+                    className={`dock-home-icon flex h-14 w-14 items-center justify-center rounded-full ring-4 ring-background transition ${
                       active
                         ? "bg-primary text-primary-foreground"
                         : "bg-secondary text-muted-foreground group-hover:text-foreground"
@@ -246,7 +272,7 @@ export function DockBar() {
               </>
             );
 
-            const cls = "relative flex min-w-0 flex-col items-center gap-1 rounded-xl px-0.5 py-1.5";
+            const cls = "dock-item relative flex min-w-0 flex-col items-center gap-1 rounded-xl px-0.5 py-1.5";
 
             if (group) {
               return (
@@ -286,6 +312,18 @@ export function DockBar() {
             ) : null;
           })}
         </div>
+        <div className="desktop-dock-controls" aria-label="Tùy chọn thanh điều hướng">
+          <button type="button" aria-pressed={desktopMode === "auto"} title={desktopMode === "auto" ? "Tắt tự ẩn" : "Tự động ẩn"} onClick={() => setDesktopMode((mode) => mode === "auto" ? "shown" : "auto")}>
+            <Pin className="h-4 w-4" /><span>Auto</span>
+          </button>
+          <button type="button" title="Ẩn thanh điều hướng" onClick={() => setDesktopMode("hidden")}>
+            <PanelLeftClose className="h-4 w-4" /><span>Ẩn</span>
+          </button>
+        </div>
+        <button type="button" className="desktop-dock-reveal" aria-label="Hiện thanh điều hướng" title="Hiện thanh điều hướng" onClick={() => setDesktopMode("shown")}>
+          <PanelLeftOpen className="h-4 w-4" />
+        </button>
+        <span className="desktop-dock-edge" aria-hidden="true" />
       </motion.nav>
     </>,
     document.body,
