@@ -132,6 +132,8 @@
   pointer-events: none;
   background: radial-gradient(ellipse at 50% 115%, color-mix(in oklch, var(--primary) 12%, transparent), transparent 58%);
 }
+
+
 .skip-link {
   position: fixed;
   left: 1rem;
@@ -791,15 +793,23 @@ html.tizen-tv [data-dockbar] {
     border-radius: .7rem;
     pointer-events: auto;
   }
-  .dock-home-icon {
+  .dock-bar > a:nth-child(4) > span:first-child {
     width: 2.15rem;
     height: 2.15rem;
-    color: inherit;
-    border: 0;
-    background: transparent !important;
+    color: var(--primary-foreground) !important;
+    border: 1px solid color-mix(in oklch, var(--primary) 72%, var(--border));
+    background: var(--primary) !important;
     box-shadow: none;
     --tw-ring-shadow: 0 0 #0000;
   }
+  .dock-bar > a:nth-child(4) {
+    border: 1px solid color-mix(in oklch, var(--primary) 42%, var(--border));
+    color: var(--primary);
+    background: color-mix(in oklch, var(--primary) 13%, var(--card));
+  }
+  .dock-bar > a:nth-child(4):hover,
+  .dock-bar > a:nth-child(4):focus-visible { border-color: var(--primary); background: color-mix(in oklch, var(--primary) 20%, var(--card)); }
+  .dock-bar > a:nth-child(4) > span:last-child { color: var(--primary) !important; font-weight: 800; }
   .dock-home-icon svg { width: 1.3rem; height: 1.3rem; }
   .dock-item > span[class*="absolute inset-0"] { inset: .15rem; border-radius: .7rem; }
   .dock-item > span[class*="-top-0.5"] { top: 50%; right: -.15rem; left: auto; width: 2px; height: 1.4rem; transform: translateY(-50%); border-radius: 999px; }
