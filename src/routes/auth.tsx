@@ -109,7 +109,7 @@ function AuthPage() {
         const role = staffRole(data.user);
         toast.success(
           role === "admin"
-            ? "Chào mừng Lạc Việt Admin"
+            ? "Chào mừng Nhím Admin"
             : role === "deputy_admin"
               ? "Chào mừng Phó Admin Lạc Việt"
               : "Chào mừng trở lại!",

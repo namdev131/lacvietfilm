@@ -377,7 +377,7 @@ function PartyPage() {
                 const mine = m.user_id === user?.id;
                 return (
                   <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                    <div className={`staff-${m.display_name === "Lạc Việt Admin" ? "admin" : m.display_name === "Phó Admin Lạc Việt" ? "deputy_admin" : "member"} max-w-[80%] rounded-2xl border px-3 py-2 text-sm ${mine ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+                    <div className={`staff-${m.display_name === "Nhím Admin" ? "admin" : m.display_name === "Phó Admin Lạc Việt" ? "deputy_admin" : "member"} max-w-[80%] rounded-2xl border px-3 py-2 text-sm ${mine ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
                       {!mine && <div className="text-[11px] font-bold text-primary">{m.display_name}</div>}
                       <div className="whitespace-pre-wrap break-words">{m.content}</div>
                     </div>

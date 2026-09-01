@@ -5,7 +5,7 @@ const admin = readFileSync(new URL("../src/routes/admin.tsx", import.meta.url), 
 const party = readFileSync(new URL("../src/routes/party.$code.tsx", import.meta.url), "utf8");
 const hook = readFileSync(new URL("../src/hooks/useWatchParty.ts", import.meta.url), "utf8");
 const must = (ok, message) => { if (!ok) throw new Error(message); };
-for (const token of ["Lạc Việt Admin", "deputy_admin", "staffRole", "staffLabel"]) must(role.includes(token), `Role thiếu ${token}`);
+for (const token of ["Nhím Admin", "deputy_admin", "staffRole", "staffLabel"]) must(role.includes(token), `Role thiếu ${token}`);
 for (const token of ["setDeputy", "Chỉ Admin chính", "Không thể thao tác với Admin chính", "raw_app_meta_data"]) must(api.includes(token), `API thiếu ${token}`);
 must(admin.includes("Phó Admin"), "Dashboard thiếu điều khiển Phó Admin");
 for (const token of ['event: "join"', "newPresences", "channel.track({ id", "staffNotice"]) must(hook.includes(token), `Presence thiếu ${token}`);

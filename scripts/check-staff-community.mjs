@@ -13,6 +13,6 @@ must(party.includes("activityNotice"), "Thiếu thông báo hoạt động riên
 must(hook.includes("event: \"join\"") && hook.includes("newPresences"), "Presence join sai");
 must(admin.includes("Thống kê cộng đồng") && admin.includes("Vào phòng"), "Dashboard thiếu thống kê/thao tác phòng");
 must(api.includes("message_count") && api.includes("member_count"), "Admin API thiếu thống kê phòng");
-must(auth.includes("Chào mừng Lạc Việt Admin") && auth.includes("Chào mừng Phó Admin Lạc Việt"), "Thông báo đăng nhập staff chưa riêng");
+must(auth.includes("Chào mừng Nhím Admin") && auth.includes("Chào mừng Phó Admin Lạc Việt"), "Thông báo đăng nhập staff chưa riêng");
 must(styles.includes(".staff-admin") && styles.includes(".staff-deputy_admin"), "Thiếu CSS vai trò");
 console.log("staff community contract: PASS");

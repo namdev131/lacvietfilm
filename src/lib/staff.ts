@@ -9,7 +9,7 @@ export function staffRole(user: Pick<User, "email" | "app_metadata"> | null | un
 }
 
 export function staffLabel(role: StaffRole, fallback = "Khán giả") {
-  if (role === "admin") return "Lạc Việt Admin";
+  if (role === "admin") return "Nhím Admin";
   if (role === "deputy_admin") return "Phó Admin Lạc Việt";
   return fallback;
 }
