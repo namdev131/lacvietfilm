@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Download, CheckCircle2, WifiOff, Trash2 } from "lucide-react";
+import { BrandName } from "@/components/BrandName";
 import { toast } from "sonner";
 
 type BipEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> };
@@ -84,7 +85,7 @@ export function InstallAppCard() {
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/60 bg-card/60 p-3">
         <div className="min-w-0">
           <p className="text-sm font-semibold">
-            {installed ? "Đã cài trên thiết bị này" : "Cài Lạc Việt Film như ứng dụng"}
+            {installed ? "Đã cài trên thiết bị này" : <>Cài <BrandName /> như ứng dụng</>}
           </p>
           <p className="text-xs text-muted-foreground">
             Mở nhanh từ màn hình chính, chạy toàn màn hình, xem lại poster & danh sách cả khi mạng yếu.

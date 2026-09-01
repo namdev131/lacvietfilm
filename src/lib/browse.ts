@@ -56,6 +56,48 @@ export interface BrowseResult {
   title?: string;
 }
 
+export type HomeShelf = "china-3d-animation" | "korea" | "china" | "vietnam";
+
+type HomeShelfMovie = {
+  slug: string;
+  name: string;
+  origin_name?: string;
+  poster_url?: string;
+  thumb_url?: string;
+  year?: number;
+  quality?: string;
+  lang?: string;
+  episode_current?: string;
+};
+
+/** Danh mục chọn lọc cho trang chủ, dùng một API thay vì nhân bản bộ tải. */
+export async function fetchHomeShelf(shelf: HomeShelf): Promise<MovieCard[]> {
+  const config: Record<HomeShelf, { path: string; country?: string }> = {
+    "china-3d-animation": { path: "danh-sach/hoat-hinh", country: "trung-quoc" },
+    korea: { path: "quoc-gia/han-quoc" },
+    china: { path: "quoc-gia/trung-quoc" },
+    vietnam: { path: "quoc-gia/viet-nam" },
+  };
+  const { path, country } = config[shelf];
+  const params = new URLSearchParams({ page: "1", limit: "20", sort_field: "modified.time", sort_type: "desc" });
+  if (country) params.set("country", country);
+  const r = await fetch(`https://phimapi.com/v1/api/${path}?${params}`);
+  if (!r.ok) throw new Error(`Không thể tải danh mục ${shelf}`);
+  const j = await r.json();
+  return ((j?.data?.items || []) as HomeShelfMovie[]).map((m): MovieCard => ({
+    slug: m.slug,
+    name: m.name,
+    origin_name: m.origin_name,
+    poster: kkImg(m.poster_url),
+    thumb: kkImg(m.thumb_url),
+    year: m.year,
+    quality: m.quality,
+    lang: m.lang,
+    episode_current: m.episode_current,
+    source: "kkphim",
+  }));
+}
+
 /** Duyệt phim theo thể loại / quốc gia / năm (nguồn KKPhim, có bộ lọc + sắp xếp) */
 export async function fetchBrowse(opts: {
   type: BrowseType;

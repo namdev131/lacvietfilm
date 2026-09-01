@@ -44,7 +44,7 @@ export interface Settings {
 }
 
 export const DEFAULT_SETTINGS: Settings = {
-  theme: "system",
+  theme: "dark",
   defaultSource: "all",
   langPref: "auto",
   defaultMode: "hls",

@@ -32,6 +32,27 @@ export interface PartyMessage {
   created_at: string;
 }
 
+export const ACTIVE_PARTY_KEY = "lv-active-watch-party";
+export type ActiveParty = Pick<Party, "code" | "name">;
+
+export function saveActiveParty(party: ActiveParty) {
+  try {
+    localStorage.setItem(ACTIVE_PARTY_KEY, JSON.stringify(party));
+    window.dispatchEvent(new Event("active-party-change"));
+  } catch {
+    /* ignore */
+  }
+}
+
+export function clearActiveParty() {
+  try {
+    localStorage.removeItem(ACTIVE_PARTY_KEY);
+    window.dispatchEvent(new Event("active-party-change"));
+  } catch {
+    /* ignore */
+  }
+}
+
 async function partyApi(body: Record<string, unknown>) {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error("Bạn cần đăng nhập");
@@ -84,6 +105,11 @@ export function useParty(code: string) {
   });
 
   const id = query.data?.id;
+  useEffect(() => {
+    if (query.data && !query.data.closed) saveActiveParty(query.data);
+    else if (query.data?.closed) clearActiveParty();
+  }, [query.data?.code, query.data?.name, query.data?.closed]);
+
   useEffect(() => {
     if (!id) return;
     const channel = supabase

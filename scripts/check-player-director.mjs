@@ -1,0 +1,13 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+const player = readFileSync(new URL("../src/components/Player.tsx", import.meta.url), "utf8");
+const movie = readFileSync(new URL("../src/routes/movie.$slug.tsx", import.meta.url), "utf8");
+const director = readFileSync(new URL("../src/routes/director.$name.tsx", import.meta.url), "utf8");
+for (const label of ["Trung tâm điều khiển Player", "Chất lượng", "Nguồn", "Tốc độ", "Âm thanh", "PiP", "Cast", "Toàn màn hình"]) assert(player.includes(label), `Thiếu ${label}`);
+for (const hook of ["player-center-play", "player-quality-badge", "player-play-button", "player-settings-pop"]) assert(player.includes(hook), `Thiếu giao diện Cinevora: ${hook}`);
+assert(player.includes("requestPictureInPicture"));
+assert(player.includes("remote?.prompt"));
+assert(movie.includes('to="/director/$name"'));
+assert(director.includes('createFileRoute("/director/$name")'));
+assert(director.includes("moviesByDirector"));
+console.log("player + director contract: PASS");

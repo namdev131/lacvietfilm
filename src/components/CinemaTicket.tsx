@@ -3,6 +3,7 @@ import { Expand, Film, Ticket, UserRound } from "lucide-react";
 import { createTicketCode } from "@/lib/tickets";
 import type { SourceId } from "@/lib/types";
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { BrandName } from "@/components/BrandName";
 
 export function CinemaTicket({
   slug,
@@ -30,7 +31,7 @@ export function CinemaTicket({
         {poster ? <img src={poster} alt="" loading="lazy" /> : <Film className="h-6 w-6" />}
       </div>
       <div className="ticket-body">
-        <div className="ticket-brand"><Ticket className="h-3.5 w-3.5" /> Lạc Việt Film</div>
+        <div className="ticket-brand"><Ticket className="h-3.5 w-3.5" /> <BrandName /></div>
         <h3 title={name}>{name}</h3>
         <div className="ticket-meta">
           <span><UserRound className="h-3.5 w-3.5" /> {owner}</span>

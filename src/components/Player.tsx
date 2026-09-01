@@ -5,6 +5,7 @@ import {
   RadioTower, RotateCcw, RotateCw, Settings2, SkipForward, Unlock, Volume2, VolumeX, Zap,
 } from "lucide-react";
 import { beginNextEpisode, cancelNextEpisode, tickNextEpisode, type NextEpisodeState } from "@/lib/nextEpisode";
+import { BrandName } from "@/components/BrandName";
 
 export type PlayMode = "hls" | "embed";
 
@@ -530,7 +531,7 @@ export function Player({
         {overlay}
         <div className="player-brand-watermark pointer-events-none absolute right-3 top-3 z-20 inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/40 px-2.5 py-1.5 text-[10px] font-bold text-white/85 backdrop-blur-md">
           <img src={PLAYER_LOGO} alt="" className="h-5 w-5 rounded object-contain" />
-          <span>Lạc Việt Film</span>
+          <BrandName />
         </div>
         {mode === "hls" && canHls && (
           <video
@@ -571,19 +572,31 @@ export function Player({
         )}
 
         {inHls && (
+          <button
+            type="button"
+            onClick={togglePlay}
+            aria-label="Phát video"
+            className={`player-center-play absolute left-1/2 top-1/2 z-20 grid h-[4.6rem] w-[4.6rem] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full text-white transition ${playing || locked ? "pointer-events-none scale-75 opacity-0" : "opacity-100"}`}
+          >
+            <Play className="ml-1 h-8 w-8 fill-current" />
+          </button>
+        )}
+
+        {inHls && (
           <div className={`player-chrome group/player absolute inset-0 z-10 flex flex-col justify-between transition-opacity md:hover:opacity-100 md:focus-within:opacity-100 ${controlsVisible && !locked ? "opacity-100" : "pointer-events-none opacity-0"}`}>
             <div className="player-topbar flex items-start justify-between gap-3 p-3 md:p-4">
               <div className="flex min-w-0 items-center gap-3">
                 <button type="button" onClick={() => history.back()} aria-label="Quay lại" className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/15 bg-black/45 text-white backdrop-blur hover:border-amber-400/60">
                   <ChevronLeft className="h-5 w-5" />
                 </button>
-                {poster && <img src={poster} alt="" className="player-title-poster h-12 w-8 shrink-0 rounded object-cover ring-1 ring-white/20" />}
                 <div className="min-w-0 text-white">
-                  <p className="truncate text-sm font-semibold md:text-base">{title || "Lạc Việt Film"}{episodeLabel ? ` · ${episodeLabel}` : ""}</p>
-                  <p className="mt-0.5 hidden truncate text-[11px] text-white/55 sm:block">Phim bộ › {title || "Đang phát"} › {episodeLabel || "Tập hiện tại"}</p>
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="player-quality-badge shrink-0 rounded-md px-2 py-1 text-[10px] font-black uppercase tracking-wide">{quality === "auto" ? "Auto" : `${quality}p`}</span>
+                    <p className="truncate text-xs font-bold md:text-sm">{title || <BrandName />}{episodeLabel ? ` · ${episodeLabel}` : ""}</p>
+                  </div>
                 </div>
               </div>
-              <div className="mr-28 flex items-center gap-1">
+              <div className="player-top-actions mr-28 flex items-center gap-1">
                 <button type="button" onClick={() => { setLocked(true); setControlsVisible(false); setMenu(false); }} aria-label="Khóa trình phát" title="Khóa trình phát" className="grid h-9 w-9 place-items-center rounded-md border border-white/15 bg-black/45 text-white/75 backdrop-blur hover:text-white"><Lock className="h-4 w-4" /></button>
                 <span className="rounded-full border border-white/15 bg-black/45 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.16em] text-white/65 backdrop-blur">{mode}</span>
               </div>
@@ -610,7 +623,7 @@ export function Player({
               </div>
               <div className="flex items-center justify-between gap-2 text-white">
                 <div className="flex items-center gap-1 sm:gap-2">
-                  <button type="button" onClick={togglePlay} aria-label="Phát / Tạm dừng" className="grid h-10 w-10 place-items-center rounded-full border border-amber-400 text-white hover:bg-amber-400 hover:text-black">
+                  <button type="button" onClick={togglePlay} aria-label="Phát / Tạm dừng" className="player-play-button grid h-10 w-10 place-items-center rounded-full text-white">
                     {playing ? <Pause className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}
                   </button>
                   {hasNext && <button type="button" onClick={() => nextRef.current?.()} aria-label="Chuyển thủ công sang tập tiếp theo" className="player-next-button grid h-9 w-9 place-items-center rounded-md text-white/75 hover:bg-white/10 hover:text-white"><SkipForward className="h-4 w-4" /></button>}
@@ -620,7 +633,7 @@ export function Player({
                   <input type="range" min={0} max={1} step={0.05} value={muted ? 0 : volume} onChange={(e) => { const v = Number(e.target.value); if (videoRef.current) { videoRef.current.volume = v; videoRef.current.muted = false; } setVolume(v); setMuted(false); }} aria-label="Âm lượng" className="hidden h-1 w-20 accent-amber-400 lg:block" />
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="hidden text-[11px] font-semibold text-white/55 md:inline">{quality === "auto" ? "Auto" : `${quality}p`} · {rate}x</span>
+                  <span className="hidden text-[11px] font-semibold text-white/70 md:inline">{quality === "auto" ? "Auto" : `${quality}p`} · {rate}x</span>
                   <button type="button" onClick={() => setMenu((v) => !v)} aria-label="Cài đặt phát" aria-expanded={menu} className="grid h-9 w-9 place-items-center rounded-md text-white/75 hover:bg-white/10 hover:text-white"><Settings2 className="h-4 w-4" /></button>
                   <button type="button" onClick={requestFull} aria-label="Toàn màn hình" className="grid h-9 w-9 place-items-center rounded-md text-white/75 hover:bg-white/10 hover:text-white"><Maximize className="h-4 w-4" /></button>
                 </div>
@@ -692,7 +705,7 @@ export function Player({
         {/* Trung tâm điều khiển Player */}
         {inHls && menu && (
           <div className="absolute bottom-20 right-3 z-30 md:right-5">
-            <div role="dialog" aria-label="Trung tâm điều khiển Player" className="max-h-[min(32rem,70vh)] w-[min(22rem,calc(100vw-1.5rem))] overflow-y-auto rounded-xl border border-white/15 bg-black/90 p-3 text-white shadow-2xl backdrop-blur">
+            <div role="dialog" aria-label="Trung tâm điều khiển Player" className="player-settings-pop max-h-[min(32rem,70vh)] w-[min(22rem,calc(100vw-1.5rem))] overflow-y-auto rounded-xl border border-white/15 p-3 text-white shadow-2xl backdrop-blur">
               <p className="mb-2 text-[10px] font-bold uppercase tracking-[.18em] text-amber-300">Trải nghiệm xem</p>
               <p className="flex items-center gap-1.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white/50"><Settings2 className="h-3 w-3" /> Chất lượng</p>
               <div className="grid grid-cols-4 gap-1">

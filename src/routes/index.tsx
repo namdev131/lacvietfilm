@@ -16,7 +16,9 @@ import {
   Landmark,
 } from "lucide-react";
 import { fetchLatest, fetchLatestMerged } from "@/lib/api";
+import { fetchHomeShelf } from "@/lib/browse";
 import { MovieRow } from "@/components/MovieRow";
+import { BrandName } from "@/components/BrandName";
 import { GoldBoard } from "@/components/GoldBoard";
 import { SourcePing } from "@/components/SourcePing";
 import { useSettings } from "@/lib/settings";
@@ -74,6 +76,10 @@ function Home() {
     queryKey: ["latest", "all", 1],
     queryFn: () => fetchLatestMerged("all", 1),
   });
+  const china3dAnimation = useQuery({ queryKey: ["home-shelf", "china-3d-animation"], queryFn: () => fetchHomeShelf("china-3d-animation") });
+  const korea = useQuery({ queryKey: ["home-shelf", "korea"], queryFn: () => fetchHomeShelf("korea") });
+  const china = useQuery({ queryKey: ["home-shelf", "china"], queryFn: () => fetchHomeShelf("china") });
+  const vietnam = useQuery({ queryKey: ["home-shelf", "vietnam"], queryFn: () => fetchHomeShelf("vietnam") });
   const { data: history } = useHistory();
 
   const featured =
@@ -134,7 +140,7 @@ function Home() {
               Phim nổi bật
             </div>
             <h1 className="text-balance text-3xl font-black leading-tight tracking-tight md:text-5xl">
-              {hero?.name || "Lạc Việt Film"}
+              {hero?.name || <BrandName />}
             </h1>
             {hero?.origin_name && (
               <p className="cinema-hero-meta text-sm md:text-base">
@@ -203,10 +209,11 @@ function Home() {
         <MovieRow title="Mới cập nhật" movies={kk2.data || []} />
         <MovieRow title="Vietsub nổi bật" movies={vietsub.slice(0, 20)} />
         <MovieRow title="Thuyết Minh" movies={thuyetminh.slice(0, 20)} />
+        <MovieRow title="Phim Hoạt hình 3D Trung Quốc" movies={china3dAnimation.data || []} />
+        <MovieRow title="Phim Hàn" movies={korea.data || []} />
+        <MovieRow title="Phim Trung Quốc" movies={china.data || []} />
+        <MovieRow title="Phim Việt" movies={vietnam.data || []} />
         <MovieRow title="Kho phim OPhim" movies={op.data || []} />
-        <MovieRow title="Kho phim NguonC" movies={ng.data || []} />
-        <MovieRow title="Kho phim VSMov" movies={vs.data || []} />
-        <MovieRow title="Đề xuất thêm" movies={featured.slice().reverse()} />
       </div>
     </div>
   );

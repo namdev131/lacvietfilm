@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent, type ReactNode } from "react";
 import { ArrowLeft, Clock3, Mail, MessageSquareText, Send } from "lucide-react";
+import { BrandName } from "@/components/BrandName";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -50,7 +51,7 @@ function ContactPage() {
               Gửi lời nhắn đến phòng chiếu.
             </h1>
             <p className="mt-6 max-w-md text-base leading-relaxed text-muted-foreground">
-              Báo phim lỗi, góp ý trình phát hoặc chia sẻ điều bạn muốn thấy trên Lạc Việt Film.
+              Báo phim lỗi, góp ý trình phát hoặc chia sẻ điều bạn muốn thấy trên <BrandName />.
             </p>
           </div>
 
@@ -109,7 +110,7 @@ function ContactPage() {
             <button type="submit" className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3.5 text-sm font-bold text-primary-foreground transition hover:bg-primary/90 active:translate-y-px sm:w-fit">
               <Send className="h-4 w-4" /> Gửi qua email
             </button>
-            <p className="text-xs leading-relaxed text-muted-foreground">Nút gửi mở ứng dụng email trên thiết bị. Lạc Việt Film không lưu nội dung biểu mẫu.</p>
+            <p className="text-xs leading-relaxed text-muted-foreground">Nút gửi mở ứng dụng email trên thiết bị. <BrandName /> không lưu nội dung biểu mẫu.</p>
           </form>
         </section>
       </div>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Compass, Heart, History, Search, Sparkles, Tv, Users, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { BrandName } from "@/components/BrandName";
 
 const STEPS = [
   {
@@ -79,7 +80,7 @@ export function Onboarding() {
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
             <div>
-              <h2 className="text-base font-bold">Chào mừng đến Lạc Việt Film</h2>
+              <h2 className="text-base font-bold">Chào mừng đến <BrandName /></h2>
               <p className="text-xs text-muted-foreground">Hướng dẫn nhanh {step + 1}/{STEPS.length}</p>
             </div>
           </div>

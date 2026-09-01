@@ -2,8 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
-  ArrowDown,
-  ArrowUp,
   ChevronLeft,
   ChevronRight,
   Eye,
@@ -48,7 +46,7 @@ function FavoriteButton({ row, active }: { row: GoldRow; active: boolean }) {
           isFav: active,
         });
       }}
-      className="absolute right-2 top-2 z-30 grid h-9 w-9 place-items-center rounded-full bg-black/65 text-white transition hover:bg-primary"
+      className="absolute bottom-11 right-2 z-30 grid h-9 w-9 place-items-center rounded-full bg-black/65 text-white transition hover:bg-primary"
     >
       <Heart className={`h-4 w-4 ${active ? "fill-current text-primary" : ""}`} />
     </button>
@@ -150,20 +148,20 @@ export function GoldBoard() {
                         <span
                           aria-label={`Tăng ${row.prev_rank - row.rank} hạng`}
                           title={`Tăng ${row.prev_rank - row.rank} hạng`}
-                          className="rank-movement rank-up absolute bottom-20 left-2 z-30 inline-flex items-center gap-1 rounded-full border border-emerald-300/60 bg-emerald-600 px-2.5 py-1.5 text-sm font-black text-white shadow-xl"
+                          className="rank-movement rank-up"
                         >
-                          <ArrowUp className="h-4 w-4 stroke-[3]" aria-hidden="true" />
-                          {row.prev_rank - row.rank}
+                          <span className="rank-chevrons" aria-hidden="true"><i /><i /><i /></span>
+                          <b>+{row.prev_rank - row.rank}</b>
                         </span>
                       )}
                       {row.prev_rank !== null && row.prev_rank < row.rank && (
                         <span
                           aria-label={`Giảm ${row.rank - row.prev_rank} hạng`}
                           title={`Giảm ${row.rank - row.prev_rank} hạng`}
-                          className="rank-movement rank-down absolute bottom-20 left-2 z-30 inline-flex items-center gap-1 rounded-full border border-red-300/60 bg-red-600 px-2.5 py-1.5 text-sm font-black text-white shadow-xl"
+                          className="rank-movement rank-down"
                         >
-                          <ArrowDown className="h-4 w-4 stroke-[3]" aria-hidden="true" />
-                          {row.rank - row.prev_rank}
+                          <span className="rank-chevrons" aria-hidden="true"><i /><i /><i /></span>
+                          <b>-{row.rank - row.prev_rank}</b>
                         </span>
                       )}
                       <span className="absolute bottom-3 right-3 z-20 inline-flex items-center gap-1 rounded bg-black/65 px-2 py-1 text-[11px] text-white"><Eye className="h-3 w-3" />{row.views}</span>

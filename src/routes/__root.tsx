@@ -20,6 +20,8 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { DockBar } from "@/components/DockBar";
 import { NotificationBell } from "@/components/NotificationBell";
 import { JoinPartyDialog } from "@/components/JoinPartyDialog";
+import { ActivePartyNotice } from "@/components/ActivePartyNotice";
+import { BrandName } from "@/components/BrandName";
 import { QuickSearch, openQuickSearch } from "@/components/QuickSearch";
 import { PlayerHostProvider } from "@/components/PlayerHost";
 import { TvRemote } from "@/hooks/useTvRemote";
@@ -128,7 +130,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="vi">
+    <html lang="vi" data-theme="dark" className="dark">
       <head>
         <HeadContent />
       </head>
@@ -157,9 +159,7 @@ function Header() {
         <div className="flex items-center gap-4 md:gap-8">
           <Link to="/" className="brand-lockup flex items-center gap-2">
             <span className="brand-seal"><img src={LOGO} alt="Lạc Việt Film" className="h-8 w-8 object-contain" /></span>
-            <span className="brand-wordmark hidden text-sm font-bold tracking-wide sm:inline">
-              LẠC VIỆT <span className="text-primary">FILM</span>
-            </span>
+            <BrandName className="brand-wordmark text-primary" />
           </Link>
 
         </div>
@@ -208,9 +208,9 @@ function Footer() {
       <div className="mx-auto flex max-w-[1600px] flex-col items-center justify-between gap-3 px-4 py-6 text-xs text-muted-foreground md:flex-row md:px-10">
         <div className="flex items-center gap-2">
           <img src={LOGO} alt="" className="h-6 w-6 opacity-80" />
-          <span>Lạc Việt Film — Mở phim, chạm hồn Việt.</span>
+          <span><BrandName /> — Mở phim, chạm hồn Việt.</span>
         </div>
-        <div>Lạc Việt Film</div>
+        <div><BrandName /></div>
       </div>
     </footer>
   );
@@ -230,6 +230,7 @@ function RootComponent() {
         <div className="site-shell min-h-screen bg-background text-foreground">
           <a href="#main-content" className="skip-link">Bỏ qua điều hướng</a>
           <Header />
+          <ActivePartyNotice />
           <main id="main-content" className="pt-14 md:pt-16">
             <Outlet />
           </main>
