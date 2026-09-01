@@ -150,9 +150,9 @@ export function GoldBoard() {
                         <span
                           aria-label={`Tăng ${row.prev_rank - row.rank} hạng`}
                           title={`Tăng ${row.prev_rank - row.rank} hạng`}
-                          className="absolute left-2 top-12 z-20 inline-flex items-center gap-0.5 rounded-full bg-emerald-950/85 px-2 py-1 text-[11px] font-bold text-emerald-400 shadow-lg"
+                          className="rank-movement rank-up absolute bottom-20 left-2 z-30 inline-flex items-center gap-1 rounded-full border border-emerald-300/60 bg-emerald-600 px-2.5 py-1.5 text-sm font-black text-white shadow-xl"
                         >
-                          <ArrowUp className="h-3.5 w-3.5" aria-hidden="true" />
+                          <ArrowUp className="h-4 w-4 stroke-[3]" aria-hidden="true" />
                           {row.prev_rank - row.rank}
                         </span>
                       )}
@@ -160,9 +160,9 @@ export function GoldBoard() {
                         <span
                           aria-label={`Giảm ${row.rank - row.prev_rank} hạng`}
                           title={`Giảm ${row.rank - row.prev_rank} hạng`}
-                          className="absolute left-2 top-12 z-20 inline-flex items-center gap-0.5 rounded-full bg-red-950/85 px-2 py-1 text-[11px] font-bold text-red-400 shadow-lg"
+                          className="rank-movement rank-down absolute bottom-20 left-2 z-30 inline-flex items-center gap-1 rounded-full border border-red-300/60 bg-red-600 px-2.5 py-1.5 text-sm font-black text-white shadow-xl"
                         >
-                          <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
+                          <ArrowDown className="h-4 w-4 stroke-[3]" aria-hidden="true" />
                           {row.rank - row.prev_rank}
                         </span>
                       )}
