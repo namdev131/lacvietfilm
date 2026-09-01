@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type ReactNode, type TouchEvent as ReactTouchEvent } from "react";
 import Hls from "hls.js";
 import {
-  AlertTriangle, ChevronLeft, Film, Gauge, Maximize, Pause, PictureInPicture2, Play,
-  RadioTower, RotateCcw, RotateCw, Settings2, SkipForward, Volume2, VolumeX, Zap,
+  AlertTriangle, ChevronLeft, Film, Gauge, Lock, Maximize, Pause, PictureInPicture2, Play,
+  RadioTower, RotateCcw, RotateCw, Settings2, SkipForward, Unlock, Volume2, VolumeX, Zap,
 } from "lucide-react";
 import { beginNextEpisode, cancelNextEpisode, tickNextEpisode, type NextEpisodeState } from "@/lib/nextEpisode";
 
 export type PlayMode = "hls" | "embed";
 
 const RATES = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+const PLAYER_LOGO = "https://files.catbox.moe/6ua430.png";
 
 export function Player({
   m3u8,
@@ -94,6 +95,7 @@ export function Player({
   const [quality, setQuality] = useState(preferredQuality);
   const [playing, setPlaying] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
+  const [locked, setLocked] = useState(false);
   const [brightness, setBrightness] = useState(1);
   const [gestureHint, setGestureHint] = useState<string | null>(null);
   const [volume, setVolume] = useState(1);
@@ -415,6 +417,7 @@ export function Player({
     else void frameRef.current?.requestFullscreen();
   };
   const togglePlayerControls = (event: ReactMouseEvent<HTMLDivElement>) => {
+    if (locked) return;
     if ((event.target as HTMLElement).closest("button, input, [role='dialog']")) return;
     if (suppressClickRef.current) {
       suppressClickRef.current = false;
@@ -429,6 +432,7 @@ export function Player({
     });
   };
   const beginTouchGesture = (event: ReactTouchEvent<HTMLDivElement>) => {
+    if (locked) return;
     if (event.touches.length !== 1 || (event.target as HTMLElement).closest("button, input, [role='dialog']")) return;
     const touch = event.touches[0];
     const rect = event.currentTarget.getBoundingClientRect();
@@ -470,6 +474,7 @@ export function Player({
     window.setTimeout(() => setGestureHint(null), 500);
   };
   const handleDoubleTap = (event: ReactMouseEvent<HTMLDivElement>) => {
+    if (locked) return;
     if ((event.target as HTMLElement).closest("button, input, [role='dialog']")) return;
     const rect = event.currentTarget.getBoundingClientRect();
     seekBy(event.clientX < rect.left + rect.width / 2 ? -10 : 10);
@@ -523,6 +528,10 @@ export function Player({
         }`}
       >
         {overlay}
+        <div className="player-brand-watermark pointer-events-none absolute right-3 top-3 z-20 inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/40 px-2.5 py-1.5 text-[10px] font-bold text-white/85 backdrop-blur-md">
+          <img src={PLAYER_LOGO} alt="" className="h-5 w-5 rounded object-contain" />
+          <span>Lạc Việt Film</span>
+        </div>
         {mode === "hls" && canHls && (
           <video
             ref={videoRef}
@@ -562,18 +571,22 @@ export function Player({
         )}
 
         {inHls && (
-          <div className={`player-chrome group/player absolute inset-0 z-10 flex flex-col justify-between transition-opacity md:hover:opacity-100 md:focus-within:opacity-100 ${controlsVisible ? "opacity-100" : "pointer-events-none opacity-0"}`}>
+          <div className={`player-chrome group/player absolute inset-0 z-10 flex flex-col justify-between transition-opacity md:hover:opacity-100 md:focus-within:opacity-100 ${controlsVisible && !locked ? "opacity-100" : "pointer-events-none opacity-0"}`}>
             <div className="player-topbar flex items-start justify-between gap-3 p-3 md:p-4">
               <div className="flex min-w-0 items-center gap-3">
                 <button type="button" onClick={() => history.back()} aria-label="Quay lại" className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/15 bg-black/45 text-white backdrop-blur hover:border-amber-400/60">
                   <ChevronLeft className="h-5 w-5" />
                 </button>
+                {poster && <img src={poster} alt="" className="player-title-poster h-12 w-8 shrink-0 rounded object-cover ring-1 ring-white/20" />}
                 <div className="min-w-0 text-white">
                   <p className="truncate text-sm font-semibold md:text-base">{title || "Lạc Việt Film"}{episodeLabel ? ` · ${episodeLabel}` : ""}</p>
                   <p className="mt-0.5 hidden truncate text-[11px] text-white/55 sm:block">Phim bộ › {title || "Đang phát"} › {episodeLabel || "Tập hiện tại"}</p>
                 </div>
               </div>
-              <span className="rounded-full border border-white/15 bg-black/45 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.16em] text-white/65 backdrop-blur">{mode}</span>
+              <div className="mr-28 flex items-center gap-1">
+                <button type="button" onClick={() => { setLocked(true); setControlsVisible(false); setMenu(false); }} aria-label="Khóa trình phát" title="Khóa trình phát" className="grid h-9 w-9 place-items-center rounded-md border border-white/15 bg-black/45 text-white/75 backdrop-blur hover:text-white"><Lock className="h-4 w-4" /></button>
+                <span className="rounded-full border border-white/15 bg-black/45 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.16em] text-white/65 backdrop-blur">{mode}</span>
+              </div>
             </div>
 
             <div className="player-bottombar px-3 pb-3 pt-14 md:px-5 md:pb-4">
@@ -613,6 +626,12 @@ export function Player({
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {locked && (
+          <div className="player-lock-shield pointer-events-none absolute inset-0 z-50">
+            <button type="button" onClick={() => { setLocked(false); setControlsVisible(true); }} aria-label="Mở khóa trình phát" title="Mở khóa trình phát" className="pointer-events-auto absolute right-3 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full border border-white/25 bg-black/70 text-white shadow-xl backdrop-blur-md"><Unlock className="h-5 w-5" /></button>
           </div>
         )}
 

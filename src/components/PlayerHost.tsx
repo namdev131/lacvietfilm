@@ -35,6 +35,8 @@ export type Playback = {
   onNext?: () => void;
   hasNext?: boolean;
   nextLabel?: string;
+  sources?: { id: SourceId; label: string }[];
+  onSourceChange?: (source: SourceId) => void;
 };
 
 type Ctx = {
@@ -267,6 +269,9 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
             preferredQuality={settings.preferredQuality}
             title={playback.name}
             episodeLabel={playback.epLabel}
+            sources={playback.sources}
+            currentSource={playback.source}
+            onSourceChange={(source) => playback.onSourceChange?.(source as SourceId)}
 
           />
         </div>

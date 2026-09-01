@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
-import { Play, ArrowLeft, Clapperboard, UsersRound } from "lucide-react";
+import { Play, ArrowLeft, Clapperboard, UsersRound, MessageCircle } from "lucide-react";
 import { fetchDetail } from "@/lib/api";
 import type { SourceId } from "@/lib/types";
 import DOMPurify from "isomorphic-dompurify";
@@ -35,46 +35,66 @@ function MoviePage() {
   });
 
   if (isLoading) {
-    return <div className="mx-auto max-w-6xl px-4 py-16 md:px-10"><div className="h-64 rounded-lg bg-card shimmer" /></div>;
+    return (
+      <div className="mx-auto max-w-6xl px-4 py-16 md:px-10">
+        <div className="h-64 rounded-lg bg-card shimmer" />
+      </div>
+    );
   }
   if (error || !data) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-20 text-center">
         <h2 className="text-xl font-semibold">Không tải được thông tin phim</h2>
-        <Link to="/" className="mt-4 inline-block text-primary">Về trang nhà</Link>
+        <Link to="/" className="mt-4 inline-block text-primary">
+          Về trang nhà
+        </Link>
       </div>
     );
   }
 
   const totalEps = data.servers[0]?.items.length || 0;
   const sanitized = DOMPurify.sanitize(data.content || "");
-  const owner = ticketOwnerLabel(user ? {
-    displayName: (user.user_metadata?.display_name || user.user_metadata?.full_name) as string | undefined,
-    email: user.email,
-  } : null);
+  const owner = ticketOwnerLabel(
+    user
+      ? {
+          displayName: (user.user_metadata?.display_name || user.user_metadata?.full_name) as
+            string | undefined,
+          email: user.email,
+        }
+      : null,
+  );
 
   return (
     <div className="relative">
       <div className="absolute inset-x-0 top-0 h-[420px] overflow-hidden">
-        {data.thumb && <img src={data.thumb} alt="" className="h-full w-full object-cover opacity-40" />}
+        {data.thumb && (
+          <img src={data.thumb} alt="" className="h-full w-full object-cover opacity-40" />
+        )}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background" />
       </div>
 
       <div className="relative mx-auto max-w-[1400px] px-4 pb-16 pt-6 md:px-10">
-        <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
           <ArrowLeft className="h-4 w-4" /> Trang nhà
         </Link>
 
         <div className="mt-6 grid gap-6 md:grid-cols-[240px_1fr] lg:gap-10">
           <div>
             <div className="aspect-[2/3] overflow-hidden rounded-lg ring-1 ring-border/60">
-              {data.poster && <img src={data.poster} alt={data.name} className="h-full w-full object-cover" />}
+              {data.poster && (
+                <img src={data.poster} alt={data.name} className="h-full w-full object-cover" />
+              )}
             </div>
           </div>
           <div className="space-y-4">
             <div>
               <h1 className="text-3xl font-black tracking-tight md:text-4xl">{data.name}</h1>
-              {data.origin_name && <p className="text-sm text-muted-foreground">{data.origin_name}</p>}
+              {data.origin_name && (
+                <p className="text-sm text-muted-foreground">{data.origin_name}</p>
+              )}
             </div>
             <div className="flex flex-wrap gap-2 text-xs">
               {data.quality && <Badge>{data.quality}</Badge>}
@@ -87,7 +107,12 @@ function MoviePage() {
             {data.category && data.category.length > 0 && (
               <div className="flex flex-wrap gap-1.5 text-xs">
                 {data.category.map((c) => (
-                  <span key={c} className="rounded-full border border-border px-2.5 py-1 text-muted-foreground">{c}</span>
+                  <span
+                    key={c}
+                    className="rounded-full border border-border px-2.5 py-1 text-muted-foreground"
+                  >
+                    {c}
+                  </span>
                 ))}
               </div>
             )}
@@ -102,13 +127,50 @@ function MoviePage() {
                   <Play className="h-4 w-4 fill-current" /> Phát phim
                 </Link>
               )}
-              <FavoriteButton slug={data.slug} name={data.name} poster={data.poster} source={source} />
-              <WatchLaterButton slug={data.slug} name={data.name} poster={data.poster} source={source} />
-              <FollowButton slug={data.slug} name={data.name} poster={data.poster} source={source} episodes={totalEps} />
-              <AddToCollectionButton slug={data.slug} name={data.name} poster={data.poster} source={source} />
+              <FavoriteButton
+                slug={data.slug}
+                name={data.name}
+                poster={data.poster}
+                source={source}
+              />
+              <WatchLaterButton
+                slug={data.slug}
+                name={data.name}
+                poster={data.poster}
+                source={source}
+              />
+              <FollowButton
+                slug={data.slug}
+                name={data.name}
+                poster={data.poster}
+                source={source}
+                episodes={totalEps}
+              />
+              <AddToCollectionButton
+                slug={data.slug}
+                name={data.name}
+                poster={data.poster}
+                source={source}
+              />
+              <Link
+                to="/forum/movie/$movieSlug"
+                params={{ movieSlug: data.slug }}
+                search={{ src: source }}
+                className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-semibold hover:border-primary hover:text-primary"
+              >
+                <MessageCircle className="h-4 w-4" />
+                Thảo luận phim
+              </Link>
             </div>
             <RatingStars slug={data.slug} name={data.name} poster={data.poster} source={source} />
-            <CinemaTicket slug={data.slug} name={data.name} poster={data.poster} source={source} userId={user?.id} owner={owner} />
+            <CinemaTicket
+              slug={data.slug}
+              name={data.name}
+              poster={data.poster}
+              source={source}
+              userId={user?.id}
+              owner={owner}
+            />
             {sanitized && (
               <div
                 className="prose prose-invert prose-sm max-w-none text-muted-foreground"
@@ -119,17 +181,49 @@ function MoviePage() {
               {data.director?.length ? (
                 <div className="flex gap-3 rounded-md bg-card p-3">
                   <Clapperboard className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                  <div><div className="text-xs text-muted-foreground">Đạo diễn</div><div className="mt-1 font-medium">{data.director.join(", ")}</div></div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">Đạo diễn</div>
+                    <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 font-medium">
+                      {data.director.map((director) => (
+                        <Link
+                          key={director}
+                          to="/director/$name"
+                          params={{ name: director }}
+                          search={{ src: source }}
+                          className="underline decoration-primary/45 underline-offset-4 hover:text-primary"
+                        >
+                          {director}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               ) : null}
               {data.actors?.length ? (
                 <div className="flex gap-3 rounded-md bg-card p-3">
                   <UsersRound className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-                  <div><div className="text-xs text-muted-foreground">Diễn viên</div><div className="mt-1 font-medium leading-6">{data.actors.join(", ")}</div></div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">Diễn viên</div>
+                    <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 font-medium leading-6">
+                      {data.actors.map((actor) => (
+                        <Link
+                          key={actor}
+                          to="/actor/$name"
+                          params={{ name: actor }}
+                          search={{ src: source }}
+                          className="underline decoration-gold/45 underline-offset-4 hover:text-gold"
+                        >
+                          {actor}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               ) : null}
               {data.country?.length ? (
-                <div><span className="text-muted-foreground">Quốc gia:</span> {data.country.join(", ")}</div>
+                <div>
+                  <span className="text-muted-foreground">Quốc gia:</span> {data.country.join(", ")}
+                </div>
               ) : null}
             </div>
           </div>

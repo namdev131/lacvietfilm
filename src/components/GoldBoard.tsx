@@ -1,7 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Eye, Flame, Heart, Radio, Users } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  Flame,
+  Heart,
+  Radio,
+  Users,
+} from "lucide-react";
 import {
   KIND_LABEL,
   PERIOD_LABEL,
@@ -136,6 +146,26 @@ export function GoldBoard() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/5 to-transparent" />
                       <span className="trending-sheen" aria-hidden="true" />
                       <strong className="trending-rank absolute bottom-1 left-2 z-20 text-7xl font-black leading-none">{row.rank}</strong>
+                      {row.prev_rank !== null && row.prev_rank > row.rank && (
+                        <span
+                          aria-label={`Tăng ${row.prev_rank - row.rank} hạng`}
+                          title={`Tăng ${row.prev_rank - row.rank} hạng`}
+                          className="absolute left-2 top-12 z-20 inline-flex items-center gap-0.5 rounded-full bg-emerald-950/85 px-2 py-1 text-[11px] font-bold text-emerald-400 shadow-lg"
+                        >
+                          <ArrowUp className="h-3.5 w-3.5" aria-hidden="true" />
+                          {row.prev_rank - row.rank}
+                        </span>
+                      )}
+                      {row.prev_rank !== null && row.prev_rank < row.rank && (
+                        <span
+                          aria-label={`Giảm ${row.rank - row.prev_rank} hạng`}
+                          title={`Giảm ${row.rank - row.prev_rank} hạng`}
+                          className="absolute left-2 top-12 z-20 inline-flex items-center gap-0.5 rounded-full bg-red-950/85 px-2 py-1 text-[11px] font-bold text-red-400 shadow-lg"
+                        >
+                          <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
+                          {row.rank - row.prev_rank}
+                        </span>
+                      )}
                       <span className="absolute bottom-3 right-3 z-20 inline-flex items-center gap-1 rounded bg-black/65 px-2 py-1 text-[11px] text-white"><Eye className="h-3 w-3" />{row.views}</span>
                     </div>
                     <h3 className="mt-2 line-clamp-1 text-sm font-semibold text-foreground group-hover:text-primary">{row.name}</h3>

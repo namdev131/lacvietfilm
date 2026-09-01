@@ -210,7 +210,7 @@ function Footer() {
           <img src={LOGO} alt="" className="h-6 w-6 opacity-80" />
           <span>Lạc Việt Film — Mở phim, chạm hồn Việt.</span>
         </div>
-        <div>Code bởi Nam NpT</div>
+        <div>Lạc Việt Film</div>
       </div>
     </footer>
   );
@@ -234,7 +234,7 @@ function RootComponent() {
             <Outlet />
           </main>
           <Footer />
-          <div className="h-28 md:h-32" />
+          <div className="dock-safe-space h-28" />
           <DockBar />
           <QuickSearch />
           <TvRemote />

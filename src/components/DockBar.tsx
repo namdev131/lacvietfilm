@@ -1,3 +1,4 @@
+[rtk] /!\ No hook installed — run `rtk init -g` for automatic token savings
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
@@ -221,6 +222,7 @@ export function DockBar() {
                   to={item.to}
                   aria-label={item.label}
                   onClick={() => { tap(); setOpen(null); }}
+                  data-active={active ? "true" : "false"}
                   className="dock-item dock-home group relative -mt-7 flex min-w-0 flex-col items-center gap-1"
                 >
                   <motion.span
@@ -234,7 +236,7 @@ export function DockBar() {
                         : "bg-secondary text-muted-foreground group-hover:text-foreground"
                     }`}
                   >
-                    <Icon className="h-6 w-6" />
+                    <img src="https://files.catbox.moe/6ua430.png" alt="" aria-hidden="true" className="dock-home-logo h-9 w-9 object-contain" />
                   </motion.span>
                   <span className={`text-[10px] font-semibold ${active ? "text-primary" : "text-muted-foreground"}`}>
                     {item.label}

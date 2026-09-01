@@ -1,0 +1,10 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+const actor = readFileSync(new URL("../src/routes/actor.$name.tsx", import.meta.url), "utf8");
+const movie = readFileSync(new URL("../src/routes/movie.$slug.tsx", import.meta.url), "utf8");
+assert(actor.includes('createFileRoute("/actor/$name")'));
+for (const label of ["Phim nổi bật", "Tiểu sử", "Vai diễn", "Phim liên quan", "timeline"]) assert(actor.includes(label), `Thiếu ${label}`);
+assert(actor.includes("moviesByActor"));
+assert(actor.includes("Tên vai diễn chưa được nguồn cung cấp"));
+assert(movie.includes('to="/actor/$name"'));
+console.log("actor profile contract: PASS");
