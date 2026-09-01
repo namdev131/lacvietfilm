@@ -17,7 +17,6 @@ import { getLocalProgress, progressPercent, formatTime } from "@/lib/progress";
 import { useSettings } from "@/lib/settings";
 import { CinemaTicket } from "@/components/CinemaTicket";
 import { ticketOwnerLabel } from "@/lib/tickets";
-import { MiniDiscussion } from "@/components/social/MiniDiscussion";
 
 const searchSchema = z.object({
   src: z.enum(["kkphim", "ophim", "nguonc", "vsmov"]).default("kkphim"),
@@ -225,19 +224,6 @@ function WatchPage() {
           });
         }
       },
-      sources: sourceMatches.map((movie) => ({
-        id: movie.source,
-        label: SOURCES.find((item) => item.id === movie.source)?.label ?? movie.source,
-      })),
-      onSourceChange: (nextSource) => {
-        const match = sourceMatches.find((movie) => movie.source === nextSource);
-        if (match)
-          navigate({
-            to: "/watch/$slug",
-            params: { slug: match.slug },
-            search: { src: nextSource, ep: 0, srv: 0 },
-          });
-      },
     });
   }, [
     data?.slug,
@@ -251,7 +237,6 @@ function WatchPage() {
     allowHls,
     settings.autoNext,
     currentServer?.items.length,
-    sourceMatches,
   ]);
 
   // Phim đề xuất
@@ -392,13 +377,6 @@ function WatchPage() {
               </div>
             )}
           </div>
-
-          <MiniDiscussion
-            movieSlug={data.slug}
-            source={source}
-            episode={ep}
-            seconds={saved?.position ?? 0}
-          />
 
           <CinemaTicket
             slug={data.slug}

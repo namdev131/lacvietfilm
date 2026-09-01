@@ -24,9 +24,6 @@ export interface AppNotification {
   poster: string | null;
   read: boolean;
   created_at: string;
-  type: string | null;
-  actor_id: string | null;
-  party_code: string | null;
 }
 
 export function useFollows() {
@@ -64,11 +61,7 @@ export function useToggleFollow() {
     }) => {
       if (!user) throw new Error("Bạn cần đăng nhập");
       if (movie.following) {
-        const { error } = await supabase
-          .from("series_follows")
-          .delete()
-          .eq("user_id", user.id)
-          .eq("slug", movie.slug);
+        const { error } = await supabase.from("series_follows").delete().eq("user_id", user.id).eq("slug", movie.slug);
         if (error) throw error;
       } else {
         const { error } = await supabase.from("series_follows").upsert(
@@ -100,7 +93,7 @@ export function useNotifications() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("notifications")
-        .select("id,title,body,slug,source,poster,read,created_at,type,actor_id,party_code")
+        .select("id,title,body,slug,source,poster,read,created_at")
         .order("created_at", { ascending: false })
         .limit(50);
       if (error) throw error;
@@ -137,12 +130,8 @@ export function useMarkNotifications() {
   return useMutation({
     mutationFn: async (input?: string | { id?: string; read?: boolean }) => {
       if (!user) return;
-      const opts =
-        typeof input === "string" ? { id: input, read: true } : { read: true, ...(input ?? {}) };
-      let q = supabase
-        .from("notifications")
-        .update({ read: opts.read } as never)
-        .eq("user_id", user.id);
+      const opts = typeof input === "string" ? { id: input, read: true } : { read: true, ...(input ?? {}) };
+      let q = supabase.from("notifications").update({ read: opts.read } as never).eq("user_id", user.id);
       if (opts.id) q = q.eq("id", opts.id);
       const { error } = await q;
       if (error) throw error;
@@ -175,16 +164,13 @@ export function useUnfollow() {
   return useMutation({
     mutationFn: async (id: string) => {
       if (!user) return;
-      const { error } = await supabase
-        .from("series_follows")
-        .delete()
-        .eq("user_id", user.id)
-        .eq("id", id);
+      const { error } = await supabase.from("series_follows").delete().eq("user_id", user.id).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["follows"] }),
   });
 }
+
 
 /** Quét phim đang theo dõi, tạo thông báo khi có tập mới (tối đa 1 lần / 30 phút) */
 export function useEpisodeWatcher() {
