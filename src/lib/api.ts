@@ -30,6 +30,11 @@ export const SOURCES: { id: SourceId; label: string; base: string }[] = [
   { id: "animapper", label: "AniMapper", base: PUBLIC_API_SOURCES.animapper.base },
 ];
 
+/** Nguồn phim dùng cho tìm kiếm; Rạp Chiếu Phim có trang riêng. */
+export const SEARCH_SOURCES: SourceId[] = SOURCES.map((source) => source.id).filter(
+  (id) => id !== "rapchieuphim",
+);
+
 // ---------- Ping ----------
 export async function pingSource(id: SourceId): Promise<number> {
   const src = SOURCES.find((s) => s.id === id)!;
@@ -400,7 +405,7 @@ export async function searchMoviesMerged(
   const merged =
     source !== "all"
       ? await searchMovies(keyword, source).catch(() => [])
-      : mergeMovies(await settled(ALL_SOURCES.map((s) => searchMovies(keyword, s))));
+      : mergeMovies(await settled(SEARCH_SOURCES.map((s) => searchMovies(keyword, s))));
   return merged
     .map((m, i) => ({ m, i, score: relevance(m, keyword) }))
     .filter((x) => x.score > 0)

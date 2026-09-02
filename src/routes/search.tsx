@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Search as SearchIcon, Loader2, X, Clock, TrendingUp, Trash2 } from "lucide-react";
-import { searchMoviesMerged } from "@/lib/api";
+import { SEARCH_SOURCES, searchMoviesMerged } from "@/lib/api";
 import { MovieCard } from "@/components/MovieCard";
 import { SourcePing } from "@/components/SourcePing";
 import { Highlight } from "@/components/Highlight";
@@ -240,7 +240,7 @@ function SearchPage() {
 
       {/* Bộ lọc nguồn */}
       <div className="mt-4">
-        <SourcePing value={source} onChange={setSource} />
+        <SourcePing value={source} onChange={setSource} sources={SEARCH_SOURCES} />
       </div>
 
       <div className="mt-8">
