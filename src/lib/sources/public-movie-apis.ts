@@ -1,10 +1,7 @@
 import type { EpisodeServer, MovieCard, MovieDetail, SourceId } from "../types";
 
 export const PUBLIC_API_SOURCES = {
-  rapchieuphim: {
-    base: "https://rapchieuphim.com/api/v1",
-    metadataOnly: true,
-  },
+
   aiphim: {
     base: "https://aiphim.online/api",
     metadataOnly: false,
@@ -81,21 +78,7 @@ function aniCard(m: any, source: SourceId): MovieCard {
   };
 }
 
-let rapCache: any[] | null = null;
-async function rapMovies() {
-  return (rapCache ??= await json(`${PUBLIC_API_SOURCES.rapchieuphim.base}/movies`));
-}
-
 export async function publicApiLatest(source: PublicSource, page = 1): Promise<MovieCard[]> {
-  if (source === "rapchieuphim") {
-    const movies = await rapMovies();
-    const start = Math.max(0, movies.length - page * 24);
-    return movies.slice(start, start + 24).reverse().map((m) => ({
-      ...aiCard(m, source),
-      poster: absolute("https://rapchieuphim.com", m.poster),
-      thumb: absolute("https://rapchieuphim.com", m.poster),
-    }));
-  }
   if (source === "aiphim") {
     const body = await json(`${PUBLIC_API_SOURCES.aiphim.base}/latest?page=${page}`);
     return (body.data || []).map((m: any) => aiCard(m, source));
@@ -114,17 +97,7 @@ export async function publicApiLatest(source: PublicSource, page = 1): Promise<M
 
 export async function publicApiSearch(q: string, source: PublicSource): Promise<MovieCard[]> {
   const keyword = encodeURIComponent(q.trim());
-  if (source === "rapchieuphim") {
-    const normalized = q.toLocaleLowerCase("vi-VN");
-    return (await rapMovies())
-      .filter((m) => `${m.name} ${m.en_name || ""}`.toLocaleLowerCase("vi-VN").includes(normalized))
-      .slice(0, 48)
-      .map((m) => ({
-        ...aiCard(m, source),
-        poster: absolute("https://rapchieuphim.com", m.poster),
-        thumb: absolute("https://rapchieuphim.com", m.poster),
-      }));
-  }
+
   if (source === "aiphim") {
     const body = await json(`${PUBLIC_API_SOURCES.aiphim.base}/search?q=${keyword}`);
     return (body.data?.movies || body.data || []).map((m: any) => aiCard(m, source));
@@ -141,19 +114,7 @@ export async function publicApiSearch(q: string, source: PublicSource): Promise<
 
 export async function publicApiDetail(slug: string, source: PublicSource): Promise<MovieDetail> {
   const safeSlug = encodeURIComponent(slug);
-  if (source === "rapchieuphim") {
-    const m = await json(`${PUBLIC_API_SOURCES.rapchieuphim.base}/movies/${safeSlug}`);
-    return {
-      ...aiCard(m, source),
-      poster: absolute("https://rapchieuphim.com", m.poster),
-      thumb: absolute("https://rapchieuphim.com", m.poster),
-      content: m.description,
-      time: m.duration,
-      country: m.country ? [m.country] : [],
-      servers: [],
-      source: source,
-    };
-  }
+
   if (source === "aiphim") {
     const body = await json(`${PUBLIC_API_SOURCES.aiphim.base}/movie/${safeSlug}`);
     const m = body.data || {};

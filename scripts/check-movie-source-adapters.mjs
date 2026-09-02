@@ -7,7 +7,7 @@ const adapters = readFileSync(new URL("../src/lib/sources/public-movie-apis.ts",
 const movie = readFileSync(new URL("../src/routes/movie.$slug.tsx", import.meta.url), "utf8");
 const watch = readFileSync(new URL("../src/routes/watch.$slug.tsx", import.meta.url), "utf8");
 
-for (const id of ["rapchieuphim", "aiphim", "thuongkhung3d", "animapper"]) {
+for (const id of ["aiphim", "thuongkhung3d", "animapper"]) {
   assert(types.includes(`\"${id}\"`), `SourceId thiếu ${id}`);
   assert(api.includes(`id: \"${id}\"`), `SOURCES thiếu ${id}`);
   assert(movie.includes(`\"${id}\"`), `route phim chưa nhận ${id}`);
@@ -15,7 +15,6 @@ for (const id of ["rapchieuphim", "aiphim", "thuongkhung3d", "animapper"]) {
 }
 
 for (const base of [
-  "https://rapchieuphim.com/api/v1",
   "https://aiphim.online/api",
   "https://animation.thuongkhung3d.my/api/v1",
   "https://api.animapper.net/api/v1",

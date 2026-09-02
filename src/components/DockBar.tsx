@@ -2,7 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import {
-  History, Home, Heart, User, Compass, Flame, CalendarClock,
+  History, Home, Heart, User, Compass, Flame, CalendarClock, Clapperboard,
   Library, Bookmark, Settings as SettingsIcon, LogIn, Bell, Mail, Users,
   PanelLeftClose, PanelLeftOpen, Pin,
 } from "lucide-react";
@@ -17,6 +17,7 @@ const MENUS: Record<string, { title: string; links: MenuLink[] }> = {
       { to: "/latest", label: "Phim mới", icon: Flame, desc: "Cập nhật liên tục mỗi ngày" },
       { to: "/browse", label: "Thể loại · Quốc gia", icon: Compass, desc: "Lọc theo thể loại, quốc gia, năm" },
       { to: "/upcoming", label: "Sắp chiếu", icon: CalendarClock, desc: "Phim sắp ra mắt" },
+      { to: "/cinema", label: "Rạp Chiếu Phim", icon: Clapperboard, desc: "Phim, lịch chiếu và hệ thống rạp" },
     ],
   },
   library: {
