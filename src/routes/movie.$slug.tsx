@@ -16,7 +16,18 @@ import { useAuth } from "@/hooks/useAuth";
 import { ticketOwnerLabel } from "@/lib/tickets";
 
 const searchSchema = z.object({
-  src: z.enum(["kkphim", "ophim", "nguonc", "vsmov"]).default("kkphim"),
+  src: z
+    .enum([
+      "kkphim",
+      "ophim",
+      "nguonc",
+      "vsmov",
+      "rapchieuphim",
+      "aiphim",
+      "thuongkhung3d",
+      "animapper",
+    ])
+    .default("kkphim"),
 });
 
 export const Route = createFileRoute("/movie/$slug")({

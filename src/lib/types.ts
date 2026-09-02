@@ -1,4 +1,12 @@
-export type SourceId = "kkphim" | "ophim" | "nguonc" | "vsmov";
+export type SourceId =
+  | "kkphim"
+  | "ophim"
+  | "nguonc"
+  | "vsmov"
+  | "rapchieuphim"
+  | "aiphim"
+  | "thuongkhung3d"
+  | "animapper";
 export type SourceFilter = SourceId | "all";
 
 

@@ -12,17 +12,36 @@ import {
   vsmovSearch,
   vsmovDetail,
 } from "./sources/vsmov";
+import {
+  PUBLIC_API_SOURCES,
+  publicApiDetail,
+  publicApiLatest,
+  publicApiSearch,
+} from "./sources/public-movie-apis";
 
 export const SOURCES: { id: SourceId; label: string; base: string }[] = [
   { id: "kkphim", label: "KKPhim", base: "https://phimapi.com" },
   { id: "ophim", label: "OPhim", base: "https://ophim1.com" },
   { id: "nguonc", label: "NguonC", base: "https://phim.nguonc.com/api" },
   { id: "vsmov", label: "VSMov", base: VSMOV_BASE },
+  { id: "rapchieuphim", label: "Rạp Chiếu Phim", base: PUBLIC_API_SOURCES.rapchieuphim.base },
+  { id: "aiphim", label: "AI Phim", base: PUBLIC_API_SOURCES.aiphim.base },
+  { id: "thuongkhung3d", label: "Thượng Khung 3D", base: PUBLIC_API_SOURCES.thuongkhung3d.base },
+  { id: "animapper", label: "AniMapper", base: PUBLIC_API_SOURCES.animapper.base },
 ];
 
 // ---------- Ping ----------
 export async function pingSource(id: SourceId): Promise<number> {
   const src = SOURCES.find((s) => s.id === id)!;
+  if (id === "rapchieuphim" || id === "aiphim" || id === "thuongkhung3d" || id === "animapper") {
+    const start = performance.now();
+    try {
+      await publicApiLatest(id, 1);
+      return Math.round(performance.now() - start);
+    } catch {
+      return -1;
+    }
+  }
   const url =
     id === "kkphim"
       ? `${src.base}/danh-sach/phim-moi-cap-nhat-v3?page=1`
@@ -58,6 +77,9 @@ function ophimImg(u?: string) {
 
 // ---------- Latest lists ----------
 export async function fetchLatest(source: SourceId, page = 1): Promise<MovieCard[]> {
+  if (source === "rapchieuphim" || source === "aiphim" || source === "thuongkhung3d" || source === "animapper") {
+    return publicApiLatest(source, page);
+  }
   if (source === "kkphim") {
     const r = await fetch(
       `https://phimapi.com/danh-sach/phim-moi-cap-nhat-v3?page=${page}`,
@@ -113,6 +135,9 @@ export async function fetchLatest(source: SourceId, page = 1): Promise<MovieCard
 
 export async function searchMovies(q: string, source: SourceId): Promise<MovieCard[]> {
   if (!q.trim()) return [];
+  if (source === "rapchieuphim" || source === "aiphim" || source === "thuongkhung3d" || source === "animapper") {
+    return publicApiSearch(q, source);
+  }
   if (source === "kkphim") {
     const r = await fetch(
       `https://phimapi.com/v1/api/tim-kiem?keyword=${encodeURIComponent(q)}&limit=24`,
@@ -183,6 +208,9 @@ function normalizeKKOphimServers(episodes: any[]): EpisodeServer[] {
 }
 
 export async function fetchDetail(slug: string, source: SourceId): Promise<MovieDetail> {
+  if (source === "rapchieuphim" || source === "aiphim" || source === "thuongkhung3d" || source === "animapper") {
+    return publicApiDetail(slug, source);
+  }
   if (source === "kkphim") {
     const r = await fetch(`https://phimapi.com/phim/${slug}`);
     const j = await r.json();

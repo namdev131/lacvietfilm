@@ -8,7 +8,7 @@ import { MovieCard as MovieCardView } from "@/components/MovieCard";
 import { fetchPersonMetadata } from "@/lib/personMetadata";
 
 const searchSchema = z.object({
-  src: z.enum(["kkphim", "ophim", "nguonc", "vsmov"]).default("kkphim"),
+  src: z.enum(["kkphim", "ophim", "nguonc", "vsmov", "rapchieuphim", "aiphim", "thuongkhung3d", "animapper"]).default("kkphim"),
 });
 
 export const Route = createFileRoute("/director/$name")({

@@ -63,11 +63,7 @@ function Home() {
     queryFn: () => fetchLatest("kkphim", 1),
   });
   const op = useQuery({ queryKey: ["latest", "ophim", 1], queryFn: () => fetchLatest("ophim", 1) });
-  const ng = useQuery({
-    queryKey: ["latest", "nguonc", 1],
-    queryFn: () => fetchLatest("nguonc", 1),
-  });
-  const vs = useQuery({ queryKey: ["latest", "vsmov", 1], queryFn: () => fetchLatest("vsmov", 1) });
+
   const kk2 = useQuery({
     queryKey: ["latest", "kkphim", 2],
     queryFn: () => fetchLatest("kkphim", 2),
@@ -76,22 +72,18 @@ function Home() {
     queryKey: ["latest", "all", 1],
     queryFn: () => fetchLatestMerged("all", 1),
   });
+  const selectedSource = useQuery({
+    queryKey: ["latest", source, 1],
+    queryFn: () => fetchLatest(source as SourceId, 1),
+    enabled: source !== "all",
+  });
   const china3dAnimation = useQuery({ queryKey: ["home-shelf", "china-3d-animation"], queryFn: () => fetchHomeShelf("china-3d-animation") });
   const korea = useQuery({ queryKey: ["home-shelf", "korea"], queryFn: () => fetchHomeShelf("korea") });
   const china = useQuery({ queryKey: ["home-shelf", "china"], queryFn: () => fetchHomeShelf("china") });
   const vietnam = useQuery({ queryKey: ["home-shelf", "vietnam"], queryFn: () => fetchHomeShelf("vietnam") });
   const { data: history } = useHistory();
 
-  const featured =
-    (source === "all"
-      ? all.data
-      : source === "kkphim"
-        ? kk.data
-        : source === "ophim"
-          ? op.data
-          : source === "vsmov"
-            ? vs.data
-            : ng.data) || [];
+  const featured = (source === "all" ? all.data : selectedSource.data) || [];
   const hero = featured[heroIndex % featured.length];
 
   useEffect(() => {
@@ -171,16 +163,10 @@ function Home() {
             )}
           </motion.div>
         </div>
-      </section>
-
-      <div className="heritage-source-bar pt-4">
-        <div className="heritage-panel flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-          <SourcePing value={source} onChange={setSource} />
-          <div className="text-[11px] text-muted-foreground">
-            Cập nhật mỗi 30 giây
-          </div>
+        <div className="absolute right-4 top-4 z-20 md:right-10 md:top-6">
+          <SourcePing value={source} onChange={setSource} compact />
         </div>
-      </div>
+      </section>
         </section>
 
         <aside className="cinema-today" aria-labelledby="today-title">

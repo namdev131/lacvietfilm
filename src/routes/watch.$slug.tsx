@@ -19,7 +19,18 @@ import { CinemaTicket } from "@/components/CinemaTicket";
 import { ticketOwnerLabel } from "@/lib/tickets";
 
 const searchSchema = z.object({
-  src: z.enum(["kkphim", "ophim", "nguonc", "vsmov"]).default("kkphim"),
+  src: z
+    .enum([
+      "kkphim",
+      "ophim",
+      "nguonc",
+      "vsmov",
+      "rapchieuphim",
+      "aiphim",
+      "thuongkhung3d",
+      "animapper",
+    ])
+    .default("kkphim"),
   ep: z.number().int().min(0).default(0),
   srv: z.number().int().min(0).default(0),
 });
@@ -67,7 +78,7 @@ function WatchPage() {
   const source = src as SourceId;
   const { user } = useAuth();
 
-  const hlsSources: SourceId[] = ["kkphim", "ophim", "vsmov"];
+  const hlsSources: SourceId[] = ["kkphim", "ophim", "vsmov", "aiphim"];
   const allowHls = hlsSources.includes(source);
   const { settings } = useSettings();
   const preferHls = allowHls && settings.defaultMode === "hls";

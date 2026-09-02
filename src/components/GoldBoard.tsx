@@ -25,7 +25,10 @@ import type { SourceId } from "@/lib/types";
 
 const PERIODS: GoldPeriod[] = ["day", "week", "month", "all"];
 const KINDS: GoldKind[] = ["all", "series", "single", "anime"];
-const SOURCES: ("all" | SourceId)[] = ["all", "kkphim", "ophim", "nguonc", "vsmov"];
+const SOURCES: ("all" | SourceId)[] = [
+  "all", "kkphim", "ophim", "nguonc", "vsmov",
+  "rapchieuphim", "aiphim", "thuongkhung3d", "animapper",
+];
 
 function FavoriteButton({ row, active }: { row: GoldRow; active: boolean }) {
   const { user } = useAuth();

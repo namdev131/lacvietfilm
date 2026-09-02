@@ -9,7 +9,7 @@ export default defineTool({
   inputSchema: {
     slug: z.string().trim().min(1),
     name: z.string().trim().min(1),
-    source: z.enum(["kkphim", "ophim", "nguonc", "vsmov"]).default("kkphim"),
+    source: z.enum(["kkphim", "ophim", "nguonc", "vsmov", "rapchieuphim", "aiphim", "thuongkhung3d", "animapper"]).default("kkphim"),
     score: z.number().int().min(1).max(5),
     poster: z.string().url().optional(),
   },

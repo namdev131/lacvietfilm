@@ -50,7 +50,10 @@ async function currentUser(request: Request) {
 const text = (value: unknown, max: number) =>
   typeof value === "string" && value.trim() && value.length <= max ? value.trim() : null;
 const number = (value: unknown) => (Number.isFinite(Number(value)) ? Number(value) : 0);
-const SOURCES = new Set<SourceId>(["kkphim", "ophim", "nguonc", "vsmov"]);
+const SOURCES = new Set<SourceId>([
+  "kkphim", "ophim", "nguonc", "vsmov",
+  "rapchieuphim", "aiphim", "thuongkhung3d", "animapper",
+]);
 
 async function verifiedEpisodeCount(slug: string, source: string, serverIndex: number) {
   if (!SOURCES.has(source as SourceId) || !Number.isInteger(serverIndex) || serverIndex < 0)
