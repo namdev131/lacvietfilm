@@ -1,6 +1,6 @@
 import { BrandName } from "./BrandName";
 
-const LOGO = "/pwa-icon-192.png";
+const LOGO = "https://files.catbox.moe/6ua430.png";
 
 export function CreditBadge() {
   return (

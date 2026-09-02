@@ -10,7 +10,7 @@ import { BrandName } from "@/components/BrandName";
 export type PlayMode = "hls" | "embed";
 
 const RATES = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
-const PLAYER_LOGO = "/pwa-icon-192.png";
+const PLAYER_LOGO = "https://files.catbox.moe/6ua430.png";
 
 export function Player({
   m3u8,

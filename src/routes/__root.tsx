@@ -30,7 +30,7 @@ import { registerPwa } from "@/components/InstallPrompt";
 import { CreditBadge } from "@/components/CreditBadge";
 import { Onboarding } from "@/components/Onboarding";
 import { initTvPlatform } from "@/lib/tizen";
-const LOGO = "/pwa-icon-192.png";
+const LOGO = "https://files.catbox.moe/6ua430.png";
 
 function NotFoundComponent() {
   return (
