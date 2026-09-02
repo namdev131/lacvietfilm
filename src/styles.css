@@ -1643,8 +1643,9 @@ img, video, iframe { max-width: 100%; }
   .site-header-inner { height: 3.25rem; align-items: center; padding: .3rem .65rem; }
   .brand-lockup { gap: .35rem; }
   .brand-seal img { width: 1.6rem; height: 1.6rem; }
-  .brand-wordmark { max-width: none; font-size: 1.28rem; }
-  .site-header .theme-toggle { display: none; }
+  .brand-wordmark { max-width: 7.4rem; overflow: hidden; font-size: 1.08rem; white-space: nowrap; }
+  .site-header .flex.items-center.gap-2 { gap: .25rem; }
+  .site-header .theme-toggle { display: inline-grid; width: 1.9rem; height: 1.9rem; flex: 0 0 1.9rem; }
   .site-header button[aria-label="Tìm phim nhanh"] {
     position: static;
     width: 1.8rem;
@@ -1658,6 +1659,13 @@ img, video, iframe { max-width: 100%; }
   .site-header button[aria-label="Tìm phim nhanh"] kbd { display: none; }
   .site-header button[aria-label="Nhập mã phòng"] { min-width: 2.2rem; height: 1.9rem; padding-inline: .5rem; overflow: hidden; font-size: 0; }
   .site-header button[aria-label="Nhập mã phòng"] svg { width: 1rem; height: 1rem; }
+  .rank-movement { top: 2.15rem; right: .35rem; width: auto; min-width: 2rem; min-height: 1.55rem; padding: .18rem .28rem; flex-direction: row; gap: .12rem; border-radius: .42rem; background: rgb(5 7 9 / .9); box-shadow: 0 2px 8px rgb(0 0 0 / .32); backdrop-filter: none; }
+  .rank-movement b { font-size: .65rem; }
+  .rank-chevrons { width: .7rem; height: .75rem; }
+  .rank-chevrons i { width: .42rem; height: .42rem; border-top-width: .12rem; border-left-width: .12rem; }
+  .rank-chevrons i:nth-child(1) { top: .02rem; }
+  .rank-chevrons i:nth-child(2) { top: .17rem; }
+  .rank-chevrons i:nth-child(3) { top: .32rem; }
   .site-shell > main { padding-top: 3.25rem; }
 
   .cinema-dashboard { padding: .55rem .55rem calc(5.5rem + env(safe-area-inset-bottom)); }
