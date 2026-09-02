@@ -1,0 +1,11 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+const api = readFileSync(new URL("../src/routes/api/watch-party.ts", import.meta.url), "utf8");
+assert.match(api, /body\.action === "transfer-host"/);
+assert.match(api, /where id=\$1 and closed=false for update/i);
+assert.match(api, /party\.rows\[0\]\.host_id !== user\.id/);
+assert.match(api, /targetId === user\.id/);
+assert.match(api, /watch_party_members where party_id=\$1 and user_id=\$2/);
+assert.match(api, /watch_party\.transfer_host/);
+assert.match(api, /update public\.watch_parties set host_id=\$2/);
+console.log("watch party transfer contract: PASS");

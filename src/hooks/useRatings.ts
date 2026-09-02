@@ -3,10 +3,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import type { SourceId } from "@/lib/types";
 
+export interface RatingReview {
+  user_id: string;
+  score: number;
+  review: string;
+  display_name: string;
+  updated_at: string;
+}
 export interface RatingSummary {
   avg: number;
   count: number;
-  mine: number | null;
+  mine: { score: number; review: string | null; status: "visible" | "hidden" } | null;
+  reviews: RatingReview[];
+}
+
+async function token() {
+  return (await supabase.auth.getSession()).data.session?.access_token;
 }
 
 export function useRating(slug: string) {
@@ -15,45 +27,38 @@ export function useRating(slug: string) {
     queryKey: ["rating", slug, user?.id ?? "anon"],
     enabled: !!slug,
     queryFn: async (): Promise<RatingSummary> => {
-      const { data, error } = await supabase
-        .from("movie_ratings")
-        .select("score,user_id")
-        .eq("slug", slug);
-      if (error) throw error;
-      const rows = data ?? [];
-      const count = rows.length;
-      const avg = count ? rows.reduce((s, r) => s + (r.score ?? 0), 0) / count : 0;
-      const mine = user ? (rows.find((r) => r.user_id === user.id)?.score ?? null) : null;
-      return { avg, count, mine };
+      const accessToken = await token();
+      const response = await fetch(`/api/ratings?slug=${encodeURIComponent(slug)}`, {
+        headers: accessToken ? { authorization: `Bearer ${accessToken}` } : {},
+      });
+      const result = (await response.json()) as RatingSummary & { error?: string };
+      if (!response.ok) throw new Error(result.error || "Không tải được đánh giá");
+      return result;
     },
   });
 }
 
 export function useRateMovie() {
-  const { user } = useAuth();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (v: {
+    mutationFn: async (value: {
       slug: string;
       name: string;
       poster?: string;
       source: SourceId;
       score: number;
+      review: string;
     }) => {
-      if (!user) throw new Error("Bạn cần đăng nhập");
-      const { error } = await supabase.from("movie_ratings").upsert(
-        {
-          user_id: user.id,
-          slug: v.slug,
-          name: v.name,
-          poster: v.poster ?? null,
-          source: v.source,
-          score: v.score,
-        },
-        { onConflict: "user_id,slug" },
-      );
-      if (error) throw error;
+      const accessToken = await token();
+      if (!accessToken) throw new Error("Bạn cần đăng nhập");
+      const response = await fetch("/api/ratings", {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify(value),
+      });
+      const result = (await response.json()) as { error?: string };
+      if (!response.ok) throw new Error(result.error || "Không lưu được đánh giá");
     },
-    onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: ["rating", v.slug] }),
+    onSuccess: (_data, value) => qc.invalidateQueries({ queryKey: ["rating", value.slug] }),
   });
 }

@@ -1,0 +1,12 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+const api = readFileSync(new URL("../src/routes/api/watch-party.ts", import.meta.url), "utf8");
+assert.match(api, /join_locked boolean not null default false/);
+assert.match(api, /where code=\$1 and closed=false for update/i);
+assert.match(api, /party\.join_locked[\s\S]*party\.host_id[\s\S]*member\.rowCount[\s\S]*isAdmin/);
+assert.match(api, /body\.action === "set-lock"/);
+assert.match(api, /host_id=\$2 and closed=false/);
+assert.match(api, /watch_party\.set_lock/);
+assert.match(api, /alter table public\.watch_parties enable row level security/i);
+assert.match(api, /revoke insert,update,delete on public\.watch_parties/i);
+console.log("watch party lock contract: PASS");

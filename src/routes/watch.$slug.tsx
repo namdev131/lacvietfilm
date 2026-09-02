@@ -205,6 +205,7 @@ function WatchPage() {
       source,
       name: data.name,
       epLabel: `${currentServer?.server_name ?? ""} · ${currentEp.name || `Tập ${ep + 1}`}`,
+      episodeCount: currentServer?.items.length,
       ep,
       srv,
       m3u8: currentEp.m3u8,

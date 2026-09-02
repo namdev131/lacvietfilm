@@ -61,7 +61,11 @@ export function useToggleFollow() {
     }) => {
       if (!user) throw new Error("Bạn cần đăng nhập");
       if (movie.following) {
-        const { error } = await supabase.from("series_follows").delete().eq("user_id", user.id).eq("slug", movie.slug);
+        const { error } = await supabase
+          .from("series_follows")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("slug", movie.slug);
         if (error) throw error;
       } else {
         const { error } = await supabase.from("series_follows").upsert(
@@ -130,8 +134,12 @@ export function useMarkNotifications() {
   return useMutation({
     mutationFn: async (input?: string | { id?: string; read?: boolean }) => {
       if (!user) return;
-      const opts = typeof input === "string" ? { id: input, read: true } : { read: true, ...(input ?? {}) };
-      let q = supabase.from("notifications").update({ read: opts.read } as never).eq("user_id", user.id);
+      const opts =
+        typeof input === "string" ? { id: input, read: true } : { read: true, ...(input ?? {}) };
+      let q = supabase
+        .from("notifications")
+        .update({ read: opts.read } as never)
+        .eq("user_id", user.id);
       if (opts.id) q = q.eq("id", opts.id);
       const { error } = await q;
       if (error) throw error;
@@ -164,15 +172,18 @@ export function useUnfollow() {
   return useMutation({
     mutationFn: async (id: string) => {
       if (!user) return;
-      const { error } = await supabase.from("series_follows").delete().eq("user_id", user.id).eq("id", id);
+      const { error } = await supabase
+        .from("series_follows")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["follows"] }),
   });
 }
 
-
-/** Quét phim đang theo dõi, tạo thông báo khi có tập mới (tối đa 1 lần / 30 phút) */
+/** Quét phim đang theo dõi qua server (tối đa 1 lần / 30 phút) */
 export function useEpisodeWatcher() {
   const { user } = useAuth();
   const { data: follows } = useFollows();
@@ -183,46 +194,45 @@ export function useEpisodeWatcher() {
     const key = `lv-ep-check-${user.id}`;
     const last = Number(localStorage.getItem(key) || 0);
     if (Date.now() - last < 30 * 60_000) return;
-    localStorage.setItem(key, String(Date.now()));
 
     let cancelled = false;
     (async () => {
+      const observations = [];
       for (const f of follows) {
         try {
           const detail = await fetchDetail(f.slug, f.source as SourceId);
           if (cancelled) return;
-          const count = Math.max(0, ...(detail.servers || []).map((s) => s.items.length));
-          if (count > f.known_episodes) {
-            await supabase.from("notifications").insert({
-              user_id: user.id,
-              title: `${f.name} có tập mới`,
-              body: `Đã cập nhật tới tập ${count}${detail.episode_current ? ` · ${detail.episode_current}` : ""}`,
-              slug: f.slug,
-              source: f.source,
-              poster: f.poster,
-            } as never);
-            await supabase
-              .from("series_follows")
-              .update({ known_episodes: count, last_checked_at: new Date().toISOString() } as never)
-              .eq("id", f.id);
-          } else {
-            await supabase
-              .from("series_follows")
-              .update({ last_checked_at: new Date().toISOString() } as never)
-              .eq("id", f.id);
-          }
+          observations.push({
+            slug: f.slug,
+            source: f.source,
+            episodeCount: Math.max(0, ...(detail.servers || []).map((s) => s.items.length)),
+            episodeCurrent: detail.episode_current,
+          });
         } catch {
           /* bỏ qua nguồn lỗi */
         }
       }
+      if (!observations.length || cancelled) return;
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+      if (!token) return;
+      const response = await fetch("/api/episode-watcher", {
+        method: "POST",
+        headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+        body: JSON.stringify({ observations }),
+      });
+      if (!response.ok) throw new Error("Không quét được tập mới");
+      localStorage.setItem(key, String(Date.now()));
       if (!cancelled) {
         qc.invalidateQueries({ queryKey: ["notifications"] });
         qc.invalidateQueries({ queryKey: ["follows"] });
       }
-    })();
+    })().catch(() => {
+      /* lần quét sau sẽ thử lại */
+    });
 
     return () => {
       cancelled = true;
     };
-  }, [user?.id, follows?.length]);
+  }, [user?.id, follows?.length, qc]);
 }

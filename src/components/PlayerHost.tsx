@@ -16,12 +16,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { getLocalProgress, setLocalProgress, syncProgress } from "@/lib/progress";
 import { useSettings } from "@/lib/settings";
 
-
 export type Playback = {
   slug: string;
   source: SourceId;
   name: string;
   epLabel?: string;
+  episodeCount?: number;
   ep: number;
   srv: number;
   m3u8?: string;
@@ -102,7 +102,14 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
     (position: number, duration: number) => {
       const p = playback;
       if (!p) return;
-      setLocalProgress({ slug: p.slug, source: p.source, ep: p.ep, srv: p.srv, position, duration });
+      setLocalProgress({
+        slug: p.slug,
+        source: p.source,
+        ep: p.ep,
+        srv: p.srv,
+        position,
+        duration,
+      });
       const uid = userRef.current;
       if (uid) {
         void syncProgress(uid, {
@@ -113,6 +120,7 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
           ep: p.ep,
           srv: p.srv,
           episode_name: p.epLabel,
+          episode_count: p.episodeCount,
           position,
           duration,
         });
@@ -121,11 +129,20 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
     [playback],
   );
 
-
   const start = useCallback((p: Playback) => {
-    setPlayback((prev) => (sameMedia(prev, p)
-        ? { ...prev!, name: p.name, epLabel: p.epLabel, onEnded: p.onEnded, onNext: p.onNext, hasNext: p.hasNext, nextLabel: p.nextLabel }
-        : p));
+    setPlayback((prev) =>
+      sameMedia(prev, p)
+        ? {
+            ...prev!,
+            name: p.name,
+            epLabel: p.epLabel,
+            onEnded: p.onEnded,
+            onNext: p.onNext,
+            hasNext: p.hasNext,
+            nextLabel: p.nextLabel,
+          }
+        : p,
+    );
   }, []);
   const stop = useCallback(() => setPlayback(null), []);
   const setMode = useCallback(
@@ -163,8 +180,12 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
   const miniRaw = !dockEl || !dockEl.isConnected || !rect || rect.width < 80 || rect.height < 80;
   const mini = miniRaw;
   const hidePlayer = mini && !settings.miniPlayer;
-  const visibleWidth = rect ? Math.max(0, Math.min(rect.right, window.innerWidth) - Math.max(rect.left, 0)) : 0;
-  const visibleHeight = rect ? Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0)) : 0;
+  const visibleWidth = rect
+    ? Math.max(0, Math.min(rect.right, window.innerWidth) - Math.max(rect.left, 0))
+    : 0;
+  const visibleHeight = rect
+    ? Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0))
+    : 0;
   const playKey = playback
     ? `${playback.source}-${playback.slug}-${playback.srv}-${playback.ep}-${playback.mode}`
     : "none";
@@ -222,7 +243,9 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
               <div className="min-w-0 flex-1">
                 <div className="line-clamp-1 text-[11px] font-semibold">{playback.name}</div>
                 {playback.epLabel && (
-                  <div className="line-clamp-1 text-[10px] text-muted-foreground">{playback.epLabel}</div>
+                  <div className="line-clamp-1 text-[10px] text-muted-foreground">
+                    {playback.epLabel}
+                  </div>
                 )}
               </div>
               <Link
@@ -272,7 +295,6 @@ export function PlayerHostProvider({ children }: { children: ReactNode }) {
             sources={playback.sources}
             currentSource={playback.source}
             onSourceChange={(source) => playback.onSourceChange?.(source as SourceId)}
-
           />
         </div>
       )}

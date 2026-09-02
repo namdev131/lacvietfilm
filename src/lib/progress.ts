@@ -100,6 +100,7 @@ export async function syncProgress(
     srv: number;
     episode_slug?: string | null;
     episode_name?: string | null;
+    episode_count?: number;
     position: number;
     duration: number;
   },

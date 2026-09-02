@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export async function watchHistoryApi(
-  action: "list" | "record" | "progress",
+  action: "list" | "record" | "progress" | "delete",
   payload: Record<string, unknown> = {},
 ) {
   const {
@@ -19,4 +19,8 @@ export async function watchHistoryApi(
   const result = (await response.json()) as { history?: unknown[]; error?: string };
   if (!response.ok) throw new Error(result.error || "Không đồng bộ được lịch sử xem");
   return result;
+}
+
+export function deleteHistoryItem(slug: string) {
+  return watchHistoryApi("delete", { slug });
 }

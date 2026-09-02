@@ -1,25 +1,57 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, BadgeCheck, Copy, Crown, DoorClosed, Lock, MessagesSquare, Pause, Play, RefreshCw, Send, Users, X } from "lucide-react";
+import {
+  ArrowLeft,
+  BadgeCheck,
+  Crown,
+  DoorClosed,
+  Lock,
+  MessagesSquare,
+  Pause,
+  Play,
+  RefreshCw,
+  Send,
+  Share2,
+  ShieldAlert,
+  Unlock,
+  Users,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Player, type PlayMode } from "@/components/Player";
 import { fetchDetail } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
-import { useCloseParty, useParty, usePartyChat, usePartyPresence, usePartySync } from "@/hooks/useWatchParty";
+import {
+  useCloseParty,
+  useParty,
+  usePartyChat,
+  usePartyMembers,
+  usePartyPresence,
+  usePartySync,
+  usePartyWarnings,
+  useSetPartyLock,
+  useTransferPartyHost,
+} from "@/hooks/useWatchParty";
 import { SignInPrompt } from "@/components/SignInPrompt";
 import type { SourceId } from "@/lib/types";
 import { staffLabel, staffRole } from "@/lib/staff";
 import { usePlayerHost } from "@/components/PlayerHost";
 
-
 export const Route = createFileRoute("/party/$code")({
   head: () => ({
     meta: [
       { title: "Phòng xem chung | Lạc Việt Film" },
-      { name: "description", content: "Xem phim cùng bạn bè theo thời gian thực: đồng bộ tập, thời điểm phát và chat trực tiếp trong phòng." },
+      {
+        name: "description",
+        content:
+          "Xem phim cùng bạn bè theo thời gian thực: đồng bộ tập, thời điểm phát và chat trực tiếp trong phòng.",
+      },
       { property: "og:title", content: "Xem chung — Lạc Việt Film" },
-      { property: "og:description", content: "Đồng bộ phim và chat cùng bạn bè theo thời gian thực." },
+      {
+        property: "og:description",
+        content: "Đồng bộ phim và chat cùng bạn bè theo thời gian thực.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -35,11 +67,24 @@ function PartyPage() {
   const isHost = !!user && party?.host_id === user.id;
   const sync = usePartySync(party, isHost);
   const closeParty = useCloseParty();
+  const members = usePartyMembers(party?.id);
+  const warnings = usePartyWarnings(party?.id);
+  const setLock = useSetPartyLock();
+  const transferHost = useTransferPartyHost();
   const meta = (user?.user_metadata ?? {}) as Record<string, string>;
   const myRole = staffRole(user);
   const canCloseParty = isHost || myRole === "admin";
-  const myName = staffLabel(myRole, meta.display_name || meta.full_name || user?.email?.split("@")[0] || "Khán giả");
-  const { count: viewers, joinedNotice, setJoinedNotice, staffNotice, setStaffNotice } = usePartyPresence(code, myName);
+  const myName = staffLabel(
+    myRole,
+    meta.display_name || meta.full_name || user?.email?.split("@")[0] || "Khán giả",
+  );
+  const {
+    count: viewers,
+    joinedNotice,
+    setJoinedNotice,
+    staffNotice,
+    setStaffNotice,
+  } = usePartyPresence(code, myName);
   const chat = usePartyChat(party?.id);
   const [text, setText] = useState("");
   const [mode, setMode] = useState<PlayMode>("hls");
@@ -47,6 +92,34 @@ function PartyPage() {
   const [resyncNonce, setResyncNonce] = useState(0);
   const [activityNotice, setActivityNotice] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const canonicalCode = (party?.code || code).trim().toUpperCase();
+  const partyLink =
+    typeof window === "undefined"
+      ? `/party/${canonicalCode}`
+      : `${window.location.origin}/party/${canonicalCode}`;
+
+  const shareParty = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `Phòng xem chung ${canonicalCode}`,
+          text: `Vào phòng ${canonicalCode}`,
+          url: partyLink,
+        });
+        return;
+      }
+      await navigator.clipboard.writeText(partyLink);
+      toast.success("Đã sao chép link phòng");
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      try {
+        await navigator.clipboard.writeText(partyLink);
+        toast.success("Đã sao chép link phòng");
+      } catch {
+        toast.error("Không thể chia sẻ link phòng");
+      }
+    }
+  };
 
   // Phòng có player riêng; tắt mini player toàn cục để tránh PiP chồng hình/âm thanh.
   useEffect(() => host.stop(), []);
@@ -95,8 +168,17 @@ function PartyPage() {
 
   useEffect(() => {
     if (!joinedNotice) return;
-    setActivityNotice(joinedNotice.role === "admin" ? `${joinedNotice.name} đang điều hành cộng đồng trong phòng` : joinedNotice.role === "deputy_admin" ? `${joinedNotice.name} đang hỗ trợ phòng` : `${joinedNotice.name} đã vào xem chung`);
-    const timer = window.setTimeout(() => { setJoinedNotice(null); setActivityNotice(null); }, 5000);
+    setActivityNotice(
+      joinedNotice.role === "admin"
+        ? `${joinedNotice.name} đang điều hành cộng đồng trong phòng`
+        : joinedNotice.role === "deputy_admin"
+          ? `${joinedNotice.name} đang hỗ trợ phòng`
+          : `${joinedNotice.name} đã vào xem chung`,
+    );
+    const timer = window.setTimeout(() => {
+      setJoinedNotice(null);
+      setActivityNotice(null);
+    }, 5000);
     return () => window.clearTimeout(timer);
   }, [joinedNotice, setJoinedNotice]);
 
@@ -128,31 +210,66 @@ function PartyPage() {
   // Vị trí bắt đầu cho người mới vào: bù thời gian đã trôi nếu chủ phòng đang phát
   const joinPosition = party
     ? party.position_seconds +
-      (party.is_playing ? Math.max(0, (Date.now() - new Date(party.updated_at).getTime()) / 1000) : 0)
+      (party.is_playing
+        ? Math.max(0, (Date.now() - new Date(party.updated_at).getTime()) / 1000)
+        : 0)
     : 0;
 
   const chatNotice = chat.incomingMessage ? (
-    <div aria-label="Tin nhắn mới trong phòng" role="status" aria-live="polite" className="watch-party-message-notice absolute left-3 right-3 top-3 z-30 rounded-xl border border-primary/50 bg-card px-4 py-3 text-foreground shadow-xl md:left-auto md:w-80">
-      <div className="flex gap-3"><MessagesSquare className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><div className="min-w-0 flex-1"><strong className="block truncate text-xs text-primary">{chat.incomingMessage.display_name || "Thành viên"}</strong><p className="line-clamp-2 text-sm">{chat.incomingMessage.content}</p></div><button type="button" onClick={chat.dismissIncoming} aria-label="Đóng thông báo tin nhắn" className="self-start rounded-full p-1 text-muted-foreground hover:bg-muted"><X className="h-3.5 w-3.5" /></button></div>
+    <div
+      aria-label="Tin nhắn mới trong phòng"
+      role="status"
+      aria-live="polite"
+      className="watch-party-message-notice absolute left-3 right-3 top-3 z-30 rounded-xl border border-primary/50 bg-card px-4 py-3 text-foreground shadow-xl md:left-auto md:w-80"
+    >
+      <div className="flex gap-3">
+        <MessagesSquare className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+        <div className="min-w-0 flex-1">
+          <strong className="block truncate text-xs text-primary">
+            {chat.incomingMessage.display_name || "Thành viên"}
+          </strong>
+          <p className="line-clamp-2 text-sm">{chat.incomingMessage.content}</p>
+        </div>
+        <button
+          type="button"
+          onClick={chat.dismissIncoming}
+          aria-label="Đóng thông báo tin nhắn"
+          className="self-start rounded-full p-1 text-muted-foreground hover:bg-muted"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      </div>
     </div>
   ) : null;
 
-
-
   if (!loading && !user) {
-    return <SignInPrompt title="Phòng xem chung" desc="Đăng nhập để vào phòng, đồng bộ phim và chat cùng bạn bè." />;
+    return (
+      <SignInPrompt
+        title="Phòng xem chung"
+        desc="Đăng nhập để vào phòng, đồng bộ phim và chat cùng bạn bè."
+      />
+    );
   }
 
   if (isLoading || loading) {
-    return <div className="mx-auto max-w-[1400px] px-4 pt-10"><div className="aspect-video w-full rounded-xl bg-card shimmer" /></div>;
+    return (
+      <div className="mx-auto max-w-[1400px] px-4 pt-10">
+        <div className="aspect-video w-full rounded-xl bg-card shimmer" />
+      </div>
+    );
   }
 
   if (!party) {
     return (
       <div className="mx-auto max-w-lg px-4 pb-32 pt-20 text-center">
         <h1 className="text-xl font-bold">Không tìm thấy phòng “{code}”</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Phòng có thể đã đóng hoặc mã không đúng.</p>
-        <Link to="/" className="mt-6 inline-block rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
+        <p className="mt-2 text-sm text-muted-foreground">
+          Phòng có thể đã đóng hoặc mã không đúng.
+        </p>
+        <Link
+          to="/"
+          className="mt-6 inline-block rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+        >
           Về trang chủ
         </Link>
       </div>
@@ -177,11 +294,14 @@ function PartyPage() {
     );
   }
 
-
   return (
     <div className="mx-auto max-w-[1400px] px-4 pb-32 pt-6 md:px-10">
       <div className="flex flex-wrap items-center gap-3">
-        <Link to="/" className="rounded-full border border-border p-2 hover:border-primary/60" aria-label="Về trang chủ">
+        <Link
+          to="/"
+          className="rounded-full border border-border p-2 hover:border-primary/60"
+          aria-label="Về trang chủ"
+        >
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div className="min-w-0">
@@ -195,34 +315,77 @@ function PartyPage() {
             <Users className="h-3.5 w-3.5 text-primary" /> {viewers} đang xem
           </span>
           <button
-            onClick={() => {
-              void navigator.clipboard?.writeText(`${window.location.origin}/party/${party.code}`);
-              toast.success("Đã sao chép link mời");
-            }}
+            type="button"
+            onClick={() => void shareParty()}
             className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground"
           >
-            <Copy className="h-3.5 w-3.5" /> Mã {party.code}
+            <Share2 className="h-3.5 w-3.5" /> Chia sẻ · {canonicalCode}
           </button>
         </div>
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_340px]">
         <div>
+          {!!warnings.data?.length && (
+            <div className="watch-party-warning mb-3 space-y-2" role="status" aria-live="polite">
+              {warnings.data.map((warning) => (
+                <div
+                  key={warning.id}
+                  className="flex items-start gap-3 rounded-xl border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm"
+                >
+                  <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+                  <div>
+                    <strong className="block text-destructive">Cảnh báo từ Admin</strong>
+                    <p>{warning.message}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
           {joinedNotice && !staffNotice && (
-            <div role="status" aria-live="polite" className={`watch-party-join staff-${joinedNotice.role} mb-3 flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-sm shadow-lg`}>
+            <div
+              role="status"
+              aria-live="polite"
+              className={`watch-party-join staff-${joinedNotice.role} mb-3 flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-sm shadow-lg`}
+            >
               <Users className="h-5 w-5 shrink-0 text-primary" />
               <strong className="min-w-0 flex-1">{joinedNotice.name} vừa tham gia phòng</strong>
-              <button type="button" onClick={() => setJoinedNotice(null)} className="rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Đóng thông báo"><X className="h-4 w-4" /></button>
+              <button
+                type="button"
+                onClick={() => setJoinedNotice(null)}
+                className="rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                aria-label="Đóng thông báo"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
           )}
           {staffNotice && (
-            <div role="status" aria-live="polite" className={`watch-party-join staff-${staffNotice.role} mb-3 flex items-center gap-3 rounded-xl border border-primary/45 bg-primary/10 px-4 py-3 text-sm shadow-sm`}>
+            <div
+              role="status"
+              aria-live="polite"
+              className={`watch-party-join staff-${staffNotice.role} mb-3 flex items-center gap-3 rounded-xl border border-primary/45 bg-primary/10 px-4 py-3 text-sm shadow-sm`}
+            >
               <BadgeCheck className="h-5 w-5 shrink-0 text-primary" />
               <strong className="min-w-0 flex-1">{staffNotice.name} đã tham gia phòng bạn</strong>
-              <button type="button" onClick={() => setStaffNotice(null)} className="rounded-full p-1 text-muted-foreground hover:bg-primary/10 hover:text-foreground" aria-label="Đóng thông báo"><X className="h-4 w-4" /></button>
+              <button
+                type="button"
+                onClick={() => setStaffNotice(null)}
+                className="rounded-full p-1 text-muted-foreground hover:bg-primary/10 hover:text-foreground"
+                aria-label="Đóng thông báo"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
           )}
-          {activityNotice && <p className={`staff-${joinedNotice?.role ?? staffNotice?.role ?? "member"} mb-3 rounded-lg border px-3 py-2 text-xs font-semibold`} role="status">{activityNotice}</p>}
+          {activityNotice && (
+            <p
+              className={`staff-${joinedNotice?.role ?? staffNotice?.role ?? "member"} mb-3 rounded-lg border px-3 py-2 text-xs font-semibold`}
+              role="status"
+            >
+              {activityNotice}
+            </p>
+          )}
           <div className="overflow-hidden rounded-xl border border-border bg-card">
             <Player
               key={`${party.slug}-${party.srv_index}-${party.ep_index}-${resyncNonce}`}
@@ -235,7 +398,8 @@ function PartyPage() {
               syncState={syncState}
               onPlayState={
                 isHost
-                  ? (playing, pos) => void sync({ is_playing: playing, position_seconds: Math.floor(pos) })
+                  ? (playing, pos) =>
+                      void sync({ is_playing: playing, position_seconds: Math.floor(pos) })
                   : undefined
               }
               onProgress={(pos) => {
@@ -250,21 +414,28 @@ function PartyPage() {
             <div className="mt-4 space-y-3 rounded-xl border border-border bg-card/60 p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
-                  <Crown className="h-3.5 w-3.5 text-primary" /> Bạn là chủ phòng — điều khiển cho cả phòng
+                  <Crown className="h-3.5 w-3.5 text-primary" /> Bạn là chủ phòng — điều khiển cho
+                  cả phòng
                 </p>
                 <div className="ml-auto flex items-center gap-2">
                   <button
                     onClick={() => void sync({ is_playing: !party.is_playing })}
                     className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold hover:border-primary/60 hover:text-primary"
                   >
-                    {party.is_playing ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+                    {party.is_playing ? (
+                      <Pause className="h-3.5 w-3.5" />
+                    ) : (
+                      <Play className="h-3.5 w-3.5" />
+                    )}
                     {party.is_playing ? "Tạm dừng phòng" : "Phát cho phòng"}
                   </button>
                   <button
                     onClick={() => {
                       const next = party.chat_mode === "host" ? "all" : "host";
                       void sync({ chat_mode: next });
-                      toast.success(next === "host" ? "Chỉ chủ phòng được chat" : "Mọi người được chat");
+                      toast.success(
+                        next === "host" ? "Chỉ chủ phòng được chat" : "Mọi người được chat",
+                      );
                     }}
                     className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
                       party.chat_mode === "host"
@@ -272,8 +443,34 @@ function PartyPage() {
                         : "border-border hover:border-primary/60"
                     }`}
                   >
-                    {party.chat_mode === "host" ? <Lock className="h-3.5 w-3.5" /> : <MessagesSquare className="h-3.5 w-3.5" />}
+                    {party.chat_mode === "host" ? (
+                      <Lock className="h-3.5 w-3.5" />
+                    ) : (
+                      <MessagesSquare className="h-3.5 w-3.5" />
+                    )}
                     {party.chat_mode === "host" ? "Chat: chỉ chủ phòng" : "Chat: mọi người"}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={setLock.isPending}
+                    onClick={() =>
+                      setLock.mutate(
+                        { party, locked: !party.join_locked },
+                        {
+                          onSuccess: () =>
+                            toast.success(party.join_locked ? "Đã mở phòng" : "Đã khóa phòng"),
+                          onError: (error) => toast.error(error.message),
+                        },
+                      )
+                    }
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold hover:border-primary/60 disabled:opacity-50"
+                  >
+                    {party.join_locked ? (
+                      <Unlock className="h-3.5 w-3.5" />
+                    ) : (
+                      <Lock className="h-3.5 w-3.5" />
+                    )}
+                    {party.join_locked ? "Mở phòng" : "Khóa phòng"}
                   </button>
                   <button
                     onClick={() => {
@@ -294,7 +491,9 @@ function PartyPage() {
                     key={s.server_name + i}
                     onClick={() => void sync({ srv_index: i, ep_index: 0, position_seconds: 0 })}
                     className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${
-                      i === party.srv_index ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      i === party.srv_index
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground"
                     }`}
                   >
                     {s.server_name}
@@ -307,7 +506,9 @@ function PartyPage() {
                     key={it.slug || i}
                     onClick={() => void sync({ ep_index: i, position_seconds: 0 })}
                     className={`min-w-10 rounded-lg px-2.5 py-1.5 text-xs font-semibold ${
-                      i === party.ep_index ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      i === party.ep_index
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground"
                     }`}
                   >
                     {i + 1}
@@ -329,7 +530,9 @@ function PartyPage() {
                   if (!followHost) setResyncNonce((n) => n + 1);
                 }}
                 className={`ml-auto inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 font-semibold transition ${
-                  followHost ? "border-primary/60 bg-primary/10 text-primary" : "border-border hover:border-primary/60"
+                  followHost
+                    ? "border-primary/60 bg-primary/10 text-primary"
+                    : "border-border hover:border-primary/60"
                 }`}
               >
                 <RefreshCw className="h-3.5 w-3.5" /> {followHost ? "Tắt đồng bộ" : "Đồng bộ lại"}
@@ -347,7 +550,15 @@ function PartyPage() {
               )}
               {canCloseParty && (
                 <button
-                  onClick={() => closeParty.mutate(party, { onSuccess: () => toast.success("Admin đã đóng phòng"), onError: (error) => toast.error(error instanceof Error ? error.message : "Không đóng được phòng") })}
+                  onClick={() =>
+                    closeParty.mutate(party, {
+                      onSuccess: () => toast.success("Admin đã đóng phòng"),
+                      onError: (error) =>
+                        toast.error(
+                          error instanceof Error ? error.message : "Không đóng được phòng",
+                        ),
+                    })
+                  }
                   className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/50 px-3 py-1.5 font-semibold text-destructive hover:bg-destructive/10"
                 >
                   <DoorClosed className="h-3.5 w-3.5" /> Đóng phòng
@@ -355,12 +566,53 @@ function PartyPage() {
               )}
             </div>
           )}
-
         </div>
 
         {/* Chat */}
         <div className="relative flex h-[520px] flex-col rounded-xl border border-border bg-card">
-
+          <div className="border-b border-border/60 p-3">
+            <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+              <Users className="h-3.5 w-3.5" /> Thành viên ({members.data?.length ?? 0})
+            </div>
+            <div className="flex max-h-28 flex-wrap gap-2 overflow-y-auto">
+              {members.data?.map((member) => (
+                <div
+                  key={member.user_id}
+                  className="flex min-w-0 items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs"
+                >
+                  {member.user_id === party.host_id && <Crown className="h-3 w-3 text-primary" />}
+                  <span className="max-w-32 truncate">{member.display_name || "Thành viên"}</span>
+                  {isHost && member.user_id !== user?.id && (
+                    <button
+                      type="button"
+                      disabled={transferHost.isPending}
+                      className="ml-1 font-semibold text-primary hover:underline disabled:opacity-50"
+                      onClick={() => {
+                        if (
+                          !confirm(
+                            `Chuyển chủ phòng cho ${member.display_name || "thành viên này"}?`,
+                          )
+                        )
+                          return;
+                        transferHost.mutate(
+                          { party, userId: member.user_id },
+                          {
+                            onSuccess: () => toast.success("Đã chuyển chủ phòng"),
+                            onError: (error) => toast.error(error.message),
+                          },
+                        );
+                      }}
+                    >
+                      Chuyển chủ phòng
+                    </button>
+                  )}
+                </div>
+              ))}
+              {!members.isLoading && !members.data?.length && (
+                <span className="text-xs text-muted-foreground">Chưa có dữ liệu thành viên</span>
+              )}
+            </div>
+          </div>
           <div className="flex items-center gap-2 border-b border-border/60 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-muted-foreground">
             Chat phòng
             {party.chat_mode === "host" && (
@@ -377,8 +629,12 @@ function PartyPage() {
                 const mine = m.user_id === user?.id;
                 return (
                   <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                    <div className={`staff-${m.display_name === "Nhím Admin" ? "admin" : m.display_name === "Phó Admin Lạc Việt" ? "deputy_admin" : "member"} max-w-[80%] rounded-2xl border px-3 py-2 text-sm ${mine ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
-                      {!mine && <div className="text-[11px] font-bold text-primary">{m.display_name}</div>}
+                    <div
+                      className={`staff-${m.staff_role ?? "member"} max-w-[80%] rounded-2xl border px-3 py-2 text-sm ${mine ? "bg-primary text-primary-foreground" : "bg-muted"}`}
+                    >
+                      {!mine && (
+                        <div className="text-[11px] font-bold text-primary">{m.display_name}</div>
+                      )}
                       <div className="whitespace-pre-wrap break-words">{m.content}</div>
                     </div>
                   </div>

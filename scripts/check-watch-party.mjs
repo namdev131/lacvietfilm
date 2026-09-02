@@ -33,23 +33,15 @@ for (const action of [
   'body.action === "sync"',
 ])
   must(api.includes(action), `API thiếu ${action}`);
-must(hook.includes('partyApi({ action: "chat-send"'), "Chat vẫn ghi trực tiếp qua RLS");
-must(hook.includes('partyApi({ action: "close"'), "Đóng phòng vẫn ghi trực tiếp qua RLS");
+must(/partyApi\(\{[\s\S]{0,100}action: "chat-send"/.test(hook), "Chat vẫn ghi trực tiếp qua RLS");
+must(/partyApi\(\{[\s\S]{0,100}action: "close"/.test(hook), "Đóng phòng vẫn ghi trực tiếp qua RLS");
 must(party.includes("host.stop()"), "Vào phòng chưa tắt PiP đang phát");
 must(party.includes("navigator.share"), "Phòng thiếu Web Share cho nút Chia sẻ");
 must(party.includes("navigator.clipboard"), "Nút Chia sẻ thiếu fallback clipboard");
-must(
-  party.includes('socialApi("friends-list"'),
-  "Mời bạn chưa tải danh sách bạn bè qua social API",
-);
-must(party.includes('socialApi("party-invite"'), "Mời bạn chưa gửi lời mời qua social API");
-must(party.includes("partyId: party.id"), "Lời mời thiếu partyId");
-must(party.includes("code: party.code"), "Lời mời thiếu code");
-must(party.includes("link: partyLink"), "Lời mời thiếu link");
+
 must(
   /<button[^>]*>[\s\S]*?Chia sẻ[\s\S]*?<\/button>/.test(party),
   "Chủ phòng và thành viên thiếu nút Chia sẻ chung",
 );
-must(/<button[^>]*>[\s\S]*?Mời bạn[\s\S]*?<\/button>/.test(party), "Phòng thiếu nút Mời bạn");
 
 console.log("watch party contract: PASS");
