@@ -11,24 +11,15 @@ import {
   Users,
 } from "lucide-react";
 import {
-  KIND_LABEL,
   PERIOD_LABEL,
   useGoldBoard,
   useLiveViewers,
-  type GoldKind,
   type GoldPeriod,
   type GoldRow,
 } from "@/lib/gold";
 import { useAuth } from "@/hooks/useAuth";
 import { useFavorites, useToggleFavorite } from "@/hooks/useUserData";
 import type { SourceId } from "@/lib/types";
-
-const PERIODS: GoldPeriod[] = ["day", "week", "month", "all"];
-const KINDS: GoldKind[] = ["all", "series", "single", "anime"];
-const SOURCES: ("all" | SourceId)[] = [
-  "all", "kkphim", "ophim", "nguonc", "vsmov",
-  "rapchieuphim", "aiphim", "thuongkhung3d", "animapper",
-];
 
 function FavoriteButton({ row, active }: { row: GoldRow; active: boolean }) {
   const { user } = useAuth();
@@ -58,17 +49,12 @@ function FavoriteButton({ row, active }: { row: GoldRow; active: boolean }) {
 
 export function GoldBoard() {
   const reduceMotion = useReducedMotion();
-  const [period, setPeriod] = useState<GoldPeriod>("day");
-  const [kind, setKind] = useState<GoldKind>("all");
-  const [source, setSource] = useState<"all" | SourceId>("all");
-  const { data, isLoading } = useGoldBoard(period, kind);
+  const period: GoldPeriod = "day";
+  const { data, isLoading } = useGoldBoard(period, "all");
   const viewers = useLiveViewers();
   const { data: favorites } = useFavorites();
   const favoriteSlugs = useMemo(() => new Set((favorites ?? []).map((item) => item.slug)), [favorites]);
-  const rows = useMemo(
-    () => (source === "all" ? data ?? [] : (data ?? []).filter((row) => row.source === source)),
-    [data, source],
-  );
+  const rows = data ?? [];
   const totalViews = rows.reduce((sum, row) => sum + row.views, 0);
   const track = useRef<HTMLDivElement>(null);
   const [atStart, setAtStart] = useState(true);
@@ -111,12 +97,6 @@ export function GoldBoard() {
           {viewers > 0 && <span className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" />{viewers} đang xem</span>}
           <span className="inline-flex items-center gap-1"><Radio className="h-3.5 w-3.5 text-primary" />Realtime</span>
         </div>
-      </div>
-
-      <div className="movie-row-inner trending-filters mb-4 flex gap-2 overflow-x-auto pb-1">
-        <FilterGroup values={PERIODS} value={period} onChange={setPeriod} label={(value) => PERIOD_LABEL[value]} />
-        <FilterGroup values={KINDS} value={kind} onChange={setKind} label={(value) => KIND_LABEL[value]} />
-        <FilterGroup values={SOURCES} value={source} onChange={setSource} label={(value) => value === "all" ? "Mọi nguồn" : value} />
       </div>
 
       {isLoading ? (
@@ -186,12 +166,4 @@ export function GoldBoard() {
   );
 }
 
-function FilterGroup<T extends string>({ values, value, onChange, label }: { values: readonly T[]; value: T; onChange: (value: T) => void; label: (value: T) => string }) {
-  return (
-    <div className="flex shrink-0 rounded-full border border-border bg-card/60 p-0.5">
-      {values.map((item) => (
-        <button key={item} type="button" onClick={() => onChange(item)} className={`rounded-full px-3 py-1 text-xs font-medium transition ${value === item ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{label(item)}</button>
-      ))}
-    </div>
-  );
-}
+

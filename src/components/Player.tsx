@@ -419,6 +419,7 @@ export function Player({
   };
   const togglePlayerControls = (event: ReactMouseEvent<HTMLDivElement>) => {
     if (locked) return;
+    if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
     if ((event.target as HTMLElement).closest("button, input, [role='dialog']")) return;
     if (suppressClickRef.current) {
       suppressClickRef.current = false;
@@ -431,6 +432,12 @@ export function Player({
       }
       return !visible;
     });
+  };
+  const revealDesktopControls = () => {
+    if (locked || !window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    setControlsVisible(true);
+    if (controlsTimerRef.current !== null) window.clearTimeout(controlsTimerRef.current);
+    controlsTimerRef.current = window.setTimeout(() => setControlsVisible(false), 3000);
   };
   const beginTouchGesture = (event: ReactTouchEvent<HTMLDivElement>) => {
     if (locked) return;
@@ -520,6 +527,8 @@ export function Player({
         ref={frameRef}
         onClick={togglePlayerControls}
         onDoubleClick={handleDoubleTap}
+        onMouseEnter={revealDesktopControls}
+        onMouseMove={revealDesktopControls}
         onTouchStart={beginTouchGesture}
         onTouchMove={updateTouchGesture}
         onTouchEnd={endTouchGesture}

@@ -3,7 +3,7 @@ export type SourceId =
   | "ophim"
   | "nguonc"
   | "vsmov"
-  | "rapchieuphim"
+  | "rapchieuphim" // dữ liệu cũ; mục rạp dùng adapter riêng
   | "aiphim"
   | "thuongkhung3d"
   | "animapper";
